@@ -1,0 +1,32 @@
+image: Visual Studio 2019
+
+environment:
+  matrix:
+    - PYTHON: "C:\\Python36-x64"
+      PYTHON_VERSION: "3.6"
+      PYTHON_ARCH: "64"
+      MINICONDA: "C:\\Miniconda36-x64"
+    - PYTHON: "C:\\Python37-x64"
+      PYTHON_VERSION: "3.7"
+      PYTHON_ARCH: "64"
+      MINICONDA: "C:\\Miniconda36-x64"
+    - PYTHON: "C:\\Python38-x64"
+      PYTHON_VERSION: "3.8"
+      PYTHON_ARCH: "64"
+      MINICONDA: "C:\\Miniconda36-x64"
+
+install:
+  - git submodule update --init --recursive
+  - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%PATH%"
+  - conda config --set always_yes yes --set changeps1 no
+  - "conda create -q -n buildenv python=%PYTHON_VERSION%"
+  - conda install -n buildenv -c conda-forge pybind11
+  - activate buildenv
+  - pip install wheel
+
+build_script:
+  - "python.exe setup.py bdist_wheel"
+
+artifacts:
+  # bdist_wheel puts your built wheel in the dist directory
+  - path: dist/*

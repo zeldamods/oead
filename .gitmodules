@@ -1,0 +1,15 @@
+[submodule "rapidyaml"]
+	path = lib/rapidyaml
+	url = https://github.com/leoetlino/rapidyaml
+[submodule "src/lib/pybind11"]
+	path = lib/pybind11
+	url = https://github.com/pybind/pybind11
+[submodule "src/lib/abseil"]
+	path = lib/abseil
+	url = https://github.com/abseil/abseil-cpp
+[submodule "src/lib/libyaml"]
+	path = lib/libyaml
+	url = https://github.com/yaml/libyaml
+[submodule "lib/ordered-map"]
+	path = lib/ordered-map
+	url = https://github.com/Tessil/ordered-map
