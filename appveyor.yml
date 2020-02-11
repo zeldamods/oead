@@ -20,7 +20,6 @@ install:
   - "set PATH=%MINICONDA%;%MINICONDA%\\Scripts;%PATH%"
   - conda config --set always_yes yes --set changeps1 no
   - "conda create -q -n buildenv python=%PYTHON_VERSION%"
-  - conda install -n buildenv -c conda-forge pybind11
   - activate buildenv
   - pip install wheel
 
