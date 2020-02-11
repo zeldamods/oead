@@ -62,7 +62,7 @@ class CMakeBuild(build_ext):
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
 
-with open("README.md", "r") as fh:
+with open("readme.rst", "r") as fh:
     long_description = fh.read()
 
 cmdclass = versioneer.get_cmdclass()
@@ -76,7 +76,7 @@ setuptools.setup(
     author_email="leo@leolam.fr",
     description="Library for recent Nintendo EAD formats in first-party games",
     long_description=long_description,
-    long_description_content_type="text/markdown",
+    long_description_content_type="text/x-rst",
     url="https://github.com/zeldamods/oead",
     packages=setuptools.find_packages(),
     classifiers=[
