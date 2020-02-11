@@ -43,6 +43,6 @@ Contributing
 ============
 
 * Issue tracker: `<https://github.com/zeldamods/oead/issues>`_
-* Source code: `<https://github.com/zeldamods/oead/issues>`_
+* Source code: `<https://github.com/zeldamods/oead>`_
 
 This project is licensed under the GPLv2+ license.
