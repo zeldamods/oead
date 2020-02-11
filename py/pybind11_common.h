@@ -65,35 +65,11 @@ inline tcb::span<u8> PyBufferToSpan(py::buffer b) {
   return {static_cast<u8*>(buffer.ptr), size_t(buffer.size)};
 }
 
-template <typename T, typename Caster>
-T CastFromPython(const py::handle& handle) {
-  Caster caster;
-  if (!caster.load(handle, true))
-    throw py::cast_error("Failed to cast Python instance to C++ type");
-  return static_cast<T&&>(std::move(caster));
-}
-
-template <typename Caster, typename T>
-py::object CastToPython(const T& value,
-                        py::return_value_policy policy = py::return_value_policy::reference,
-                        py::handle parent = {}) {
-  Caster caster;
-  return py::reinterpret_steal<py::object>(caster.cast(value, policy, parent));
-}
-
 template <typename Vector, typename holder_type = std::unique_ptr<Vector>, typename... Args>
 py::class_<Vector, holder_type> BindVector(py::handle scope, const std::string& name,
                                            Args&&... args) {
   using Value = typename Vector::value_type;
-  using Caster = py::detail::list_caster<Vector, Value>;
-
-  const auto as_list = [](const Vector& vector) { return CastToPython<Caster>(vector); };
-
-  auto cl = py::bind_vector<Vector, holder_type>(scope, name, std::forward<Args>(args)...)
-                .def("__str__", [&](const Vector& v) { return py::str(as_list(v)); })
-                .def("__repr__", [name, as_list](const Vector& v) {
-                  return "{}({!r})"_s.format(name, as_list(v));
-                });
+  auto cl = py::bind_vector<Vector, holder_type>(scope, name, std::forward<Args>(args)...);
   py::implicitly_convertible<py::iterable, Vector>();
   return cl;
 }
@@ -132,9 +108,6 @@ template <typename Map, typename holder_type = std::unique_ptr<Map>, typename...
 py::class_<Map, holder_type> BindMap(py::handle scope, const std::string& name, Args&&... args) {
   using Key = typename Map::key_type;
   using Value = typename Map::mapped_type;
-  using Caster = py::detail::map_caster<Map, Key, Value>;
-
-  const auto as_dict = [](const Map& map) { return CastToPython<Caster>(map); };
   auto cl =
       py::bind_map<Map, holder_type>(scope, name, std::forward<Args>(args)...)
           .def(py::init([&](py::iterator it) {
@@ -145,9 +118,6 @@ py::class_<Map, holder_type> BindMap(py::handle scope, const std::string& name, 
                  return MapFromDict<Map, Key>(dict, MapCastValue<Map, Key, Value>);
                }),
                "dictionary"_a)
-          .def("__str__", [as_dict](const Map& map) { return py::str(as_dict(map)); })
-          .def("__repr__",
-               [name, as_dict](const Map& map) { return "{}({!s})"_s.format(name, as_dict(map)); })
           .def("clear", &Map::clear)
           .def(
               "get",
