@@ -37,8 +37,8 @@ jobs:
       run: python setup.py install --user
     - name: Test with pytest
       run: |
-        pip install pytest pytest-benchmark
-        pytest test/ --benchmark-skip
+        pip install pytest
+        pytest test/ --ignore-glob "*benchmark*"
     - name: Upload wheels
       uses: actions/upload-artifact@master
       with:

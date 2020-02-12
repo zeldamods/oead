@@ -1,5 +1,4 @@
 import pytest
-import byml
 import oead
 
 from utils import make_test_cases
