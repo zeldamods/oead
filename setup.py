@@ -12,6 +12,11 @@ from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
 
+# Intended to make building in manylinux images easier.
+# CentOS (or the EPEL package?) calls CMake cmake3...
+cmake3_path = Path("/usr/bin/cmake3")
+if cmake3_path.exists():
+    Path("/usr/bin/cmake").symlink_to(cmake3_path)
 
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
