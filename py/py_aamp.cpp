@@ -117,5 +117,15 @@ void BindAamp(py::module& parent) {
   BindMap<aamp::ParameterMap>(m, "ParameterMap");
   BindMap<aamp::ParameterObjectMap>(m, "ParameterObjectMap");
   BindMap<aamp::ParameterListMap>(m, "ParameterListMap");
+
+  py::class_<aamp::NameTable>(m, "NameTable")
+    .def(py::init<bool>(), "with_botw_strings"_a)
+    .def("get_name", &aamp::NameTable::GetName, "hash"_a, "index"_a, "parent_name_hash"_a)
+    .def("add_name", py::overload_cast<std::string>(&aamp::NameTable::AddName), "name"_a)
+    .def_readwrite("names", &aamp::NameTable::names)
+    .def_readwrite("owned_names", &aamp::NameTable::owned_names)
+    .def_readwrite("numbered_names", &aamp::NameTable::numbered_names);
+
+  m.def("GetDefaultNameTable", &aamp::GetDefaultNameTable);
 }
 }  // namespace oead::bind

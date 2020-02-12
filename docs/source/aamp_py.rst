@@ -69,4 +69,14 @@ Parameter IO
 Name utilities
 ==============
 
-.. note:: Name utilities are currently not exposed by the Python bindings.
+Because binary parameter archives only store CRC32 hashes of structure names, recovering the original names -- which is useful for converting archives to a human-readable format -- requires the use of a name table.
+
+When serializing to YAML, by default oead will use a table that contains strings from *Breath of the Wild*'s executable.
+
+.. autoclass:: oead.aamp.NameTable
+
+    See also :cpp:type:`oead::aamp::NameTable`
+
+.. autofunction:: oead.aamp.GetDefaultNameTable
+
+    See also :cpp:func:`oead::aamp::GetDefaultNameTable`
