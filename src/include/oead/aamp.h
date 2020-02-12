@@ -50,7 +50,10 @@ struct NameTable {
 
   /// Add a known string to the name table.
   /// \return a view to the added string.
-  std::string_view AddName(std::string name) { return AddName(util::crc32(name), std::move(name)); }
+  std::string_view AddName(std::string name) {
+    const u32 hash = util::crc32(name);
+    return AddName(hash, std::move(name));
+  }
   /// Add a known string to the name table. This should be used if the string's hash
   /// has already been computed in order to avoid recomputing it.
   /// \return a view to the added string.
