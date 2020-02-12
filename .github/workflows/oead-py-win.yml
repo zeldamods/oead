@@ -36,7 +36,7 @@ jobs:
     - name: Test with pytest
       run: |
         pip install pytest
-        pytest
+        pytest test/ --benchmark-skip
     - name: Upload wheels
       uses: actions/upload-artifact@master
       with:
