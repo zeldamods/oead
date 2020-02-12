@@ -24,7 +24,7 @@ Install with::
 .. warning::
    Windows users must ensure that they have the `latest Visual C++ 2019 Redistributable <https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads>`_ installed.
 
-For more information, refer to the documentation.
+For more information, refer to the `documentation <https://oead.readthedocs.io/>`_.
 
 Building from source
 ====================
