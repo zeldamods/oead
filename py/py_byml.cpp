@@ -28,9 +28,9 @@
 #include <oead/byml.h>
 #include "main.h"
 
-OEAD_MAKE_VARIANT_CASTER(oead::Byml::Value);
 OEAD_MAKE_OPAQUE("oead.Byml.Array", oead::Byml::Array);
 OEAD_MAKE_OPAQUE("oead.Byml.Hash", oead::Byml::Hash);
+OEAD_MAKE_VARIANT_CASTER(oead::Byml::Value);
 
 namespace oead::bind {
 void BindByml(py::module& m) {
