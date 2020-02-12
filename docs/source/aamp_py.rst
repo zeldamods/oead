@@ -77,6 +77,8 @@ When serializing to YAML, by default oead will use a table that contains strings
 
     See also :cpp:type:`oead::aamp::NameTable`
 
-.. autofunction:: oead.aamp.GetDefaultNameTable
+.. note:: For safety reasons, the underlying maps are not exposed.
+
+.. autofunction:: oead.aamp.get_default_name_table
 
     See also :cpp:func:`oead::aamp::GetDefaultNameTable`
