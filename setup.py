@@ -15,8 +15,7 @@ from distutils.version import LooseVersion
 # Intended to make building in manylinux images easier.
 # CentOS (or the EPEL package?) calls CMake cmake3...
 cmake3_path = Path("/usr/bin/cmake3")
-if cmake3_path.exists():
-    Path("/usr/bin/cmake").symlink_to(cmake3_path)
+cmake_name = "cmake3" if cmake3_path.exists() else "cmake"
 
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
@@ -63,8 +62,8 @@ class CMakeBuild(build_ext):
                                                               self.distribution.get_version())
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
-        subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
-        subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
+        subprocess.check_call([cmake_name, ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
+        subprocess.check_call([cmake_name, '--build', '.'] + build_args, cwd=self.build_temp)
 
 
 with open("readme.rst", "r") as fh:
