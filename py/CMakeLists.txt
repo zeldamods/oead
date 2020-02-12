@@ -29,10 +29,6 @@ pybind11_add_module(oead-py
   pybind11_common.h
   pybind11_variant_caster.h
 )
-if (MSVC)
-  # https://github.com/abseil/abseil-cpp/issues/357
-  target_compile_options(oead-py PUBLIC /permissive)
-endif()
 set_target_properties(oead-py PROPERTIES OUTPUT_NAME oead)
 add_subdirectory(../ oead)
 target_link_libraries(oead-py PRIVATE oead)

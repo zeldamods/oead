@@ -46,8 +46,6 @@ target_include_directories(oead PUBLIC src/include)
 target_include_directories(oead PRIVATE src/)
 if (MSVC)
   target_compile_options(oead PRIVATE /W4)
-  # https://github.com/abseil/abseil-cpp/issues/357
-  target_compile_options(oead PRIVATE /permissive)
 else()
   target_compile_options(oead PRIVATE -Wall -Wextra -fno-plt)
 endif()
