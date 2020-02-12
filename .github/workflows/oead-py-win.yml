@@ -33,6 +33,8 @@ jobs:
         pip install --upgrade pip setuptools wheel
     - name: Build
       run: python setup.py bdist_wheel
+    - name: Install
+      run: python setup.py install --user
     - name: Test with pytest
       run: |
         pip install pytest pytest-benchmark
