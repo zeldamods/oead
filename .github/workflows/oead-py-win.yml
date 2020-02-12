@@ -35,7 +35,7 @@ jobs:
       run: python setup.py bdist_wheel
     - name: Test with pytest
       run: |
-        pip install pytest
+        pip install pytest pytest-benchmark
         pytest test/ --benchmark-skip
     - name: Upload wheels
       uses: actions/upload-artifact@master
