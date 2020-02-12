@@ -126,6 +126,6 @@ void BindAamp(py::module& parent) {
     .def_readwrite("owned_names", &aamp::NameTable::owned_names)
     .def_readwrite("numbered_names", &aamp::NameTable::numbered_names);
 
-  m.def("GetDefaultNameTable", &aamp::GetDefaultNameTable);
+  m.def("get_default_name_table", &aamp::GetDefaultNameTable);
 }
 }  // namespace oead::bind
