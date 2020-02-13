@@ -199,7 +199,7 @@ static std::vector<T> ReadSequenceForBuffer(const ryml::NodeRef& node) {
 }
 
 template <size_t N>
-static std::array<Curve, N> ReadSequenceForCurve(const ryml::NodeRef& node) {
+static std::array<oead::Curve, N> ReadSequenceForCurve(const ryml::NodeRef& node) {
   std::array<Curve, N> curves;
   size_t i = 0;
   for (Curve& curve : curves) {
@@ -211,65 +211,63 @@ static std::array<Curve, N> ReadSequenceForCurve(const ryml::NodeRef& node) {
   return curves;
 }
 
-bool read(const ryml::NodeRef& node, Parameter* v) {
+Parameter ReadParameter(const ryml::NodeRef& node) {
   if (node.is_seq()) {
     const auto tag = yml::RymlSubstrToStrView(node.val_tag());
-    if (tag == "!vec2") {
-      *v = ReadSequenceForNumericalStruct<Vector2f>(node);
-    } else if (tag == "!vec3") {
-      *v = ReadSequenceForNumericalStruct<Vector3f>(node);
-    } else if (tag == "!vec4") {
-      *v = ReadSequenceForNumericalStruct<Vector4f>(node);
-    } else if (tag == "!color") {
-      *v = ReadSequenceForNumericalStruct<Color4f>(node);
-    } else if (tag == "!curve") {
+
+    if (tag == "!vec2")
+      return ReadSequenceForNumericalStruct<Vector2f>(node);
+    if (tag == "!vec3")
+      return ReadSequenceForNumericalStruct<Vector3f>(node);
+    if (tag == "!vec4")
+      return ReadSequenceForNumericalStruct<Vector4f>(node);
+    if (tag == "!color")
+      return ReadSequenceForNumericalStruct<Color4f>(node);
+
+    if (tag == "!curve") {
       constexpr size_t NumElementsPerCurve = 32;
       switch (node.num_children()) {
       case 1 * NumElementsPerCurve:
-        *v = ReadSequenceForCurve<1>(node);
-        break;
+        return ReadSequenceForCurve<1>(node);
       case 2 * NumElementsPerCurve:
-        *v = ReadSequenceForCurve<2>(node);
-        break;
+        return ReadSequenceForCurve<2>(node);
       case 3 * NumElementsPerCurve:
-        *v = ReadSequenceForCurve<3>(node);
-        break;
+        return ReadSequenceForCurve<3>(node);
       case 4 * NumElementsPerCurve:
-        *v = ReadSequenceForCurve<4>(node);
-        break;
+        return ReadSequenceForCurve<4>(node);
       default:
         throw InvalidDataError("Invalid curve: unexpected number of children");
       }
-    } else if (tag == "!buffer_int") {
-      *v = ReadSequenceForBuffer<int>(node);
-    } else if (tag == "!buffer_f32") {
-      *v = ReadSequenceForBuffer<f32>(node);
-    } else if (tag == "!buffer_u32") {
-      *v = ReadSequenceForBuffer<u32>(node);
-    } else if (tag == "!buffer_binary") {
-      *v = ReadSequenceForBuffer<u8>(node);
-    } else if (tag == "!quat") {
-      *v = ReadSequenceForNumericalStruct<Quatf>(node);
-    } else {
-      throw InvalidDataError(absl::StrFormat("Unexpected sequence tag (or no tag): %s", tag));
     }
-    return true;
+
+    if (tag == "!buffer_int")
+      return ReadSequenceForBuffer<int>(node);
+    if (tag == "!buffer_f32")
+      return ReadSequenceForBuffer<f32>(node);
+    if (tag == "!buffer_u32")
+      return ReadSequenceForBuffer<u32>(node);
+    if (tag == "!buffer_binary")
+      return ReadSequenceForBuffer<u8>(node);
+    if (tag == "!quat")
+      return ReadSequenceForNumericalStruct<Quatf>(node);
+
+    throw InvalidDataError(absl::StrFormat("Unexpected sequence tag (or no tag): %s", tag));
   }
 
-  if (node.has_val()) {
-    *v = ScalarToValue(yml::RymlGetValTag(node), yml::ParseScalar(node, RecognizeTag));
-    return true;
-  }
+  if (node.has_val())
+    return ScalarToValue(yml::RymlGetValTag(node), yml::ParseScalar(node, RecognizeTag));
 
-  return false;
+  throw InvalidDataError("Invalid parameter node");
 }
 
-template <typename T, typename Map>
-static void ReadMap(const ryml::NodeRef& node, Map& map) {
+template <typename Fn, typename Map>
+static void ReadMap(const ryml::NodeRef& node, Map& map, Fn read_fn) {
+  if (!node.is_map())
+    throw InvalidDataError("Expected map node");
+
   for (const auto& child : node) {
     const auto key = yml::ParseScalarKey(child, RecognizeTag);
-    T structure;
-    child >> structure;
+    auto structure = read_fn(child);
     if (const auto* hash = std::get_if<u64>(&key))
       map.emplace(static_cast<u32>(*hash), std::move(structure));
     else if (const auto* str = std::get_if<std::string>(&key))
@@ -279,50 +277,34 @@ static void ReadMap(const ryml::NodeRef& node, Map& map) {
   }
 }
 
-bool read(const ryml::NodeRef& node, ParameterObject* v) {
-  if (!node.is_map())
-    return false;
-
+ParameterObject ReadParameterObject(const ryml::NodeRef& node) {
   ParameterObject object;
-  ReadMap<Parameter>(node, object.params);
-  *v = std::move(object);
-  return true;
+  ReadMap(node, object.params, ReadParameter);
+  return object;
 }
 
-bool read(const ryml::NodeRef& node, ParameterList* v) {
-  if (!node.is_map() || !node.has_child("objects") || !node.has_child("lists"))
-    return false;
-
+ParameterList ReadParameterList(const ryml::NodeRef& node) {
   ParameterList list;
-  ReadMap<ParameterObject>(node["objects"], list.objects);
-  ReadMap<ParameterList>(node["lists"], list.lists);
-  *v = std::move(list);
-  return true;
+  ReadMap(yml::RymlGetMapItem(node, "objects"), list.objects, ReadParameterObject);
+  ReadMap(yml::RymlGetMapItem(node, "lists"), list.lists, ReadParameterList);
+  return list;
 }
 
-bool read(const ryml::NodeRef& node, ParameterIO* v) {
-  if (!node.is_map() || !node.has_child("version") || !node.has_child("type") ||
-      !node.has_child("param_root")) {
-    return false;
-  }
-
+ParameterIO ReadParameterIO(const ryml::NodeRef& node) {
   ParameterIO pio;
-  pio.version = ParseIntOrFloat<u32>(node["version"]);
-  pio.type = std::move(std::get<std::string>(yml::ParseScalar(node["type"], RecognizeTag)));
-  ParameterList param_root;
-  node["param_root"] >> param_root;
+  pio.version = ParseIntOrFloat<u32>(yml::RymlGetMapItem(node, "version"));
+  pio.type = std::move(
+      std::get<std::string>(yml::ParseScalar(yml::RymlGetMapItem(node, "type"), RecognizeTag)));
+  ParameterList param_root = ReadParameterList(yml::RymlGetMapItem(node, "param_root"));
   pio.objects = std::move(param_root.objects);
   pio.lists = std::move(param_root.lists);
-  *v = std::move(pio);
-  return true;
+  return pio;
 }
 
 ParameterIO ParameterIO::FromText(std::string_view yml_text) {
   yml::InitRymlIfNeeded();
   ryml::Tree tree = ryml::parse(yml::StrViewToRymlSubstr(yml_text));
-  ParameterIO pio;
-  tree.rootref() >> pio;
-  return pio;
+  return ReadParameterIO(tree.rootref());
 }
 
 class TextEmitter {

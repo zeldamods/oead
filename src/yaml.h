@@ -71,6 +71,12 @@ inline std::string_view RymlGetValTag(const ryml::NodeRef& n) {
 inline std::string_view RymlGetKeyTag(const ryml::NodeRef& n) {
   return n.has_key_tag() ? RymlSubstrToStrView(n.key_tag()) : std::string_view{};
 }
+inline ryml::NodeRef RymlGetMapItem(const ryml::NodeRef& n, std::string_view key) {
+  const auto k = StrViewToRymlSubstr(key);
+  if (n.is_map() && n.has_child(k))
+    return n[k];
+  throw std::out_of_range("No such key: " + std::string(key));
+}
 
 class ParseError : public std::runtime_error {
 public:

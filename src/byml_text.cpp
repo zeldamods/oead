@@ -75,48 +75,39 @@ static bool HasOnlySimpleItems(const Byml& container) {
     return false;
   }
 }
-}  // namespace byml
 
-bool read(const c4::yml::NodeRef& node, Byml* v) {
+Byml ParseYamlNode(const c4::yml::NodeRef& node) {
   if (node.is_seq()) {
     auto array = Byml::Array{};
     array.reserve(node.num_children());
     for (const auto& child : node) {
-      Byml value;
-      child >> value;
-      array.emplace_back(std::move(value));
+      array.emplace_back(ParseYamlNode(child));
     }
-    *v = std::move(array);
-    return true;
+    return array;
   }
 
   if (node.is_map()) {
     auto hash = Byml::Hash{};
     for (const auto& child : node) {
-      std::string key;
-      Byml value;
-      child >> c4::yml::key(key);
-      child >> value;
+      std::string key{yml::RymlSubstrToStrView(child.key())};
+      Byml value = ParseYamlNode(child);
       hash.emplace(std::move(key), std::move(value));
     }
-    *v = std::move(hash);
-    return true;
+    return hash;
   }
 
   if (node.has_val()) {
-    *v = byml::ScalarToValue(yml::RymlGetValTag(node), yml::ParseScalar(node, byml::RecognizeTag));
-    return true;
+    return byml::ScalarToValue(yml::RymlGetValTag(node), yml::ParseScalar(node, byml::RecognizeTag));
   }
 
-  return false;
+  throw InvalidDataError("Failed to parse YAML node");
 }
+}  // namespace byml
 
 Byml Byml::FromText(std::string_view yml_text) {
   yml::InitRymlIfNeeded();
   ryml::Tree tree = ryml::parse(yml::StrViewToRymlSubstr(yml_text));
-  Byml root;
-  tree.rootref() >> root;
-  return root;
+  return byml::ParseYamlNode(tree.rootref());
 }
 
 std::string Byml::ToText() const {
