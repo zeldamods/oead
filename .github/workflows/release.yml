@@ -51,7 +51,7 @@ jobs:
     - name: Build
       uses: RalfG/python-wheels-manylinux-build@v0.2-manylinux2014_x86_64
       with:
-        python-versions: 'cp36-cp36m cp37-cp37m'
+        python-versions: 'cp36-cp36m cp38-cp38'
         system-packages: 'epel-release cmake3'
         package-path: ''
     - name: Upload wheels
@@ -68,7 +68,7 @@ jobs:
         python -m pip install --upgrade twine
         twine upload wheelhouse/*-manylinux*.whl
 
-  release-lin-3.8-with-docs:
+  release-lin-3.7-with-docs:
     runs-on: [ubuntu-latest]
     steps:
     - uses: actions/checkout@v2
@@ -80,7 +80,7 @@ jobs:
     - name: Build
       uses: RalfG/python-wheels-manylinux-build@v0.2-manylinux2014_x86_64
       with:
-        python-versions: 'cp38-cp38'
+        python-versions: 'cp37-cp37m'
         system-packages: 'epel-release cmake3'
         package-path: ''
     - name: Upload wheels
