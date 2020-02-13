@@ -119,10 +119,11 @@ void BindAamp(py::module& parent) {
   BindMap<aamp::ParameterListMap>(m, "ParameterListMap");
 
   py::class_<aamp::NameTable>(m, "NameTable")
-    .def(py::init<bool>(), "with_botw_strings"_a)
-    .def("get_name", &aamp::NameTable::GetName, "hash"_a, "index"_a, "parent_name_hash"_a)
-    .def("add_name", py::overload_cast<std::string>(&aamp::NameTable::AddName), "name"_a);
+      .def(py::init<bool>(), "with_botw_strings"_a)
+      .def("get_name", &aamp::NameTable::GetName, "hash"_a, "index"_a, "parent_name_hash"_a)
+      .def("add_name", py::overload_cast<std::string>(&aamp::NameTable::AddName), "name"_a);
 
-  m.def("get_default_name_table", &aamp::GetDefaultNameTable);
+  m.def("get_default_name_table", &aamp::GetDefaultNameTable, py::return_value_policy::reference,
+        "Just like in C++, this returns the default instance of the name table. It is modifiable.");
 }
 }  // namespace oead::bind
