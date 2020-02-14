@@ -71,7 +71,7 @@ py::class_<Vector, holder_type> BindVector(py::handle scope, const std::string& 
                                            Args&&... args) {
   using Value = typename Vector::value_type;
   auto cl = py::bind_vector<Vector, holder_type>(scope, name, std::forward<Args>(args)...);
-  py::implicitly_convertible<py::iterable, Vector>();
+  py::implicitly_convertible<py::list, Vector>();
   return cl;
 }
 
@@ -132,7 +132,6 @@ py::class_<Map, holder_type> BindMap(py::handle scope, const std::string& name, 
           .def(
               "keys", [](const Map& map) { return py::make_key_iterator(map.begin(), map.end()); },
               py::keep_alive<0, 1>());
-  py::implicitly_convertible<py::iterator, Map>();
   py::implicitly_convertible<py::dict, Map>();
   return cl;
 }
