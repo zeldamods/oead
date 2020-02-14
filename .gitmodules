@@ -13,3 +13,6 @@
 [submodule "lib/ordered-map"]
 	path = lib/ordered-map
 	url = https://github.com/Tessil/ordered-map
+[submodule "lib/zlib-ng"]
+	path = lib/zlib-ng
+	url = https://github.com/zeldamods/zlib-ng
