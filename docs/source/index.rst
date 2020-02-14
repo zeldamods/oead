@@ -12,9 +12,11 @@ oead
     utils
 
 .. toctree::
-    :caption: File formats
+    :caption: Formats
 
     aamp
     aamp_py
     byml
     byml_py
+    yaz0
+    yaz0_py

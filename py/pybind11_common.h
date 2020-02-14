@@ -30,6 +30,7 @@
 #include <pybind11/stl_bind.h>
 
 #include <oead/types.h>
+#include <oead/util/swap.h>
 #include "pybind11_variant_caster.h"
 
 namespace py = pybind11;
@@ -134,6 +135,12 @@ py::class_<Map, holder_type> BindMap(py::handle scope, const std::string& name, 
   py::implicitly_convertible<py::iterator, Map>();
   py::implicitly_convertible<py::dict, Map>();
   return cl;
+}
+
+template <typename C, typename D, util::Endianness E>
+void BindEndianInt(py::class_<C>& cl, const char* name, util::EndianInt<D, E> C::*pm) {
+  cl.def_property(
+      name, [pm](const C& c) { return D(c.*pm); }, [pm](C& c, D value) { c.*pm = value; });
 }
 }  // namespace oead::bind
 

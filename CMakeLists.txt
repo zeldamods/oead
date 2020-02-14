@@ -33,12 +33,14 @@ add_library(oead
   src/include/oead/byml.h
   src/include/oead/errors.h
   src/include/oead/types.h
+  src/include/oead/yaz0.h
   src/aamp.cpp
   src/aamp_text.cpp
   src/byml.cpp
   src/byml_text.cpp
   src/yaml.cpp
   src/yaml.h
+  src/yaz0.cpp
 )
 
 target_include_directories(oead PUBLIC src/include)
@@ -56,6 +58,8 @@ add_subdirectory(lib/abseil)
 add_subdirectory(lib/libyaml)
 add_subdirectory(lib/ordered-map)
 add_subdirectory(lib/rapidyaml)
+option(ZLIB_ENABLE_TESTS "" OFF)
+add_subdirectory(lib/zlib-ng)
 target_link_libraries(oead
   PUBLIC
     absl::btree
@@ -69,4 +73,5 @@ target_link_libraries(oead
     absl::str_format
     ryml
     yaml
+    zlib
 )
