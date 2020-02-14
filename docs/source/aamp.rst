@@ -4,6 +4,8 @@ AAMP
 
 .. include:: _aamp_status.rst
 
+``#include <oead/aamp.h>``
+
 Parameters
 ==========
 

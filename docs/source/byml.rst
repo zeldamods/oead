@@ -4,6 +4,8 @@ BYML
 
 .. include:: _byml_status.rst
 
+``#include <oead/byml.h>``
+
 Reference
 =========
 
