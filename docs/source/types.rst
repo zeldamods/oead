@@ -35,8 +35,6 @@ Utils
 .. doxygenstruct:: oead::Color4f
 .. doxygenstruct:: oead::Curve
 
-.. doxygenstruct:: oead::util::Variant
-
 Strings
 =======
 

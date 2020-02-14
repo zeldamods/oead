@@ -22,7 +22,7 @@
 #include <nonstd/visit.h>
 #include <type_traits>
 
-#include "type_utils.h"
+#include <oead/util/type_utils.h>
 
 namespace oead::util {
 

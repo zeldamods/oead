@@ -29,7 +29,7 @@
 #include <pybind11/stl_bind.h>
 
 #include <oead/types.h>
-#include "../src/util/type_utils.h"
+#include <oead/util/type_utils.h>
 
 namespace oead::detail {
 template <class T>

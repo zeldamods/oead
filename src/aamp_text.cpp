@@ -31,8 +31,8 @@
 
 #include <oead/aamp.h>
 #include <oead/errors.h>
-#include "util/iterator_utils.h"
-#include "util/variant_utils.h"
+#include <oead/util/iterator_utils.h>
+#include <oead/util/variant_utils.h>
 #include "yaml.h"
 
 CMRC_DECLARE(oead::res);

@@ -25,9 +25,9 @@
 #include "../lib/libyaml/include/yaml.h"
 
 #include <oead/byml.h>
-#include "util/iterator_utils.h"
-#include "util/type_utils.h"
-#include "util/variant_utils.h"
+#include <oead/util/iterator_utils.h>
+#include <oead/util/type_utils.h>
+#include <oead/util/variant_utils.h>
 #include "yaml.h"
 
 namespace oead {

@@ -26,11 +26,11 @@
 #include <string_view>
 
 #include <oead/byml.h>
-#include "util/align.h"
-#include "util/binary_reader.h"
-#include "util/bit_utils.h"
-#include "util/iterator_utils.h"
-#include "util/variant_utils.h"
+#include <oead/util/align.h>
+#include <oead/util/binary_reader.h>
+#include <oead/util/bit_utils.h>
+#include <oead/util/iterator_utils.h>
+#include <oead/util/variant_utils.h>
 
 namespace oead {
 

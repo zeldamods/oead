@@ -31,8 +31,8 @@
 #include <vector>
 
 #include <oead/types.h>
-#include "../../util/hash.h"
-#include "../../util/variant_utils.h"
+#include <oead/util/hash.h>
+#include <oead/util/variant_utils.h>
 
 namespace oead::aamp {
 

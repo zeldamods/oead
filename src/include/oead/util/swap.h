@@ -19,7 +19,7 @@
 #include <arpa/inet.h>
 #endif
 
-#include "util/types.h"
+#include <oead/types.h>
 
 namespace oead::util {
 
@@ -150,6 +150,7 @@ inline void swap<8>(u8* data) {
   std::memcpy(data, &value, sizeof(u64));
 }
 
+/// Byte swap a value.
 template <typename T>
 inline T SwapValue(T data) {
   static_assert(std::is_arithmetic<T>(), "function only makes sense with arithmetic types");
@@ -163,6 +164,8 @@ T SwapIfNeeded(T value, Endianness endian) {
   return detail::GetPlatformEndianness() == endian ? value : SwapValue(value);
 }
 
+/// A wrapper that stores an integer in the specified endianness and automatically bytes swap when
+/// reading/writing the value.
 template <typename T, Endianness Endian>
 struct EndianInt {
   static_assert(std::is_arithmetic<T>(), "T must be an arithmetic type");

@@ -20,16 +20,15 @@ cmrc_add_resource_library(oead_res ALIAS oead::res NAMESPACE oead::res
 )
 
 add_library(oead
-  src/util/align.h
-  src/util/binary_reader.h
-  src/util/bit_utils.h
-  src/util/hash.h
-  src/util/iterator_utils.h
-  src/util/scope_guard.h
-  src/util/swap.h
-  src/util/type_utils.h
-  src/util/types.h
-  src/util/variant_utils.h
+  src/include/oead/util/align.h
+  src/include/oead/util/binary_reader.h
+  src/include/oead/util/bit_utils.h
+  src/include/oead/util/hash.h
+  src/include/oead/util/iterator_utils.h
+  src/include/oead/util/scope_guard.h
+  src/include/oead/util/swap.h
+  src/include/oead/util/type_utils.h
+  src/include/oead/util/variant_utils.h
   src/include/oead/aamp.h
   src/include/oead/byml.h
   src/include/oead/errors.h

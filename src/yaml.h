@@ -31,8 +31,8 @@
 #include <ryml.hpp>
 #include "../lib/libyaml/include/yaml.h"
 
-#include "util/type_utils.h"
-#include "util/types.h"
+#include <oead/types.h>
+#include <oead/util/type_utils.h>
 
 namespace oead::yml {
 

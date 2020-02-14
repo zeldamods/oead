@@ -26,9 +26,9 @@
 #include <type_traits>
 #include <vector>
 
-#include "util/align.h"
-#include "util/bit_utils.h"
-#include "util/swap.h"
+#include <oead/util/align.h>
+#include <oead/util/bit_utils.h>
+#include <oead/util/swap.h>
 
 namespace oead::util {
 

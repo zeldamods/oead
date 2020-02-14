@@ -28,10 +28,10 @@
 #include "absl/container/flat_hash_set.h"
 
 #include <oead/errors.h>
-#include "util/binary_reader.h"
-#include "util/bit_utils.h"
-#include "util/iterator_utils.h"
-#include "util/type_utils.h"
+#include <oead/util/binary_reader.h>
+#include <oead/util/bit_utils.h>
+#include <oead/util/iterator_utils.h>
+#include <oead/util/type_utils.h>
 
 namespace oead::aamp {
 

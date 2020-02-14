@@ -31,8 +31,8 @@
 
 #include <oead/errors.h>
 #include <oead/types.h>
-#include "../util/type_utils.h"
-#include "../util/variant_utils.h"
+#include <oead/util/type_utils.h>
+#include <oead/util/variant_utils.h>
 
 namespace oead {
 

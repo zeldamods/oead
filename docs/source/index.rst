@@ -9,6 +9,7 @@ oead
     About the project <about>
     types
     types_py
+    utils
 
 .. toctree::
     :caption: File formats
