@@ -68,7 +68,7 @@ jobs:
         python -m pip install --upgrade twine
         twine upload wheelhouse/*-manylinux*.whl
 
-  release-lin-3.7-with-docs:
+  release-lin-with-docs:
     runs-on: [ubuntu-latest]
     steps:
     - uses: actions/checkout@v2
