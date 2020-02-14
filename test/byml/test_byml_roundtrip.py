@@ -15,6 +15,14 @@ def test_byml_roundtrip_bin(file):
     assert data == data2
 
 
+@pytest.mark.parametrize("file", cases_bin)
+def test_byml_roundtrip_bin_big_endian(file):
+    data = oead.Byml.from_binary(data_bin[file])
+    serialized = data.to_binary(big_endian=True, version=2)
+    data2 = oead.Byml.from_binary(serialized)
+    assert data == data2
+
+
 @pytest.mark.parametrize("file", cases_text)
 def test_byml_roundtrip_text(file):
     data = oead.Byml.from_text(data_text[file])

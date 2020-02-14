@@ -26,6 +26,7 @@
 #include <type_traits>
 #include <vector>
 
+#include <oead/types.h>
 #include <oead/util/align.h>
 #include <oead/util/bit_utils.h>
 #include <oead/util/swap.h>
@@ -136,10 +137,10 @@ public:
   }
 
   void WriteU24(u32 value) {
-    std::array<u8, 3> bytes;
-    value = SwapIfNeeded(value, m_endian);
-    std::memcpy(bytes.data(), &value, bytes.size());
-    WriteBytes(bytes);
+    if (m_endian == Endianness::Big)
+      Write<U24<true>>(value);
+    else
+      Write<U24<false>>(value);
   }
 
   void WriteNul() { Write<u8>(0); }
