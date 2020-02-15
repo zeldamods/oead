@@ -32,6 +32,11 @@ template <typename T, typename PyT>
 void BindNumber(py::module& m, const char* name) {
   py::class_<T> cl(m, name);
   cl.def(py::init([](PyT v) { return T(v); }), "value"_a = 0)
+      .def(py::self == py::self)
+      .def(py::self < py::self)
+      .def(py::self <= py::self)
+      .def(py::self > py::self)
+      .def(py::self >= py::self)
       .def_property(
           "v", [](const T& self) { return self.value; }, [](T& self, PyT vnew) { self = vnew; },
           "Value")
@@ -62,7 +67,6 @@ void BindFixedSafeString(py::module& m, const char* name) {
       .def(py::self == py::self)
       .def("__eq__",
            [](const FixedSafeString<N>& lhs, std::string_view rhs) { return Str(lhs) == rhs; });
-  ;
 }
 }  // namespace detail
 
