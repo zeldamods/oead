@@ -17,7 +17,7 @@ def byml_to_text(data):
 
 
 def oead_to_text(instance):
-    return instance.to_text()
+    return oead.byml.to_text(instance)
 
 
 @pytest.mark.parametrize("file", cases)
@@ -30,5 +30,5 @@ def test_to_text_byml(benchmark, file):
 @pytest.mark.parametrize("file", cases)
 def test_to_text_oead(benchmark, file):
     benchmark.group = "to text: " + file
-    instance = oead.Byml.from_binary(data[file])
+    instance = oead.byml.from_binary(data[file])
     benchmark(oead_to_text, instance)

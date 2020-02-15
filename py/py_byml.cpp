@@ -28,58 +28,53 @@
 #include <oead/byml.h>
 #include "main.h"
 
-OEAD_MAKE_OPAQUE("oead.Byml.Array", oead::Byml::Array);
-OEAD_MAKE_OPAQUE("oead.Byml.Hash", oead::Byml::Hash);
+OEAD_MAKE_OPAQUE("Array", oead::Byml::Array);
+OEAD_MAKE_OPAQUE("Hash", oead::Byml::Hash);
 OEAD_MAKE_VARIANT_CASTER(oead::Byml::Value);
 
+namespace pybind11::detail {
+template <>
+struct type_caster<oead::Byml> {
+  using value_conv = make_caster<oead::Byml::Value>;
+
+  template <typename T_>
+  static handle cast(T_&& src, return_value_policy policy, handle parent) {
+    return value_conv::cast(src.GetVariant(), policy, parent);
+  }
+
+  bool load(handle src, bool convert) {
+    value_conv inner_caster;
+    if (!inner_caster.load(src, convert))
+      return false;
+    value.GetVariant() = std::move(cast_op<oead::Byml::Value&&>(std::move(inner_caster)));
+    return true;
+  }
+
+  PYBIND11_TYPE_CASTER(oead::Byml, make_caster<oead::Byml::Value::Storage>::name);
+};
+}  // namespace pybind11::detail
+
 namespace oead::bind {
-void BindByml(py::module& m) {
-  py::class_<Byml> clas(m, "Byml");
-  py::enum_<Byml::Type>(clas, "Type")
-      .value("Null", Byml::Type::Null)
-      .value("String", Byml::Type::String)
-      .value("Array", Byml::Type::Array)
-      .value("Hash", Byml::Type::Hash)
-      .value("Bool", Byml::Type::Bool)
-      .value("Int", Byml::Type::Int)
-      .value("Float", Byml::Type::Float)
-      .value("UInt", Byml::Type::UInt)
-      .value("Int64", Byml::Type::Int64)
-      .value("UInt64", Byml::Type::UInt64)
-      .value("Double", Byml::Type::Double);
+void BindByml(py::module& parent) {
+  auto m = parent.def_submodule("byml");
+  m.def(
+      "from_binary", [](py::buffer b) { return Byml::FromBinary(PyBufferToSpan(b)); }, "buffer"_a,
+      py::return_value_policy::move, ":return: An Array or a Hash.");
+  m.def("from_text", &Byml::FromText, "yml_text"_a, py::return_value_policy::move,
+        ":return: An Array or a Hash.");
+  m.def("to_binary", &Byml::ToBinary, "data"_a, "big_endian"_a, "version"_a = 2);
+  m.def("to_text", &Byml::ToText, "data"_a);
 
-  clas.def(py::init<>()).def(py::init<Byml::Value>(), "value"_a).def(py::self == py::self);
+  m.def("get_bool", &Byml::GetBool, "data"_a);
+  m.def("get_double", &Byml::GetDouble, "data"_a);
+  m.def("get_float", &Byml::GetFloat, "data"_a);
+  m.def("get_int", &Byml::GetInt, "data"_a);
+  m.def("get_int64", &Byml::GetInt64, "data"_a);
+  m.def("get_string", &Byml::GetString, "data"_a);
+  m.def("get_uint", &Byml::GetUInt, "data"_a);
+  m.def("get_uint64", &Byml::GetUInt64, "data"_a);
 
-  clas.def("type", &Byml::GetType)
-      .def("__repr__", [](Byml& i) { return "Byml({!r})"_s.format(i.GetVariant()); })
-      .def("__str__", [](Byml& i) { return "{!s}"_s.format(i.GetVariant()); });
-
-  clas.def_static(
-          "from_binary", [](py::buffer b) { return Byml::FromBinary(PyBufferToSpan(b)); },
-          "buffer"_a)
-      .def_static(
-          "from_text", [](std::string_view str) { return Byml::FromText(str); }, "yml_text"_a)
-      .def("to_binary", &Byml::ToBinary, "big_endian"_a, "version"_a = 2)
-      .def("to_text", &Byml::ToText);
-
-  clas.def_property(
-          "v", [](Byml& i) -> Byml::Value& { return i.GetVariant(); },
-          [](Byml& i, Byml::Value& v) { i.GetVariant() = std::move(v); }, "Value")
-      .def("get_hash", &Byml::GetHash, py::return_value_policy::reference_internal)
-      .def("get_array", &Byml::GetArray, py::return_value_policy::reference_internal)
-      .def("get_string", &Byml::GetString)
-      .def("get_bool", &Byml::GetBool)
-      .def("get_int", &Byml::GetInt)
-      .def("get_uint", &Byml::GetUInt)
-      .def("get_float", &Byml::GetFloat)
-      .def("get_int64", &Byml::GetInt64)
-      .def("get_uint64", &Byml::GetUInt64)
-      .def("get_double", &Byml::GetDouble);
-
-  BindVector<Byml::Array>(clas, "Array");
-  BindMap<Byml::Hash>(clas, "Hash");
-
-  py::implicitly_convertible<py::dict, Byml>();
-  py::implicitly_convertible<Byml::Value, Byml>();
+  BindVector<Byml::Array>(m, "Array");
+  BindMap<Byml::Hash>(m, "Hash");
 }
 }  // namespace oead::bind

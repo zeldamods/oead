@@ -22,4 +22,4 @@ def test_parse_byml(benchmark, file):
 @pytest.mark.parametrize("file", cases)
 def test_parse_oead(benchmark, file):
     benchmark.group = "from_text: " + file
-    benchmark(oead.Byml.from_text, data[file])
+    benchmark(oead.byml.from_text, data[file])

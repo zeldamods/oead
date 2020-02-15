@@ -17,8 +17,8 @@ def byml_convert(data):
     return byml.Writer(b, be=False, version=2).write(stream)
 
 def oead_convert(data):
-    b = oead.Byml.from_text(data)
-    return b.to_binary(big_endian=False, version=2)
+    b = oead.byml.from_text(data)
+    return oead.byml.to_binary(b, big_endian=False, version=2)
 
 @pytest.mark.parametrize("file", cases)
 def test_convert_byml(benchmark, file):

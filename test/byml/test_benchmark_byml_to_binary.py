@@ -14,7 +14,7 @@ def byml_to_bin(data):
 
 
 def oead_to_bin(instance):
-    return instance.to_binary(big_endian=False, version=2)
+    return oead.byml.to_binary(instance, big_endian=False, version=2)
 
 
 @pytest.mark.parametrize("file", cases)
@@ -27,5 +27,5 @@ def test_to_bin_byml(benchmark, file):
 @pytest.mark.parametrize("file", cases)
 def test_to_bin_oead(benchmark, file):
     benchmark.group = "to bin: " + file
-    instance = oead.Byml.from_binary(data[file])
+    instance = oead.byml.from_binary(data[file])
     benchmark(oead_to_bin, instance)
