@@ -25,6 +25,7 @@
 #include <optional>
 #include <vector>
 
+#include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
@@ -71,6 +72,7 @@ py::class_<Vector, holder_type> BindVector(py::handle scope, const std::string& 
                                            Args&&... args) {
   using Value = typename Vector::value_type;
   auto cl = py::bind_vector<Vector, holder_type>(scope, name, std::forward<Args>(args)...);
+  cl.def(py::self == py::self);
   py::implicitly_convertible<py::list, Vector>();
   return cl;
 }
@@ -119,6 +121,7 @@ py::class_<Map, holder_type> BindMap(py::handle scope, const std::string& name, 
                  return MapFromDict<Map, Key>(dict, MapCastValue<Map, Key, Value>);
                }),
                "dictionary"_a)
+          .def(py::self == py::self)
           .def("clear", &Map::clear)
           .def(
               "get",
