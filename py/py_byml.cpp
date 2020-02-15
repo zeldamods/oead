@@ -17,6 +17,7 @@
  * along with syaz0.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <functional>
 #include <map>
 #include <nonstd/span.h>
 #include <type_traits>
@@ -26,6 +27,7 @@
 #include <pybind11/pybind11.h>
 
 #include <oead/byml.h>
+#include <oead/util/scope_guard.h>
 #include "main.h"
 
 OEAD_MAKE_OPAQUE("Array", oead::Byml::Array);
@@ -55,6 +57,31 @@ struct type_caster<oead::Byml> {
 }  // namespace pybind11::detail
 
 namespace oead::bind {
+/// Wraps a callable to avoid expensive conversions to Byml; instead, we detect
+/// whether the first parameter is a Byml::Array or a Byml::Hash and if so we
+/// borrow the value and move-construct a temporary Byml in order to avoid copies.
+template <typename... Ts, typename Callable>
+static auto BorrowByml(Callable&& callable) {
+  return [&, callable](py::handle handle, Ts&&... args) {
+    Byml obj;
+    const auto invoke = [&, callable](auto&& value) {
+      obj = std::move(value);
+      return std::invoke(callable, obj, std::forward<Ts>(args)...);
+    };
+    if (py::isinstance<Byml::Array>(handle)) {
+      auto& ref = handle.cast<Byml::Array&>();
+      util::ScopeGuard guard{[&] { ref = std::move(obj.Get<Byml::Type::Array>()); }};
+      return invoke(std::move(ref));
+    }
+    if (py::isinstance<Byml::Hash>(handle)) {
+      auto& ref = handle.cast<Byml::Hash&>();
+      util::ScopeGuard guard{[&] { ref = std::move(obj.Get<Byml::Type::Hash>()); }};
+      return invoke(std::move(ref));
+    }
+    return invoke(handle.cast<Byml>());
+  };
+}
+
 void BindByml(py::module& parent) {
   auto m = parent.def_submodule("byml");
   m.def(
@@ -62,17 +89,18 @@ void BindByml(py::module& parent) {
       py::return_value_policy::move, ":return: An Array or a Hash.");
   m.def("from_text", &Byml::FromText, "yml_text"_a, py::return_value_policy::move,
         ":return: An Array or a Hash.");
-  m.def("to_binary", &Byml::ToBinary, "data"_a, "big_endian"_a, "version"_a = 2);
-  m.def("to_text", &Byml::ToText, "data"_a);
+  m.def("to_binary", BorrowByml<bool, int>(&Byml::ToBinary), "data"_a, "big_endian"_a,
+        "version"_a = 2);
+  m.def("to_text", BorrowByml(&Byml::ToText), "data"_a);
 
-  m.def("get_bool", &Byml::GetBool, "data"_a);
-  m.def("get_double", &Byml::GetDouble, "data"_a);
-  m.def("get_float", &Byml::GetFloat, "data"_a);
-  m.def("get_int", &Byml::GetInt, "data"_a);
-  m.def("get_int64", &Byml::GetInt64, "data"_a);
-  m.def("get_string", &Byml::GetString, "data"_a);
-  m.def("get_uint", &Byml::GetUInt, "data"_a);
-  m.def("get_uint64", &Byml::GetUInt64, "data"_a);
+  m.def("get_bool", BorrowByml(&Byml::GetBool), "data"_a);
+  m.def("get_double", BorrowByml(&Byml::GetDouble), "data"_a);
+  m.def("get_float", BorrowByml(&Byml::GetFloat), "data"_a);
+  m.def("get_int", BorrowByml(&Byml::GetInt), "data"_a);
+  m.def("get_int64", BorrowByml(&Byml::GetInt64), "data"_a);
+  m.def("get_string", BorrowByml(&Byml::GetString), "data"_a);
+  m.def("get_uint", BorrowByml(&Byml::GetUInt), "data"_a);
+  m.def("get_uint64", BorrowByml(&Byml::GetUInt64), "data"_a);
 
   BindVector<Byml::Array>(m, "Array");
   BindMap<Byml::Hash>(m, "Hash");
