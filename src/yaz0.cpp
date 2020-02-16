@@ -105,8 +105,8 @@ private:
 }  // namespace
 
 std::vector<u8> Compress(tcb::span<const u8> src, u32 data_alignment, int level) {
-  std::vector<u8> result(sizeof(Header));
-  result.reserve(src.size());
+  util::BinaryWriter writer{util::Endianness::Big};
+  writer.Buffer().reserve(src.size());
 
   // Write the header.
   Header header;
@@ -114,9 +114,9 @@ std::vector<u8> Compress(tcb::span<const u8> src, u32 data_alignment, int level)
   header.uncompressed_size = u32(src.size());
   header.data_alignment = data_alignment;
   header.reserved.fill(0);
-  std::memcpy(result.data(), &header, sizeof(header));
+  writer.Write(header);
 
-  GroupWriter writer{result};
+  GroupWriter group_writer{writer.Buffer()};
 
   // Let zlib do the heavy lifting.
   std::array<u8, 8> dummy{};
@@ -124,12 +124,12 @@ std::vector<u8> Compress(tcb::span<const u8> src, u32 data_alignment, int level)
   const int ret = zng_compress2(
       dummy.data(), &dummy_size, src.data(), src.size(), std::clamp<int>(level, 6, 9),
       [](void* w, u32 dist, u32 lc) { static_cast<GroupWriter*>(w)->HandleZlibMatch(dist, lc); },
-      &writer);
+      &group_writer);
   if (ret != Z_OK)
     throw std::runtime_error("zng_compress failed");
 
-  writer.Finalise();
-  return result;
+  group_writer.Finalise();
+  return writer.Finalize();
 }
 
 std::vector<u8> Decompress(tcb::span<const u8> src) {
