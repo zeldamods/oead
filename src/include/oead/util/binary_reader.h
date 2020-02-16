@@ -54,12 +54,10 @@ public:
       if (m_offset + sizeof(T) > m_data.size())
         return std::nullopt;
     }
-    const T value = util::BitCastPtr<T>(&m_data[m_offset]);
+    T value = util::BitCastPtr<T>(&m_data[m_offset]);
+    util::SwapIfNeededInPlace(value, m_endian);
     m_offset += sizeof(T);
-    if constexpr (std::is_arithmetic_v<T>)
-      return SwapIfNeeded(value, m_endian);
-    else
-      return value;
+    return value;
   }
 
   template <bool Safe = true>
@@ -123,8 +121,7 @@ public:
   template <typename T, typename std::enable_if_t<!std::is_pointer_v<T> &&
                                                   std::is_trivially_copyable_v<T>>* = nullptr>
   void Write(T value) {
-    if constexpr (std::is_arithmetic_v<T>)
-      value = SwapIfNeeded(value, m_endian);
+    SwapIfNeededInPlace(value, m_endian);
     WriteBytes({reinterpret_cast<const u8*>(&value), sizeof(value)});
   }
 

@@ -5,6 +5,7 @@
 #pragma once
 
 #include <cstring>
+#include <tuple>
 #include <type_traits>
 
 #ifdef __APPLE__
@@ -20,6 +21,7 @@
 #endif
 
 #include <oead/types.h>
+#include <oead/util/type_utils.h>
 
 namespace oead::util {
 
@@ -159,9 +161,27 @@ inline T SwapValue(T data) {
   return data;
 }
 
+/// Swap a value if its endianness is not the same as the machine endianness.
+/// @param endian  The endianness of the value.
+template <typename T>
+void SwapIfNeededInPlace(T& value, Endianness endian) {
+  if (detail::GetPlatformEndianness() == endian)
+    return;
+
+  if constexpr (std::is_arithmetic<T>()) {
+    value = SwapValue(value);
+  }
+
+  if constexpr (util::ExposesFields<T>()) {
+    std::apply([endian](auto&&... fields) { (SwapIfNeededInPlace(fields, endian), ...); },
+               value.fields());
+  }
+}
+
 template <typename T>
 T SwapIfNeeded(T value, Endianness endian) {
-  return detail::GetPlatformEndianness() == endian ? value : SwapValue(value);
+  SwapIfNeededInPlace(value, endian);
+  return value;
 }
 
 /// A wrapper that stores an integer in the specified endianness and automatically bytes swap when

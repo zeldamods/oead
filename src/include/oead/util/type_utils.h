@@ -54,4 +54,14 @@ constexpr T* AsMutable(T* value) noexcept {
 template <typename T>
 void AsMutable(T const&&) = delete;
 
+template <typename, template <typename> class, typename = std::void_t<>>
+struct Detect : std::false_type {};
+template <typename T, template <typename> class Op>
+struct Detect<T, Op, std::void_t<Op<T>>> : std::true_type {};
+
+template <typename T>
+using ExposesFieldsImpl = decltype(std::declval<T>().fields());
+template <typename T>
+using ExposesFields = Detect<T, ExposesFieldsImpl>;
+
 }  // namespace oead::util
