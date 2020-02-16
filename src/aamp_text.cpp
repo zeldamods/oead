@@ -32,25 +32,13 @@
 #include <oead/aamp.h>
 #include <oead/errors.h>
 #include <oead/util/iterator_utils.h>
+#include <oead/util/string_utils.h>
 #include <oead/util/variant_utils.h>
 #include "yaml.h"
 
 CMRC_DECLARE(oead::res);
 
 namespace oead::aamp {
-
-template <typename Callback>
-static void SplitStringByLine(std::string_view data, Callback cb) {
-  size_t line_start_pos = 0;
-  while (line_start_pos < data.size()) {
-    const auto line_end_pos = data.find('\n', line_start_pos);
-    if (line_start_pos != line_end_pos)
-      cb(data.substr(line_start_pos, line_end_pos - line_start_pos));
-    if (line_end_pos == std::string_view::npos)
-      break;
-    line_start_pos = line_end_pos + 1;
-  }
-}
 
 NameTable::NameTable(bool with_botw_strings) {
   if (!with_botw_strings)
@@ -59,14 +47,16 @@ NameTable::NameTable(bool with_botw_strings) {
   const auto fs = cmrc::oead::res::get_filesystem();
 
   const auto hashed_names_f = fs.open("data/botw_hashed_names.txt");
-  SplitStringByLine({hashed_names_f.begin(), hashed_names_f.size()}, [&](std::string_view name) {
-    // No need to copy the string data since it is in the constant data section of the executable.
-    names.emplace(util::crc32(name), name);
-  });
+  util::SplitStringByLine({hashed_names_f.begin(), hashed_names_f.size()},
+                          [&](std::string_view name) {
+                            // No need to copy the string data since it is in the constant data
+                            // section of the executable.
+                            names.emplace(util::crc32(name), name);
+                          });
 
   const auto numbered_names_f = fs.open("data/botw_numbered_names.txt");
-  SplitStringByLine({numbered_names_f.begin(), numbered_names_f.size()},
-                    [&](std::string_view name) { numbered_names.emplace_back(name); });
+  util::SplitStringByLine({numbered_names_f.begin(), numbered_names_f.size()},
+                          [&](std::string_view name) { numbered_names.emplace_back(name); });
 }
 
 std::optional<std::string_view> NameTable::GetName(u32 hash, int index, u32 parent_name_hash) {

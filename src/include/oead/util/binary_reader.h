@@ -44,6 +44,7 @@ public:
   void Seek(size_t offset) { m_offset = offset; }
 
   Endianness Endian() const { return m_endian; }
+  void SetEndian(Endianness endian) { m_endian = endian; }
 
   template <typename T, bool Safe = true>
   std::optional<T> Read(std::optional<size_t> offset = std::nullopt) {

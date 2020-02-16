@@ -18,5 +18,6 @@ oead
     aamp_py
     byml
     byml_py
+    sarc
     yaz0
     yaz0_py

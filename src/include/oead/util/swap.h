@@ -184,6 +184,10 @@ T SwapIfNeeded(T value, Endianness endian) {
   return value;
 }
 
+constexpr Endianness ByteOrderMarkToEndianness(u16 bom) {
+  return bom == 0xFEFF ? Endianness::Big : Endianness::Little;
+}
+
 /// A wrapper that stores an integer in the specified endianness and automatically bytes swap when
 /// reading/writing the value.
 template <typename T, Endianness Endian>
