@@ -33,11 +33,13 @@ struct Header {
   /// 'Yaz0'
   std::array<char, 4> magic;
   /// Size of uncompressed data
-  util::BeInt<u32> uncompressed_size;
+  u32 uncompressed_size;
   /// [Newer files only] Required buffer alignment
-  util::BeInt<u32> data_alignment;
+  u32 data_alignment;
   /// Unused (as of December 2019)
   std::array<u8, 4> reserved;
+
+  OEAD_DEFINE_FIELDS(Header, magic, uncompressed_size, data_alignment, reserved);
 };
 static_assert(sizeof(Header) == 0x10);
 

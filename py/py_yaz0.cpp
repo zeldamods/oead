@@ -30,11 +30,11 @@ namespace oead::bind {
 void BindYaz0(py::module& parent) {
   auto m = parent.def_submodule("yaz0");
 
-  auto header_cl = py::class_<yaz0::Header>(m, "Header");
-  header_cl.def_readwrite("magic", &yaz0::Header::magic);
-  BindEndianInt(header_cl, "uncompressed_size", &yaz0::Header::uncompressed_size);
-  BindEndianInt(header_cl, "data_alignment", &yaz0::Header::data_alignment);
-  header_cl.def_readwrite("reserved", &yaz0::Header::reserved);
+  py::class_<yaz0::Header>(m, "Header")
+      .def_readwrite("magic", &yaz0::Header::magic)
+      .def_readwrite("uncompressed_size", &yaz0::Header::uncompressed_size)
+      .def_readwrite("data_alignment", &yaz0::Header::data_alignment)
+      .def_readwrite("reserved", &yaz0::Header::reserved);
 
   m.def(
       "get_header",

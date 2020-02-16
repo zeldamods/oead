@@ -173,7 +173,7 @@ void SwapIfNeededInPlace(T& value, Endianness endian) {
   }
 
   if constexpr (util::ExposesFields<T>()) {
-    std::apply([endian](auto&&... fields) { (SwapIfNeededInPlace(fields, endian), ...); },
+    std::apply([endian](auto&... fields) { (SwapIfNeededInPlace(fields, endian), ...); },
                value.fields());
   }
 }
