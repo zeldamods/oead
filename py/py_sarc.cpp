@@ -28,8 +28,7 @@ void BindSarc(py::module& m) {
   py::class_<Sarc> cl(m, "Sarc");
   py::class_<Sarc::File> file_cl(m, "File");
 
-  cl.def(py::init([](py::buffer b) { return Sarc{PyBufferToSpan(b)}; }), "data"_a,
-         py::return_value_policy::move)
+  cl.def(py::init<tcb::span<const u8>>(), "data"_a, py::keep_alive<1, 2>())
       .def("get_num_files", &Sarc::GetNumFiles)
       .def("get_data_offset", &Sarc::GetDataOffset)
       .def("get_endianness", &Sarc::GetEndianness)

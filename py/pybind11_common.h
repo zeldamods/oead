@@ -31,6 +31,7 @@
 #include <pybind11/stl_bind.h>
 
 #include <oead/types.h>
+#include <oead/util/scope_guard.h>
 #include "pybind11_variant_caster.h"
 
 namespace py = pybind11;
@@ -53,17 +54,36 @@ using namespace py::literals;
   struct type_caster<__VA_ARGS__> : oead_variant_wrapper_caster<__VA_ARGS__> {};                   \
   }
 
+namespace pybind11::detail {
+template <typename T>
+constexpr auto OeadGetSpanCasterName() {
+  if constexpr (std::is_same_v<std::decay_t<T>, u8>)
+    return _("BytesLike");
+  return _("Span[") + detail::concat(make_caster<T>::name) + _("]");
+}
+
+template <typename T>
+struct type_caster<tcb::span<T>> {
+  static handle cast(tcb::span<T> span, return_value_policy, handle) {
+    return py::memoryview{span.data(), ssize_t(span.size_bytes())}.release();
+  }
+
+  bool load(handle src, bool) {
+    const py::buffer_info buffer = src.cast<py::buffer>().request(!std::is_const_v<T>);
+    if (buffer.itemsize != sizeof(T) || buffer.ndim != 1)
+      return false;
+    value = {static_cast<T*>(buffer.ptr), size_t(buffer.size)};
+    return true;
+  }
+
+  PYBIND11_TYPE_CASTER(tcb::span<T>, OeadGetSpanCasterName<T>());
+};
+}  // namespace pybind11::detail
+
 namespace oead::bind {
 inline tcb::span<u8> PyBytesToSpan(py::bytes b) {
   return {reinterpret_cast<u8*>(PYBIND11_BYTES_AS_STRING(b.ptr())),
           size_t(PYBIND11_BYTES_SIZE(b.ptr()))};
-}
-
-inline tcb::span<u8> PyBufferToSpan(py::buffer b) {
-  const py::buffer_info buffer = b.request();
-  if (buffer.itemsize != 1 || buffer.ndim != 1 || buffer.size <= 0)
-    throw py::value_error("Expected a non-empty bytes-like object");
-  return {static_cast<u8*>(buffer.ptr), size_t(buffer.size)};
 }
 
 template <typename Vector, typename holder_type = std::unique_ptr<Vector>, typename... Args>

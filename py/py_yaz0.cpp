@@ -36,15 +36,11 @@ void BindYaz0(py::module& parent) {
       .def_readwrite("data_alignment", &yaz0::Header::data_alignment)
       .def_readwrite("reserved", &yaz0::Header::reserved);
 
-  m.def(
-      "get_header",
-      [](py::buffer data_py) { return yaz0::GetHeader(PyBufferToSpan(data_py)).value(); },
-      "data"_a);
+  m.def("get_header", &yaz0::GetHeader, "data"_a);
 
   m.def(
       "decompress",
-      [](py::buffer src_py) {
-        const auto src = PyBufferToSpan(src_py);
+      [](tcb::span<const u8> src) {
         const auto header = yaz0::GetHeader(src);
         if (!header)
           throw InvalidDataError("Invalid Yaz0 header");
@@ -56,21 +52,14 @@ void BindYaz0(py::module& parent) {
 
   m.def(
       "decompress_unsafe",
-      [](py::bytes src_py) {
-        const auto src = PyBytesToSpan(src_py);
+      [](tcb::span<const u8> src) {
         py::bytes dst_py{nullptr, yaz0::GetHeader(src)->uncompressed_size};
         yaz0::DecompressUnsafe(src, PyBytesToSpan(dst_py));
         return dst_py;
       },
       "data"_a);
 
-  m.def(
-      "compress",
-      [](py::buffer src_py, u32 data_alignment, int level) {
-        const auto src = PyBufferToSpan(src_py);
-        return yaz0::Compress(src, data_alignment, level);
-      },
-      "data"_a, "data_alignment"_a = 0, "level"_a = 7);
+  m.def("compress", &yaz0::Compress, "data"_a, "data_alignment"_a = 0, "level"_a = 7);
 }
 
 }  // namespace oead::bind
