@@ -19,5 +19,6 @@ oead
     byml
     byml_py
     sarc
+    sarc_py
     yaz0
     yaz0_py

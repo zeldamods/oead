@@ -24,6 +24,7 @@
 
 #include <oead/errors.h>
 #include <oead/types.h>
+#include <oead/util/swap.h>
 #include "main.h"
 
 namespace oead::bind {
@@ -147,5 +148,9 @@ void BindCommonTypes(py::module& m) {
 
   py::register_exception<TypeError>(m, "TypeError");
   py::register_exception<InvalidDataError>(m, "InvalidDataError");
+
+  py::enum_<util::Endianness>(m, "Endianness")
+      .value("Big", util::Endianness::Big)
+      .value("Little", util::Endianness::Little);
 }
 }  // namespace oead::bind
