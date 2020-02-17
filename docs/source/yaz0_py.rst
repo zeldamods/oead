@@ -2,7 +2,8 @@
 Yaz0 (Python)
 #############
 
-.. include:: yaz0_common.rst
+.. include:: parts/py_common.rst
+.. include:: parts/yaz0_common.rst
 
 API
 ===

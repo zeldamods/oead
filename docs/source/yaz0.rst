@@ -2,7 +2,7 @@
 Yaz0
 ####
 
-.. include:: yaz0_common.rst
+.. include:: parts/yaz0_common.rst
 
 API
 ===

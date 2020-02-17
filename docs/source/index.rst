@@ -2,8 +2,6 @@
 oead
 ####
 
-.. note:: Because of the similarities between the C++ APIs and the Python APIs, only the former will be documented in detail. Differences will obviously be noted though.
-
 .. toctree::
 
     About the project <about>

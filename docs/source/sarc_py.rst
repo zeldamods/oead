@@ -2,6 +2,8 @@
 SARC (Python)
 #############
 
+.. include:: parts/py_common.rst
+
 API
 ===
 

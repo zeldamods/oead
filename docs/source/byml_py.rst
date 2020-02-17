@@ -2,7 +2,8 @@
 BYML (Python)
 #############
 
-.. include:: _byml_status.rst
+.. include:: parts/py_common.rst
+.. include:: parts/byml_common.rst
 
 Quick usage
 ===========

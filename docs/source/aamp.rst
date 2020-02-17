@@ -2,7 +2,7 @@
 AAMP
 ####
 
-.. include:: _aamp_status.rst
+.. include:: parts/aamp_common.rst
 
 ``#include <oead/aamp.h>``
 
