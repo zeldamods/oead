@@ -105,12 +105,8 @@ void BindAamp(py::module& parent) {
       .def(py::self == py::self)
       .def_readwrite("version", &aamp::ParameterIO::version)
       .def_readwrite("type", &aamp::ParameterIO::type)
-      .def_static(
-          "from_binary",
-          [](py::buffer b) { return aamp::ParameterIO::FromBinary(PyBufferToSpan(b)); }, "buffer"_a)
-      .def_static(
-          "from_text", [](std::string_view str) { return aamp::ParameterIO::FromText(str); },
-          "yml_text"_a)
+      .def_static("from_binary", &aamp::ParameterIO::FromBinary, "buffer"_a)
+      .def_static("from_text", &aamp::ParameterIO::FromText, "yml_text"_a)
       .def("to_binary", &aamp::ParameterIO::ToBinary)
       .def("to_text", &aamp::ParameterIO::ToText);
 

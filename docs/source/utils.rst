@@ -16,6 +16,13 @@ Swap utils
 .. doxygentypedef:: oead::util::BeInt
 .. doxygentypedef:: oead::util::LeInt
 
+For the Python API:
+
+.. class:: oead.Endianness
+
+    .. attribute:: Big
+    .. attribute:: Little
+
 Variant utils
 =============
 ``#include <oead/util/variant_utils.h>``

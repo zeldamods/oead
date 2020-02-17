@@ -19,18 +19,16 @@
 
 #pragma once
 
-#include <pybind11/pybind11.h>
+#include <array>
 
-#include "pybind11_common.h"
+namespace oead::util {
 
-namespace py = pybind11;
+template <size_t N>
+constexpr auto MakeMagic(const char (&magic)[N]) {
+  std::array<char, N - 1> data{};
+  for (size_t i = 0; i < N - 1; ++i)
+    data[i] = magic[i];
+  return data;
+}
 
-namespace oead::bind {
-
-void BindAamp(py::module& m);
-void BindByml(py::module& m);
-void BindCommonTypes(py::module& m);
-void BindSarc(py::module& m);
-void BindYaz0(py::module& m);
-
-}  // namespace oead::bind
+}

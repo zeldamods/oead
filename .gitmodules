@@ -16,3 +16,6 @@
 [submodule "lib/zlib-ng"]
 	path = lib/zlib-ng
 	url = https://github.com/zeldamods/zlib-ng
+[submodule "lib/EasyIterator"]
+	path = lib/EasyIterator
+	url = https://github.com/TheLartians/EasyIterator

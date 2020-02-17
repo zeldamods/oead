@@ -2,7 +2,7 @@
 BYML
 ####
 
-.. include:: _byml_status.rst
+.. include:: parts/byml_common.rst
 
 ``#include <oead/byml.h>``
 

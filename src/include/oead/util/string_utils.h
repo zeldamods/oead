@@ -19,18 +19,21 @@
 
 #pragma once
 
-#include <pybind11/pybind11.h>
+#include <string_view>
 
-#include "pybind11_common.h"
+namespace oead::util {
 
-namespace py = pybind11;
+template <typename Callback>
+inline void SplitStringByLine(std::string_view data, Callback cb) {
+  size_t line_start_pos = 0;
+  while (line_start_pos < data.size()) {
+    const auto line_end_pos = data.find('\n', line_start_pos);
+    if (line_start_pos != line_end_pos)
+      cb(data.substr(line_start_pos, line_end_pos - line_start_pos));
+    if (line_end_pos == std::string_view::npos)
+      break;
+    line_start_pos = line_end_pos + 1;
+  }
+}
 
-namespace oead::bind {
-
-void BindAamp(py::module& m);
-void BindByml(py::module& m);
-void BindCommonTypes(py::module& m);
-void BindSarc(py::module& m);
-void BindYaz0(py::module& m);
-
-}  // namespace oead::bind
+}  // namespace oead::util

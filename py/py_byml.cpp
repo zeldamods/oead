@@ -84,9 +84,8 @@ static auto BorrowByml(Callable&& callable) {
 
 void BindByml(py::module& parent) {
   auto m = parent.def_submodule("byml");
-  m.def(
-      "from_binary", [](py::buffer b) { return Byml::FromBinary(PyBufferToSpan(b)); }, "buffer"_a,
-      py::return_value_policy::move, ":return: An Array or a Hash.");
+  m.def("from_binary", &Byml::FromBinary, "buffer"_a, py::return_value_policy::move,
+        ":return: An Array or a Hash.");
   m.def("from_text", &Byml::FromText, "yml_text"_a, py::return_value_policy::move,
         ":return: An Array or a Hash.");
   m.def("to_binary", BorrowByml<bool, int>(&Byml::ToBinary), "data"_a, "big_endian"_a,

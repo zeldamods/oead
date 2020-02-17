@@ -2,7 +2,8 @@
 AAMP (Python)
 #############
 
-.. include:: _aamp_status.rst
+.. include:: parts/py_common.rst
+.. include:: parts/aamp_common.rst
 
 Quick usage
 ===========

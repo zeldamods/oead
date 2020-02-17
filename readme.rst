@@ -13,6 +13,7 @@ Currently, oead only handles two very common formats that are extensively used i
 
 * `BYML <https://zeldamods.org/wiki/BYML>`_ (binary YAML): Versions 2, 3, and 4 are supported.
 * `AAMP <https://zeldamods.org/wiki/AAMP>`_ (binary parameter archive): Only version 2 is supported.
+* `SARC <https://zeldamods.org/wiki/SARC>`_ (archive)
 * `Yaz0 <https://zeldamods.org/wiki/Yaz0>`_ (compression algorithm)
 
 Getting started
