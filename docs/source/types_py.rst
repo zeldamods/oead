@@ -9,7 +9,7 @@ All of the following types support the buffer protocol.
 
 .. autoclass:: oead.Bytes
 
-    This class is the equivalent to ``std::vector<u8>``.
+    This class is the equivalent to ``std::vector<u8>``. Python ``bytes`` will be implicitly converted to oead.Bytes, so explicitly doing something like ``oead.Bytes(b"my bytes")`` is unnecessary.
 
 .. autoclass:: oead.BufferInt
 

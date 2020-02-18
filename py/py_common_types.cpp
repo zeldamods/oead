@@ -75,6 +75,7 @@ void BindCommonTypes(py::module& m) {
   BindVector<std::vector<u8>>(
       m, "Bytes", py::buffer_protocol(),
       "Mutable bytes-like object. This is used to avoid possibly expensive data copies.");
+  py::implicitly_convertible<py::bytes, std::vector<u8>>();
   BindVector<std::vector<int>>(m, "BufferInt", py::buffer_protocol(),
                                "Mutable list-like object that stores signed 32-bit integers.");
   BindVector<std::vector<f32>>(m, "BufferF32", py::buffer_protocol(),
