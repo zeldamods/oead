@@ -155,7 +155,7 @@ std::optional<Sarc::File> Sarc::GetFile(std::string_view name) const {
   // Perform a binary search.
   u32 a = 0;
   u32 b = m_num_files - 1;
-  while (a < b) {
+  while (a <= b) {
     const u32 m = (a + b) / 2;
     const auto hash = m_reader.Read<u32>(m_entries_offset + sizeof(sarc::ResFatEntry) * m);
     if (wanted_hash < hash)
