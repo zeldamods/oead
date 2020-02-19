@@ -317,7 +317,7 @@ std::pair<u32, std::vector<u8>> SarcWriter::Write() {
   header.version = 0x0100;
   writer.Seek(0);
   writer.Write(header);
-  return {required_alignment, std::move(writer.Finalize())};
+  return {required_alignment, writer.Finalize()};
 }
 
 void SarcWriter::SetMinAlignment(size_t alignment) {
