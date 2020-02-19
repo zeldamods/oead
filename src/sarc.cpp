@@ -203,7 +203,7 @@ static auto& GetBotwFactoryNames() {
   return names;
 }
 
-static const auto GetAglEnvAlignmentRequirements() {
+static const auto& GetAglEnvAlignmentRequirements() {
   static auto requirements = [] {
     std::vector<std::pair<std::string, u32>> requirements;
 
