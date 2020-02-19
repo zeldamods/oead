@@ -28,8 +28,13 @@ inline void SplitStringByLine(std::string_view data, Callback cb) {
   size_t line_start_pos = 0;
   while (line_start_pos < data.size()) {
     const auto line_end_pos = data.find('\n', line_start_pos);
-    if (line_start_pos != line_end_pos)
-      cb(data.substr(line_start_pos, line_end_pos - line_start_pos));
+    if (line_start_pos != line_end_pos) {
+      auto line = data.substr(line_start_pos, line_end_pos - line_start_pos);
+      if (!line.empty() && line.back() == '\r')
+        line.remove_suffix(1);
+      cb(line);
+    }
+
     if (line_end_pos == std::string_view::npos)
       break;
     line_start_pos = line_end_pos + 1;
