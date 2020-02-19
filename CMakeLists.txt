@@ -76,8 +76,8 @@ target_link_libraries(oead
     absl::hash
     EasyIterator
     tsl::ordered_map
-  PRIVATE
     oead::res
+  PRIVATE
     absl::inlined_vector
     absl::strings
     absl::str_format
