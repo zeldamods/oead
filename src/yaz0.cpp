@@ -31,7 +31,6 @@ namespace oead::yaz0 {
 constexpr std::array<char, 4> Magic = {'Y', 'a', 'z', '0'};
 constexpr size_t ChunksPerGroup = 8;
 constexpr size_t MaximumMatchLength = 0xFF + 0x12;
-constexpr size_t WindowSize = 0x1000;
 
 static std::optional<Header> GetHeader(util::BinaryReader& reader) {
   const auto header = reader.Read<Header>();
