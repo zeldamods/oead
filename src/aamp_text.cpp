@@ -71,14 +71,11 @@ std::optional<std::string_view> NameTable::GetName(u32 hash, int index, u32 pare
   // Try to guess the name from the parent structure if possible.
   if (const auto it = names.find(parent_name_hash); it != names.end()) {
     const auto test_names = [&](std::string_view prefix) -> std::optional<std::string_view> {
-      static constexpr std::array<std::string_view, 6> formats = {{
-          "%s%d",
-          "%s_%d",
-          "%s%02d",
-          "%s_%02d",
-          "%s%03d",
-          "%s_%03d",
-      }};
+      static const std::array formats{
+          absl::ParsedFormat<'s', 'd'>{"%s%d"},   absl::ParsedFormat<'s', 'd'>{"%s_%d"},
+          absl::ParsedFormat<'s', 'd'>{"%s%02d"}, absl::ParsedFormat<'s', 'd'>{"%s_%02d"},
+          absl::ParsedFormat<'s', 'd'>{"%s%03d"}, absl::ParsedFormat<'s', 'd'>{"%s_%03d"},
+      };
       for (int i : {index, index + 1}) {
         for (const auto format : formats) {
           auto candidate = absl::StrFormat(format, prefix, i);
@@ -106,7 +103,10 @@ std::optional<std::string_view> NameTable::GetName(u32 hash, int index, u32 pare
   // Last resort: test all numbered names.
   for (std::string_view name : numbered_names) {
     for (int i = 0; i < index + 2; ++i) {
-      auto candidate = absl::StrFormat(name, i);
+      auto format = absl::ParsedFormat<'d'>::New(name);
+      if (!format)
+        break;
+      auto candidate = absl::StrFormat(*format, i);
       if (util::crc32(candidate) == hash)
         return AddName(hash, std::move(candidate));
     }
