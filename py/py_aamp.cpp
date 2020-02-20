@@ -82,6 +82,7 @@ void BindAamp(py::module& parent) {
       .def(py::init<std::string_view>(), "name"_a)
       .def(py::self == py::self)
       .def_readonly("hash", &aamp::Name::hash)
+      .def("__hash__", [](aamp::Name n) { return n.hash; }, py::is_operator())
       .def("__str__", [](aamp::Name n) { return "{}"_s.format(n.hash); })
       .def("__repr__", [](aamp::Name n) { return "aamp.Name({})"_s.format(n.hash); });
   py::implicitly_convertible<u32, aamp::Name>();
