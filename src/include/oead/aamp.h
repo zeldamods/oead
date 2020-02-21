@@ -78,6 +78,7 @@ NameTable& GetDefaultNameTable();
 /// Parameter structure name. This is a wrapper around a CRC32 hash.
 struct Name {
   constexpr Name(std::string_view name) : hash{util::crc32(name)} {}
+  constexpr Name(const char* name) : hash{util::crc32(name)} {}
   constexpr Name(u32 name_crc32) : hash{name_crc32} {}
   operator u32() const { return hash; }
   /// The CRC32 hash of the name.
