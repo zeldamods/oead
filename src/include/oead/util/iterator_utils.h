@@ -47,7 +47,7 @@ constexpr auto Enumerate(T&& iterable) {
 }
 
 template <typename First, typename... T>
-constexpr bool IsAnyOf(const First& first, const T&... t) {
+constexpr inline bool IsAnyOf(const First& first, const T&... t) {
   return ((first == t) || ...);
 }
 
