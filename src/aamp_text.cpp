@@ -92,6 +92,8 @@ std::optional<std::string_view> NameTable::GetName(u32 hash, int index, u32 pare
     // Sometimes the parent name is plural and the object names are singular.
     if (const auto match = test_names("Children"sv))
       return *match;
+    if (const auto match = test_names("Child"sv))
+      return *match;
     for (std::string_view suffix : {"s"sv, "es"sv, "List"sv}) {
       if (!absl::EndsWith(parent_name, suffix))
         continue;
