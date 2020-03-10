@@ -83,6 +83,15 @@ public:
   auto& GetVariant() { return m_value; }
   const auto& GetVariant() const { return m_value; }
 
+  /// Get an item from a map/hash.
+  template <typename T, Type Type>
+  auto Get(std::string_view key, const T& default_value) {
+    auto it = GetHash().find(key);
+    if (it == GetHash().end())
+      return default_value;
+    return it->second.Get<Type>();
+  }
+
   /// Load a document from binary data.
   static Byml FromBinary(tcb::span<const u8> data);
   /// Load a document from YAML text.
