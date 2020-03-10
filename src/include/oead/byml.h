@@ -84,7 +84,7 @@ public:
   const auto& GetVariant() const { return m_value; }
 
   /// Get an item from a map/hash.
-  template <typename T, Type Type>
+  template <Type Type, typename T>
   auto Get(std::string_view key, const T& default_value) {
     auto it = GetHash().find(key);
     if (it == GetHash().end())
