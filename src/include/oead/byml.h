@@ -85,11 +85,15 @@ public:
 
   /// Get an item from a map/hash.
   template <Type Type, typename T>
-  auto Get(std::string_view key, const T& default_value) {
+  const auto& Get(std::string_view key, const T& default_value) const {
     auto it = GetHash().find(key);
     if (it == GetHash().end())
       return default_value;
     return it->second.Get<Type>();
+  }
+  template <Type Type, typename T>
+  auto& Get(std::string_view key, const T& default_value) {
+    return util::AsMutable(std::as_const(*this).Get<Type, T>(key, default_value));
   }
 
   /// Load a document from binary data.
