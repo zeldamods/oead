@@ -21,6 +21,7 @@
 
 #include <absl/container/btree_map.h>
 #include <absl/container/flat_hash_map.h>
+#include <functional>
 #include <memory>
 #include <nonstd/span.h>
 #include <string>
@@ -84,16 +85,37 @@ public:
   const auto& GetVariant() const { return m_value; }
 
   /// Get an item from a map/hash.
+  template <typename T>
+  struct Reference {
+    Reference(T value) : m_storage{std::move(value)} {}
+    Reference(std::reference_wrapper<T> value) : m_storage{std::move(value)} {}
+    T* operator->() const {
+      if (auto ptr = std::get_if<0>(&m_storage))
+        return ptr;
+      if (auto ptr = std::get_if<1>(&m_storage))
+        return &ptr->get();
+      return nullptr;
+    }
+    T& operator*() const { return *operator->(); }
+
+  private:
+    using Storage = std::variant<T, std::reference_wrapper<T>>;
+    Storage m_storage;
+  };
+
   template <Type Type, typename T>
-  const auto& Get(std::string_view key, const T& default_value) const {
+  Reference<const T> Get(std::string_view key, T default_) const {
     auto it = GetHash().find(key);
     if (it == GetHash().end())
-      return default_value;
-    return it->second.Get<Type>();
+      return default_;
+    return std::cref(it->second.Get<Type>());
   }
   template <Type Type, typename T>
-  auto& Get(std::string_view key, const T& default_value) {
-    return util::AsMutable(std::as_const(*this).Get<Type, T>(key, default_value));
+  Reference<T> Get(std::string_view key, T default_) {
+    auto it = GetHash().find(key);
+    if (it == GetHash().end())
+      return default_;
+    return std::ref(it->second.Get<Type>());
   }
 
   /// Load a document from binary data.
