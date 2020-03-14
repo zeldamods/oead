@@ -62,15 +62,16 @@ static Byml ScalarToValue(std::string_view tag, yml::Scalar&& scalar) {
       });
 }
 
-static bool HasOnlySimpleItems(const Byml& container) {
+static bool ShouldUseInlineYamlStyle(const Byml& container) {
   const auto is_simple = [](const Byml& item) {
     return !util::IsAnyOf(item.GetType(), Byml::Type::Array, Byml::Type::Hash);
   };
   switch (container.GetType()) {
   case Byml::Type::Array:
-    return absl::c_all_of(container.GetArray(), is_simple);
+    return container.GetArray().size() <= 10 && absl::c_all_of(container.GetArray(), is_simple);
   case Byml::Type::Hash:
-    return absl::c_all_of(container.GetHash(), [&](const auto& p) { return is_simple(p.second); });
+    return container.GetHash().size() <= 10 &&
+           absl::c_all_of(container.GetHash(), [&](const auto& p) { return is_simple(p.second); });
   default:
     return false;
   }
@@ -97,7 +98,8 @@ Byml ParseYamlNode(const c4::yml::NodeRef& node) {
   }
 
   if (node.has_val()) {
-    return byml::ScalarToValue(yml::RymlGetValTag(node), yml::ParseScalar(node, byml::RecognizeTag));
+    return byml::ScalarToValue(yml::RymlGetValTag(node),
+                               yml::ParseScalar(node, byml::RecognizeTag));
   }
 
   throw InvalidDataError("Failed to parse YAML node");
@@ -126,8 +128,8 @@ std::string Byml::ToText() const {
         [&](const String& v) { emitter.EmitString(v); },
         [&](const Array& v) {
           yaml_event_t event;
-          const auto style =
-              byml::HasOnlySimpleItems(v) ? YAML_FLOW_SEQUENCE_STYLE : YAML_BLOCK_SEQUENCE_STYLE;
+          const auto style = byml::ShouldUseInlineYamlStyle(v) ? YAML_FLOW_SEQUENCE_STYLE :
+                                                                 YAML_BLOCK_SEQUENCE_STYLE;
           yaml_sequence_start_event_initialize(&event, nullptr, nullptr, 1, style);
           emitter.Emit(event);
 
@@ -138,8 +140,8 @@ std::string Byml::ToText() const {
           emitter.Emit(event);
         },
         [&](const Hash& v) {
-          const auto style =
-              byml::HasOnlySimpleItems(v) ? YAML_FLOW_MAPPING_STYLE : YAML_BLOCK_MAPPING_STYLE;
+          const auto style = byml::ShouldUseInlineYamlStyle(v) ? YAML_FLOW_MAPPING_STYLE :
+                                                                 YAML_BLOCK_MAPPING_STYLE;
           yml::LibyamlEmitter::MappingScope scope{emitter, {}, style};
 
           for (const auto& [k, v] : v) {
