@@ -84,7 +84,7 @@ Byml ParseYamlNode(const c4::yml::NodeRef& node) {
     for (const auto& child : node) {
       array.emplace_back(ParseYamlNode(child));
     }
-    return array;
+    return Byml{std::move(array)};
   }
 
   if (node.is_map()) {
@@ -94,7 +94,7 @@ Byml ParseYamlNode(const c4::yml::NodeRef& node) {
       Byml value = ParseYamlNode(child);
       hash.emplace(std::move(key), std::move(value));
     }
-    return hash;
+    return Byml{std::move(hash)};
   }
 
   if (node.has_val()) {
