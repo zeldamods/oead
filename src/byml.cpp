@@ -460,6 +460,18 @@ std::vector<u8> Byml::ToBinary(bool big_endian, int version) const {
   return ctx.writer.Finalize();
 }
 
+Byml::Hash& Byml::GetHash() {
+  return Get<Type::Hash>();
+}
+
+Byml::Array& Byml::GetArray() {
+  return Get<Type::Array>();
+}
+
+Byml::String& Byml::GetString() {
+  return Get<Type::String>();
+}
+
 const Byml::Hash& Byml::GetHash() const {
   return Get<Type::Hash>();
 }

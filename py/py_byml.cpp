@@ -97,7 +97,7 @@ void BindByml(py::module& parent) {
   m.def("get_float", BorrowByml(&Byml::GetFloat), "data"_a);
   m.def("get_int", BorrowByml(&Byml::GetInt), "data"_a);
   m.def("get_int64", BorrowByml(&Byml::GetInt64), "data"_a);
-  m.def("get_string", BorrowByml(&Byml::GetString), "data"_a);
+  m.def("get_string", BorrowByml(py::overload_cast<>(&Byml::GetString, py::const_)), "data"_a);
   m.def("get_uint", BorrowByml(&Byml::GetUInt), "data"_a);
   m.def("get_uint64", BorrowByml(&Byml::GetUInt64), "data"_a);
 

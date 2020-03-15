@@ -134,6 +134,9 @@ public:
   // Some of them will perform type conversions automatically.
   // If value types are incorrect, an exception is thrown.
 
+  Hash& GetHash();
+  Array& GetArray();
+  String& GetString();
   const Hash& GetHash() const;
   const Array& GetArray() const;
   const String& GetString() const;
