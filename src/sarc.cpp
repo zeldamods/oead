@@ -257,6 +257,17 @@ std::pair<u32, std::vector<u8>> SarcWriter::Write() {
     return sarc::HashName(m_hash_multiplier, a.first) < sarc::HashName(m_hash_multiplier, b.first);
   });
 
+  // Try to avoid unnecessary reallocations by making the buffer large enough to fit the whole SARC.
+  size_t estimated_size =
+      sizeof(sarc::ResHeader) + sizeof(sarc::ResFatHeader) + sizeof(sarc::ResFntHeader);
+  for (const FileMap::value_type& pair : files) {
+    const auto& [name, data] = pair;
+    estimated_size += sizeof(sarc::ResFatEntry);
+    estimated_size += util::AlignUp(name.size() + 1, 4);
+    estimated_size += data.size();
+  }
+  writer.Buffer().reserve(1.5f * estimated_size);
+
   // SFAT
   sarc::ResFatHeader fat_header{};
   fat_header.magic = sarc::SfatMagic;
