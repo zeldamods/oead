@@ -177,7 +177,7 @@ private:
 
     switch (type) {
     case NodeType::String:
-      return m_string_table.GetString(m_reader, *raw);
+      return Byml{m_string_table.GetString(m_reader, *raw)};
     case NodeType::Binary: {
       const u32 data_offset = *raw;
       const u32 size = m_reader.Read<u32>(data_offset).value();
@@ -219,7 +219,7 @@ private:
       const auto type = m_reader.Read<NodeType>(offset + 4 + i);
       result.emplace_back(ParseContainerChildNode(values_offset + 4 * i, type.value()));
     }
-    return result;
+    return Byml{std::move(result)};
   }
 
   Byml ParseHashNode(u32 offset, u32 size) {
@@ -231,7 +231,7 @@ private:
       result.emplace(m_hash_key_table.GetString(m_reader, name_idx.value()),
                      ParseContainerChildNode(entry_offset + 4, type.value()));
     }
-    return result;
+    return Byml{std::move(result)};
   }
 
   Byml ParseContainerNode(u32 offset) {
