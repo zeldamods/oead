@@ -184,6 +184,7 @@ void InitRymlIfNeeded() {
 LibyamlEmitter::LibyamlEmitter() {
   yaml_emitter_initialize(&m_emitter);
   yaml_emitter_set_unicode(&m_emitter, 1);
+  yaml_emitter_set_width(&m_emitter, 120);
 }
 
 LibyamlEmitter::~LibyamlEmitter() {

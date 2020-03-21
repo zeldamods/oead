@@ -18,6 +18,7 @@
  */
 
 #include <absl/algorithm/container.h>
+#include <absl/strings/escaping.h>
 #include <absl/strings/str_format.h>
 
 #include <c4/std/string.hpp>
@@ -33,11 +34,17 @@
 namespace oead {
 
 namespace byml {
+static bool IsBinaryTag(std::string_view tag) {
+  return util::IsAnyOf(tag, "tag:yaml.org,2002:binary", "!!binary");
+}
+
 static std::optional<yml::TagBasedType> RecognizeTag(const std::string_view tag) {
   if (util::IsAnyOf(tag, "!f64"))
     return yml::TagBasedType::Float;
   if (util::IsAnyOf(tag, "!u", "!l", "!ul"))
     return yml::TagBasedType::Int;
+  if (IsBinaryTag(tag))
+    return yml::TagBasedType::Str;
   return std::nullopt;
 }
 
@@ -45,7 +52,15 @@ static Byml ScalarToValue(std::string_view tag, yml::Scalar&& scalar) {
   return util::Match(
       std::move(scalar), [](std::nullptr_t) -> Byml { return Byml::Null{}; },
       [](bool value) -> Byml { return value; },
-      [](std::string&& value) -> Byml { return std::move(value); },
+      [&](std::string&& value) -> Byml {
+        if (IsBinaryTag(tag)) {
+          std::string decoded;
+          if (!absl::Base64Unescape(value, &decoded))
+            throw InvalidDataError("Invalid base64-encoded data");
+          return Byml{std::vector<u8>(decoded.begin(), decoded.end())};
+        }
+        return Byml{std::move(value)};
+      },
       [&](u64 value) -> Byml {
         if (tag == "!u")
           return U32(value);
@@ -126,6 +141,11 @@ std::string Byml::ToText() const {
     util::Match(
         node.GetVariant().v, [&](Null) { emitter.EmitNull(); },
         [&](const String& v) { emitter.EmitString(v); },
+        [&](const std::vector<u8>& v) {
+          const std::string encoded =
+              absl::Base64Escape(std::string_view((const char*)v.data(), v.size()));
+          emitter.EmitString(encoded, "tag:yaml.org,2002:binary");
+        },
         [&](const Array& v) {
           yaml_event_t event;
           const auto style = byml::ShouldUseInlineYamlStyle(v) ? YAML_FLOW_SEQUENCE_STYLE :

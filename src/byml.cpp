@@ -55,6 +55,7 @@ static_assert(sizeof(ResHeader) == 0x10);
 
 enum class NodeType : u8 {
   String = 0xa0,
+  Binary = 0xa1,
   Array = 0xc0,
   Hash = 0xc1,
   StringTable = 0xc2,
@@ -70,9 +71,9 @@ enum class NodeType : u8 {
 
 constexpr NodeType GetNodeType(Byml::Type type) {
   constexpr std::array map{
-      NodeType::Null,  NodeType::String, NodeType::Array,  NodeType::Hash,
-      NodeType::Bool,  NodeType::Int,    NodeType::Float,  NodeType::UInt,
-      NodeType::Int64, NodeType::UInt64, NodeType::Double,
+      NodeType::Null, NodeType::String, NodeType::Binary, NodeType::Array,
+      NodeType::Hash, NodeType::Bool,   NodeType::Int,    NodeType::Float,
+      NodeType::UInt, NodeType::Int64,  NodeType::UInt64, NodeType::Double,
   };
   return map[u8(type)];
 }
@@ -89,7 +90,7 @@ constexpr bool IsLongType(T type) {
 
 template <typename T = NodeType>
 constexpr bool IsNonInlineType(T type) {
-  return IsContainerType(type) || IsLongType(type);
+  return IsContainerType(type) || IsLongType(type) || type == T::Binary;
 }
 
 constexpr bool IsValidVersion(int version) {
@@ -177,6 +178,12 @@ private:
     switch (type) {
     case NodeType::String:
       return m_string_table.GetString(m_reader, *raw);
+    case NodeType::Binary: {
+      const u32 data_offset = *raw;
+      const u32 size = m_reader.Read<u32>(data_offset).value();
+      return Byml{std::vector<u8>(m_reader.span().begin() + data_offset + 4,
+                                  m_reader.span().begin() + data_offset + 4 + size)};
+    }
     case NodeType::Bool:
       return *raw != 0;
     case NodeType::Int:
@@ -296,6 +303,10 @@ struct WriteContext {
       return writer.Write<u32>(0);
     case Byml::Type::String:
       return writer.Write<u32>(string_table.GetIndex(data.GetString()));
+    case Byml::Type::Binary:
+      writer.Write(static_cast<u32>(data.GetBinary().size()));
+      writer.WriteBytes(data.GetBinary());
+      return;
     case Byml::Type::Bool:
       return writer.Write<u32>(data.GetBool());
     case Byml::Type::Int:
@@ -369,10 +380,10 @@ struct WriteContext {
         const size_t offset = writer.Tell();
         writer.RunAt(node.offset_in_container, [&](size_t) { writer.Write<u32>(offset); });
         non_inline_node_data.emplace(*node.data, offset);
-        if (IsLongType(node.data->GetType()))
-          WriteValueNode(*node.data);
-        else
+        if (IsContainerType(node.data->GetType()))
           WriteContainerNode(*node.data);
+        else
+          WriteValueNode(*node.data);
       }
     }
   }
@@ -472,6 +483,10 @@ Byml::String& Byml::GetString() {
   return Get<Type::String>();
 }
 
+std::vector<u8>& Byml::GetBinary() {
+  return Get<Type::Binary>();
+}
+
 const Byml::Hash& Byml::GetHash() const {
   return Get<Type::Hash>();
 }
@@ -482,6 +497,10 @@ const Byml::Array& Byml::GetArray() const {
 
 const Byml::String& Byml::GetString() const {
   return Get<Type::String>();
+}
+
+const std::vector<u8>& Byml::GetBinary() const {
+  return Get<Type::Binary>();
 }
 
 bool Byml::GetBool() const {

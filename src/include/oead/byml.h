@@ -43,6 +43,7 @@ public:
   enum class Type {
     Null = 0,
     String,
+    Binary,
     Array,
     Hash,
     Bool,
@@ -59,8 +60,9 @@ public:
   using Array = std::vector<Byml>;
   using Hash = absl::btree_map<std::string, Byml>;
 
-  using Value = util::Variant<Type, Null, std::unique_ptr<String>, std::unique_ptr<Array>,
-                              std::unique_ptr<Hash>, bool, S32, F32, U32, S64, U64, F64>;
+  using Value = util::Variant<Type, Null, std::unique_ptr<String>, std::unique_ptr<std::vector<u8>>,
+                              std::unique_ptr<Array>, std::unique_ptr<Hash>, bool, S32, F32, U32,
+                              S64, U64, F64>;
 
   Byml() = default;
   Byml(const Byml& other) { *this = other; }
@@ -137,9 +139,11 @@ public:
   Hash& GetHash();
   Array& GetArray();
   String& GetString();
+  std::vector<u8>& GetBinary();
   const Hash& GetHash() const;
   const Array& GetArray() const;
   const String& GetString() const;
+  const std::vector<u8>& GetBinary() const;
   bool GetBool() const;
   s32 GetInt() const;
   u32 GetUInt() const;
