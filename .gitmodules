@@ -6,7 +6,7 @@
 	url = https://github.com/leoetlino/pybind11
 [submodule "src/lib/abseil"]
 	path = lib/abseil
-	url = https://github.com/leoetlino/abseil-cpp
+	url = https://github.com/abseil/abseil-cpp
 [submodule "src/lib/libyaml"]
 	path = lib/libyaml
 	url = https://github.com/yaml/libyaml
