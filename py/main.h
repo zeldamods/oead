@@ -30,6 +30,7 @@ namespace oead::bind {
 void BindAamp(py::module& m);
 void BindByml(py::module& m);
 void BindCommonTypes(py::module& m);
+void BindGsheet(py::module& m);
 void BindSarc(py::module& m);
 void BindYaz0(py::module& m);
 

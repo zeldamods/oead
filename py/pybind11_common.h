@@ -163,3 +163,5 @@ OEAD_MAKE_OPAQUE("oead.Bytes", std::vector<u8>);
 OEAD_MAKE_OPAQUE("oead.BufferInt", std::vector<int>);
 OEAD_MAKE_OPAQUE("oead.BufferF32", std::vector<f32>);
 OEAD_MAKE_OPAQUE("oead.BufferU32", std::vector<u32>);
+OEAD_MAKE_OPAQUE("oead.BufferBool", std::vector<bool>);
+OEAD_MAKE_OPAQUE("oead.BufferString", std::vector<std::string>);

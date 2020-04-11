@@ -312,6 +312,10 @@ public:
     }
   }
   FlagBit<T> operator[](T bit) { return FlagBit(m_hex, bit); }
+  constexpr bool operator[](T bit) const {
+    return (m_hex & static_cast<std::underlying_type_t<T>>(bit)) != 0;
+  }
+  constexpr friend bool operator==(Flags a, Flags b) { return a.m_hex == b.m_hex; }
 
   std::underlying_type_t<T> m_hex = 0;
 };

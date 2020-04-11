@@ -100,7 +100,7 @@ struct Variant {
                  self.v);
   }
 
-  EnumType GetType() const { return EnumType(v.index()); }
+  constexpr EnumType GetType() const { return EnumType(v.index()); }
 
   template <EnumType type>
   const auto& Get() const {
