@@ -9,12 +9,16 @@ Python bindings for 3.6+ are also available.
 Features
 ========
 
-Currently, oead only handles two very common formats that are extensively used in recent games such as *Breath of the Wild* and *Super Mario Odyssey*.
+Currently, oead only handles very common formats that are extensively used in recent games such as *Breath of the Wild* and *Super Mario Odyssey*.
 
-* `BYML <https://zeldamods.org/wiki/BYML>`_ (binary YAML): Versions 2, 3, and 4 are supported.
 * `AAMP <https://zeldamods.org/wiki/AAMP>`_ (binary parameter archive): Only version 2 is supported.
+* `BYML <https://zeldamods.org/wiki/BYML>`_ (binary YAML): Versions 2, 3, and 4 are supported.
 * `SARC <https://zeldamods.org/wiki/SARC>`_ (archive)
 * `Yaz0 <https://zeldamods.org/wiki/Yaz0>`_ (compression algorithm)
+
+oead also supports a recent Grezzo format that is used in *Link's Awakening (Switch)*:
+
+* `gsheet <https://zeldamods.org/las/Datasheet>`_ (Grezzo datasheet)
 
 Getting started
 ===============
@@ -33,7 +37,7 @@ Building from source
 
 Building oead from source requires:
 
-* CMake 3.10+
+* CMake 3.12+
 * A compiler that supports C++17
 * Everything needed to build libyaml
 

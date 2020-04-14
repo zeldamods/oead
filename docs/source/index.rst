@@ -16,6 +16,8 @@ oead
     aamp_py
     byml
     byml_py
+    gsheet
+    gsheet_py
     sarc
     sarc_py
     yaz0

@@ -11,17 +11,25 @@ All of the following types support the buffer protocol.
 
     This class is the equivalent to ``std::vector<u8>``. Python ``bytes`` will be implicitly converted to oead.Bytes, so explicitly doing something like ``oead.Bytes(b"my bytes")`` is unnecessary.
 
+.. autoclass:: oead.BufferBool
+
+    This is a list that can only store booleans. This class is the equivalent to ``std::vector<bool>``.
+
 .. autoclass:: oead.BufferInt
 
-    This class is the equivalent to ``std::vector<int>``.
+    This is a list that can only store signed 32-bit integers. This class is the equivalent to ``std::vector<int>``.
 
 .. autoclass:: oead.BufferF32
 
-    This class is the equivalent to ``std::vector<f32>``.
+    This is a list that can only store binary32 floating point numbers. This class is the equivalent to ``std::vector<f32>``.
+
+.. autoclass:: oead.BufferString
+
+    This is a list that can only store strings. This class is the equivalent to ``std::vector<std::string>``.
 
 .. autoclass:: oead.BufferU32
 
-    This class is the equivalent to ``std::vector<u32>``.
+    This is a list that can only store unsigned 32-bit integers. This class is the equivalent to ``std::vector<u32>``.
 
 Numbers
 =======
