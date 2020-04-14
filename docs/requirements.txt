@@ -2,4 +2,4 @@ breathe==4.14.1
 Sphinx==2.4.0
 sphinx-autobuild==0.7.1
 sphinx-rtd-theme==0.4.3
-oead
+oead==1.1.0rc1
