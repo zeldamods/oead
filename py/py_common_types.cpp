@@ -82,6 +82,9 @@ void BindCommonTypes(py::module& m) {
                                "Mutable list-like object that stores binary32 floats.");
   BindVector<std::vector<u32>>(m, "BufferU32", py::buffer_protocol(),
                                "Mutable list-like object that stores unsigned 32-bit integers.");
+  BindVector<std::vector<bool>>(m, "BufferBool", "Mutable list-like object that stores booleans.");
+  BindVector<std::vector<std::string>>(m, "BufferString",
+                                       "Mutable list-like object that stores strings.");
 
   detail::BindNumber<U8, py::int_>(m, "U8");
   detail::BindNumber<U16, py::int_>(m, "U16");

@@ -36,6 +36,7 @@ add_library(oead
   src/include/oead/aamp.h
   src/include/oead/byml.h
   src/include/oead/errors.h
+  src/include/oead/gsheet.h
   src/include/oead/sarc.h
   src/include/oead/types.h
   src/include/oead/yaz0.h
@@ -43,6 +44,7 @@ add_library(oead
   src/aamp_text.cpp
   src/byml.cpp
   src/byml_text.cpp
+  src/gsheet.cpp
   src/sarc.cpp
   src/yaml.cpp
   src/yaml.h

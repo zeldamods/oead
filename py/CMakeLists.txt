@@ -40,6 +40,7 @@ pybind11_add_module(oead-py
   py_aamp.cpp
   py_byml.cpp
   py_common_types.cpp
+  py_gsheet.cpp
   py_sarc.cpp
   py_yaz0.cpp
   pybind11_common.h

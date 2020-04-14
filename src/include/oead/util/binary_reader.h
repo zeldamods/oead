@@ -95,6 +95,30 @@ private:
   Endianness m_endian = Endianness::Big;
 };
 
+template <typename T>
+inline void RelocateWithSize(tcb::span<u8> buffer, T*& ptr, size_t size) {
+  const u64 offset = reinterpret_cast<u64>(ptr);
+  if (buffer.size() < offset || buffer.size() < offset + size)
+    throw std::out_of_range("RelocateWithSize: out of bounds");
+  ptr = reinterpret_cast<T*>(buffer.data() + offset);
+}
+
+template <typename T>
+inline void Relocate(tcb::span<u8> buffer, T*& ptr, size_t num_objects = 1) {
+  RelocateWithSize(buffer, ptr, sizeof(T) * num_objects);
+}
+
+inline std::string_view ReadString(tcb::span<u8> buffer, const char* ptr_) {
+  const u8* ptr = reinterpret_cast<const u8*>(ptr_);
+  if (ptr < buffer.data() || buffer.data() + buffer.size() <= ptr)
+    throw std::out_of_range("ReadString: out of bounds");
+  const size_t max_len = buffer.data() + buffer.size() - ptr;
+  const size_t length = strnlen(ptr_, max_len);
+  if (length == max_len)
+    throw std::out_of_range("String is not null-terminated");
+  return {ptr_, length};
+}
+
 template <typename Storage>
 class BinaryWriterBase {
 public:
