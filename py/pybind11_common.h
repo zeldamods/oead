@@ -154,7 +154,7 @@ py::class_<Map, holder_type> BindMap(py::handle scope, const std::string& name, 
                 }
                 return it->second;
               },
-              py::return_value_policy::reference_internal, "key"_a, "default"_a = std::nullopt)
+              "key"_a, "default"_a = std::nullopt, py::keep_alive<0, 1>())
           .def(
               "keys", [](const Map& map) { return py::make_key_iterator(map.begin(), map.end()); },
               py::keep_alive<0, 1>());
