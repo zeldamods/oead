@@ -144,11 +144,15 @@ py::class_<Map, holder_type> BindMap(py::handle scope, const std::string& name, 
           .def("clear", &Map::clear)
           .def(
               "get",
-              [](const Map& map, const Key& key, const std::optional<Value>& value) {
+              [](const Map& map, const Key& key,
+                 std::optional<py::object> default_value) -> std::variant<py::object, Value> {
                 const auto it = map.find(key);
-                if (it == map.cend())
-                  return value;
-                return std::make_optional(it->second);
+                if (it == map.cend()) {
+                  if (default_value)
+                    return *default_value;
+                  throw py::key_error();
+                }
+                return it->second;
               },
               py::return_value_policy::reference_internal, "key"_a, "default"_a = std::nullopt)
           .def(
