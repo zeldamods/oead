@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <absl/algorithm/container.h>
 #include <absl/container/btree_map.h>
 #include <absl/container/flat_hash_map.h>
 #include <easy_iterator.h>
@@ -41,6 +42,12 @@ public:
     std::string_view name;
     /// File data (as a view).
     tcb::span<const u8> data;
+
+    bool operator==(const File& other) const {
+      return name == other.name && absl::c_equal(data, other.data);
+    }
+
+    bool operator!=(const File& other) const { return !(*this == other); }
   };
 
   /// File iterator.
@@ -74,6 +81,12 @@ public:
 
   /// Guess the minimum data alignment for files that are stored in the archive.
   size_t GuessMinAlignment() const;
+
+  /// Returns true if and only if the raw archive data is identical.
+  bool operator==(const Sarc& other) const;
+  bool operator!=(const Sarc& other) const { return !(*this == other); }
+
+  bool AreFilesEqual(const Sarc& other) const;
 
 private:
   u16 m_num_files;

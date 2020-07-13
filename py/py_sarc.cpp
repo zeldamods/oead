@@ -29,6 +29,8 @@ void BindSarc(py::module& m) {
   py::class_<Sarc::File> file_cl(m, "File");
 
   cl.def(py::init<tcb::span<const u8>>(), "data"_a, py::keep_alive<1, 2>())
+      .def(py::self == py::self)
+      .def("are_files_equal", &Sarc::AreFilesEqual)
       .def("get_num_files", &Sarc::GetNumFiles)
       .def("get_data_offset", &Sarc::GetDataOffset)
       .def("get_endianness", &Sarc::GetEndianness)

@@ -168,6 +168,21 @@ std::optional<Sarc::File> Sarc::GetFile(std::string_view name) const {
   return std::nullopt;
 }
 
+bool Sarc::operator==(const Sarc& other) const {
+  return absl::c_equal(m_reader.span(), other.m_reader.span());
+}
+
+bool Sarc::AreFilesEqual(const Sarc& other) const {
+  if (GetNumFiles() != other.GetNumFiles())
+    return false;
+
+  for (const auto& [file1, file2] : easy_iterator::zip(GetFiles(), other.GetFiles())) {
+    if (file1 != file2)
+      return false;
+  }
+  return true;
+}
+
 static constexpr bool IsValidAlignment(size_t alignment) {
   return alignment != 0 && (alignment & (alignment - 1)) == 0;
 }
