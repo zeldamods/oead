@@ -27,7 +27,7 @@ if(CCACHE_BIN)
 endif()
 
 if (MSVC)
-  set(PYBIND11_CPP_STANDARD /std:c++latest)
+  set(PYBIND11_CPP_STANDARD /std:c++17)
 else()
   set(PYBIND11_CPP_STANDARD -std=c++17)
 endif()
