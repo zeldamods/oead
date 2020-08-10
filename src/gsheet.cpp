@@ -254,7 +254,7 @@ private:
           data.VisitArray([&](const auto& v) {
             using T = typename std::decay_t<decltype(v)>::value_type;
             if constexpr (util::IsAnyOfType<T, bool, int, float>()) {
-              for (const auto& item : v) {
+              for (const auto item : v) {
                 writer.Write(item);
                 writer.AlignUp(4);
               }
