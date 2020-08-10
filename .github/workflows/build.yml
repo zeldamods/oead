@@ -65,3 +65,27 @@ jobs:
       run: |
         pip install pytest
         pytest test/ --ignore-glob "*benchmark*"
+
+  build-and-test-macos:
+    runs-on: [macos-latest]
+    strategy:
+      matrix:
+        python-version: [3.8]
+
+    steps:
+    - uses: actions/checkout@v2
+    - run: git submodule update --init --recursive
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install --upgrade pip setuptools wheel
+    - name: Install
+      run: python setup.py install --user
+    - name: Test with pytest
+      run: |
+        pip install pytest
+        pytest test/ --ignore-glob "*benchmark*"
