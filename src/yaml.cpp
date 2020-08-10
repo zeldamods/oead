@@ -171,7 +171,7 @@ void InitRymlIfNeeded() {
   static std::once_flag s_flag;
   std::call_once(s_flag, [] {
     ryml::Callbacks callbacks = ryml::get_callbacks();
-    callbacks.m_error = [](const char* msg, size_t msg_len, void*) {
+    callbacks.m_error = [](const char* msg, size_t msg_len, ryml::Location, void*) {
       throw RymlError("RymlError: " + std::string(msg, msg_len));
     };
     ryml::set_callbacks(callbacks);
