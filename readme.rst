@@ -23,9 +23,17 @@ oead also supports a recent Grezzo format that is used in *Link's Awakening (Swi
 Getting started
 ===============
 
-Install with::
+To install the Python module, simply run:
 
    pip install oead
+
+This will download and install a precompiled version of oead for the following platforms:
+
+* Windows, Python 3.6/3.7/3.8 (64-bit)
+* Recent Linux distributions, Python 3.8 (64-bit)
+* macOS 10.14 / 10.15, Python 3.8 (64-bit)
+
+If you are using any other platform, you must build oead from source (refer to the next section).
 
 .. warning::
    Windows users must ensure that they have the `latest Visual C++ 2019 Redistributable <https://support.microsoft.com/en-us/help/2977003/the-latest-supported-visual-c-downloads>`_ installed.
@@ -41,9 +49,19 @@ Building oead from source requires:
 * A compiler that supports C++17
 * Everything needed to build libyaml
 
+First, clone the repository then enter the oead directory and run ``git submodule update --init --recursive``.
+
+Building the Python module
+--------------------------
+
+* To install the module, run ``pip install -e .``. This requires the following Python modules to be installed: setuptools, wheel
+* If you just want to build the Python module from source without installing it, run ``python setup.py bdist_wheel``.
+
+C++ usage
+---------
+
 Linking to the ``oead`` target is sufficient to use the library.
 
-To build the Python bindings from source, run ``python setup.py bdist_wheel``. This requires setuptools to be installed.
 
 Contributing
 ============
