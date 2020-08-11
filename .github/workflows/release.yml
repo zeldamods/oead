@@ -104,6 +104,8 @@ jobs:
     strategy:
       matrix:
         python-version: [3.8]
+    env:
+      MACOSX_DEPLOYMENT_TARGET: "10.14"
 
     steps:
     - uses: actions/checkout@v2
