@@ -200,6 +200,7 @@ struct FixedSafeString {
     return *this;
   }
   auto& operator=(std::string_view str) {
+    data.fill(0);
     length = std::min(str.size(), N);
     std::copy_n(str.begin(), length, data.begin());
     return *this;
@@ -211,7 +212,7 @@ struct FixedSafeString {
 
 private:
   size_t length = 0;
-  std::array<char, N> data;
+  std::array<char, N> data{};
 };
 
 /// Casts a string-like object to a string view.
