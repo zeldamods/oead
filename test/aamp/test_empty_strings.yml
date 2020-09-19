@@ -1,0 +1,9 @@
+!io
+version: 10
+type: oead_test
+param_root: !list
+  objects:
+    TestContent: !obj
+      Str64_empty: !str64 ''
+      Str64_empty2: !str64
+  lists: {}
