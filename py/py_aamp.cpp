@@ -59,7 +59,11 @@ static void BindAampParameter(py::module& m) {
       .value("BufferBinary", aamp::Parameter::Type::BufferBinary)
       .value("StringRef", aamp::Parameter::Type::StringRef);
 
-  clas.def(py::init<aamp::Parameter::Value>()).def(py::self == py::self);
+  clas.def(py::init<aamp::Parameter::Value>())
+      .def(py::self == py::self)
+      .def("__copy__", [](const aamp::Parameter::Value& o) { return aamp::Parameter::Value(o); })
+      .def("__deepcopy__",
+           [](const aamp::Parameter::Value& o, py::dict) { return aamp::Parameter::Value(o); });
 
   clas.def("type", &aamp::Parameter::GetType)
       .def("__repr__",
@@ -82,7 +86,8 @@ void BindAamp(py::module& parent) {
       .def(py::init<std::string_view>(), "name"_a)
       .def(py::self == py::self)
       .def_readonly("hash", &aamp::Name::hash)
-      .def("__hash__", [](aamp::Name n) { return n.hash; }, py::is_operator())
+      .def(
+          "__hash__", [](aamp::Name n) { return n.hash; }, py::is_operator())
       .def("__str__", [](aamp::Name n) { return "{}"_s.format(n.hash); })
       .def("__repr__", [](aamp::Name n) { return "aamp.Name({})"_s.format(n.hash); });
   py::implicitly_convertible<u32, aamp::Name>();
@@ -93,17 +98,26 @@ void BindAamp(py::module& parent) {
   py::class_<aamp::ParameterObject>(m, "ParameterObject")
       .def(py::init<>())
       .def(py::self == py::self)
+      .def("__copy__", [](const aamp::ParameterObject& o) { return aamp::ParameterObject(o); })
+      .def("__deepcopy__",
+           [](const aamp::ParameterObject& o, py::dict) { return aamp::ParameterObject(o); })
       .def_readwrite("params", &aamp::ParameterObject::params);
 
   py::class_<aamp::ParameterList>(m, "ParameterList")
       .def(py::init<>())
       .def(py::self == py::self)
+      .def("__copy__", [](const aamp::ParameterList& o) { return aamp::ParameterList(o); })
+      .def("__deepcopy__",
+           [](const aamp::ParameterList& o, py::dict) { return aamp::ParameterList(o); })
       .def_readwrite("objects", &aamp::ParameterList::objects)
       .def_readwrite("lists", &aamp::ParameterList::lists);
 
   py::class_<aamp::ParameterIO, aamp::ParameterList>(m, "ParameterIO")
       .def(py::init<>())
       .def(py::self == py::self)
+      .def("__copy__", [](const aamp::ParameterIO& o) { return aamp::ParameterIO(o); })
+      .def("__deepcopy__",
+           [](const aamp::ParameterIO& o, py::dict) { return aamp::ParameterIO(o); })
       .def_readwrite("version", &aamp::ParameterIO::version)
       .def_readwrite("type", &aamp::ParameterIO::type)
       .def_static("from_binary", &aamp::ParameterIO::FromBinary, "buffer"_a)
@@ -117,6 +131,8 @@ void BindAamp(py::module& parent) {
 
   py::class_<aamp::NameTable>(m, "NameTable")
       .def(py::init<bool>(), "with_botw_strings"_a)
+      .def("__copy__", [](const aamp::NameTable& o) { return aamp::NameTable(o); })
+      .def("__deepcopy__", [](const aamp::NameTable& o, py::dict) { return aamp::NameTable(o); })
       .def("get_name", &aamp::NameTable::GetName, "hash"_a, "index"_a, "parent_name_hash"_a)
       .def("add_name", py::overload_cast<std::string>(&aamp::NameTable::AddName), "name"_a);
 
