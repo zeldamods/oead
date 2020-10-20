@@ -59,7 +59,11 @@ static void BindAampParameter(py::module& m) {
       .value("BufferBinary", aamp::Parameter::Type::BufferBinary)
       .value("StringRef", aamp::Parameter::Type::StringRef);
 
-  clas.def(py::init<aamp::Parameter::Value>())
+  clas
+      // This is required to support conversions from F32 to float.
+      // Without this constructor, oead.F32(1.7) is turned into an integer.
+      .def(py::init<F32>())
+      .def(py::init<aamp::Parameter::Value>())
       .def(py::self == py::self)
       .def("__copy__", [](const aamp::Parameter::Value& o) { return aamp::Parameter::Value(o); })
       .def("__deepcopy__",

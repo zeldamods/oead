@@ -71,8 +71,10 @@ template <template <typename...> class V, typename... Ts>
 struct oead_variant_caster<V<Ts...>> {
   template <typename T, bool ptr>
   bool do_load(handle src, bool convert) {
-    if constexpr (std::is_same<T, bool>())
+    if constexpr (oead::util::IsAnyOfType<T, bool, u32, s32, f32, oead::U32, oead::S32,
+                                          oead::F32>()) {
       convert = false;
+    }
     auto caster = make_caster<T>();
     if (caster.load(src, convert)) {
       if constexpr (ptr) {
@@ -97,7 +99,39 @@ struct oead_variant_caster<V<Ts...>> {
 
   bool load_alternative(handle, bool, type_list<>) { return false; }
 
+  template <typename T>
+  bool load_with_no_conversion(handle src) {
+    if constexpr (oead::util::IsAnyOfType<T, Ts...>())
+      return load_alternative<T>(src, false, {});
+    else
+      return false;
+  }
+
   bool load(handle src, bool convert) {
+    // Try to load the strongly typed number types first to avoid undesired conversions.
+    if (load_with_no_conversion<oead::U8>(src))
+      return true;
+    if (load_with_no_conversion<oead::U16>(src))
+      return true;
+    if (load_with_no_conversion<oead::U32>(src))
+      return true;
+    if (load_with_no_conversion<oead::U64>(src))
+      return true;
+
+    if (load_with_no_conversion<oead::S8>(src))
+      return true;
+    if (load_with_no_conversion<oead::S16>(src))
+      return true;
+    if (load_with_no_conversion<oead::S32>(src))
+      return true;
+    if (load_with_no_conversion<oead::S64>(src))
+      return true;
+
+    if (load_with_no_conversion<oead::F32>(src))
+      return true;
+    if (load_with_no_conversion<oead::F64>(src))
+      return true;
+
     if (convert && load_alternative(src, false, type_list<Ts...>{}))
       return true;
     return load_alternative(src, convert, type_list<Ts...>{});
