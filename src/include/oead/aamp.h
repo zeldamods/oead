@@ -132,6 +132,7 @@ public:
   Parameter(Parameter&& other) noexcept { *this = std::move(other); }
   template <typename T, std::enable_if_t<std::is_constructible_v<Value, T>>* = nullptr>
   Parameter(T value) : m_value{std::move(value)} {}
+  Parameter(F32 value) : m_value{static_cast<f32>(value)} {}
   Parameter& operator=(const Parameter& other) = default;
   Parameter& operator=(Parameter&& other) noexcept = default;
 
