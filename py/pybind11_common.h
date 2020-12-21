@@ -65,7 +65,7 @@ constexpr auto OeadGetSpanCasterName() {
 template <typename T>
 struct type_caster<tcb::span<T>> {
   static handle cast(tcb::span<T> span, return_value_policy, handle) {
-    return py::memoryview{span.data(), ssize_t(span.size_bytes())}.release();
+    return py::memoryview::from_memory(span.data(), ssize_t(span.size_bytes())).release();
   }
 
   bool load(handle src, bool) {
