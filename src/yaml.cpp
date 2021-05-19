@@ -27,6 +27,7 @@
 #include <c4/error.hpp>
 #include <ryml.hpp>
 
+#include <oead/errors.h>
 #include <oead/util/iterator_utils.h>
 
 namespace oead::yml {
@@ -148,22 +149,30 @@ bool StringNeedsQuotes(const std::string_view value) {
 }
 
 Scalar ParseScalar(const ryml::NodeRef& node, TagRecognizer recognizer) {
+  if (!node.valid())
+    throw InvalidDataError("Invalid YAML node for ParseScalar");
+
   const std::string_view tag = RymlGetValTag(node);
   const std::string_view value = RymlSubstrToStrView(node.val());
   const char* arena_start = node.tree()->arena().data();
   bool is_quoted = false;
-  if (node.val().data() != arena_start)
-    is_quoted = util::IsAnyOf(*(node.val().data() - 1), '\'', '"');
+  const char* raw_string = node.val().data();
+  if (raw_string != nullptr && raw_string != arena_start)
+    is_quoted = util::IsAnyOf(raw_string[-1], '\'', '"');
   return ParseScalar(tag, value, is_quoted, recognizer);
 }
 
 Scalar ParseScalarKey(const ryml::NodeRef& node, TagRecognizer recognizer) {
+  if (!node.valid())
+    throw InvalidDataError("Invalid YAML node for ParseScalarKey");
+
   const std::string_view tag = RymlGetKeyTag(node);
   const std::string_view value = RymlSubstrToStrView(node.key());
   const char* arena_start = node.tree()->arena().data();
   bool is_quoted = false;
-  if (node.key().data() != arena_start)
-    is_quoted = util::IsAnyOf(*(node.key().data() - 1), '\'', '"');
+  const char* raw_string = node.key().data();
+  if (raw_string != nullptr && raw_string != arena_start)
+    is_quoted = util::IsAnyOf(raw_string[-1], '\'', '"');
   return ParseScalar(tag, value, is_quoted, recognizer);
 }
 
