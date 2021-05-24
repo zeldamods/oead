@@ -93,6 +93,9 @@ static bool ShouldUseInlineYamlStyle(const Byml& container) {
 }
 
 Byml ParseYamlNode(const c4::yml::NodeRef& node) {
+  if (!node.valid())
+    throw InvalidDataError("Invalid YAML node");
+
   if (node.is_seq()) {
     auto array = Byml::Array{};
     array.reserve(node.num_children());

@@ -204,6 +204,9 @@ static std::array<oead::Curve, N> ReadSequenceForCurve(const ryml::NodeRef& node
 }
 
 Parameter ReadParameter(const ryml::NodeRef& node) {
+  if (!node.valid())
+    throw InvalidDataError("Invalid YAML node for Parameter");
+
   if (node.is_seq()) {
     const auto tag = yml::RymlSubstrToStrView(node.val_tag());
 
@@ -254,6 +257,8 @@ Parameter ReadParameter(const ryml::NodeRef& node) {
 
 template <typename Fn, typename Map>
 static void ReadMap(const ryml::NodeRef& node, Map& map, Fn read_fn) {
+  if (!node.valid())
+    throw InvalidDataError("Invalid YAML node for Map");
   if (!node.is_map())
     throw InvalidDataError("Expected map node");
 
@@ -270,12 +275,18 @@ static void ReadMap(const ryml::NodeRef& node, Map& map, Fn read_fn) {
 }
 
 ParameterObject ReadParameterObject(const ryml::NodeRef& node) {
+  if (!node.valid())
+    throw InvalidDataError("Invalid YAML node for ParameterObject");
+
   ParameterObject object;
   ReadMap(node, object.params, ReadParameter);
   return object;
 }
 
 ParameterList ReadParameterList(const ryml::NodeRef& node) {
+  if (!node.valid())
+    throw InvalidDataError("Invalid YAML node for ParameterList");
+
   ParameterList list;
   ReadMap(yml::RymlGetMapItem(node, "objects"), list.objects, ReadParameterObject);
   ReadMap(yml::RymlGetMapItem(node, "lists"), list.lists, ReadParameterList);
@@ -283,6 +294,9 @@ ParameterList ReadParameterList(const ryml::NodeRef& node) {
 }
 
 ParameterIO ReadParameterIO(const ryml::NodeRef& node) {
+  if (!node.valid())
+    throw InvalidDataError("Invalid YAML node for ParameterIO");
+
   ParameterIO pio;
   pio.version = ParseIntOrFloat<u32>(yml::RymlGetMapItem(node, "version"));
   pio.type = std::move(
