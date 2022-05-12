@@ -30,6 +30,7 @@ jobs:
         os: [ubuntu-20.04, windows-2019, macOS-10.15]
     env:
       MACOSX_DEPLOYMENT_TARGET: "10.14"
+      CIBW_ARCHS: auto64
 
     steps:
       - uses: actions/checkout@v2
