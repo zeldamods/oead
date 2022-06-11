@@ -29,9 +29,14 @@ To install the Python module, simply run:
 
 This will download and install a precompiled version of oead for the following platforms:
 
-* Windows, Python 3.6/3.7/3.8 (64-bit)
-* Recent Linux distributions, Python 3.8 (64-bit)
-* macOS 10.14 / 10.15, Python 3.8 (64-bit)
+* Windows (x86-64 / 64-bit)
+* Recent Linux distributions (x86-64, glibc and musl)
+* macOS 10.14 / 10.15 (x86-64)
+
+The following versions of Python are supported:
+
+* CPython 3.6 to 3.10
+* PyPy3.7 to 3.9
 
 If you are using any other platform, you must build oead from source (refer to the next section).
 
