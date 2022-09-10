@@ -165,7 +165,6 @@ static void Decompress(tcb::span<const u8> src, tcb::span<u8> dst) {
       if (base < dst.begin() || dst_it + length > dst.end()) {
         throw std::invalid_argument("Copy is out of bounds");
       }
-#pragma GCC unroll 0
       for (size_t i = 0; i < length; ++i)
         *dst_it++ = base[i];
     }
