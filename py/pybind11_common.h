@@ -130,34 +130,30 @@ template <typename Map, typename holder_type = std::unique_ptr<Map>, typename...
 py::class_<Map, holder_type> BindMap(py::handle scope, const std::string& name, Args&&... args) {
   using Key = typename Map::key_type;
   using Value = typename Map::mapped_type;
-  auto cl =
-      py::bind_map<Map, holder_type>(scope, name, std::forward<Args>(args)...)
-          .def(py::init([&](py::iterator it) {
-                 return MapFromIter<Map, Key>(it, MapCastValue<Map, Key, Value>);
-               }),
-               "iterator"_a)
-          .def(py::init([&](py::dict dict) {
-                 return MapFromDict<Map, Key>(dict, MapCastValue<Map, Key, Value>);
-               }),
-               "dictionary"_a)
-          .def(py::self == py::self)
-          .def("clear", &Map::clear)
-          .def(
-              "get",
-              [](const Map& map, const Key& key,
-                 std::optional<py::object> default_value) -> std::variant<py::object, Value> {
-                const auto it = map.find(key);
-                if (it == map.cend()) {
-                  if (default_value)
-                    return *default_value;
-                  throw py::key_error();
-                }
-                return it->second;
-              },
-              "key"_a, "default"_a = std::nullopt, py::keep_alive<0, 1>())
-          .def(
-              "keys", [](const Map& map) { return py::make_key_iterator(map.begin(), map.end()); },
-              py::keep_alive<0, 1>());
+  auto cl = py::bind_map<Map, holder_type>(scope, name, std::forward<Args>(args)...)
+                .def(py::init([&](py::iterator it) {
+                       return MapFromIter<Map, Key>(it, MapCastValue<Map, Key, Value>);
+                     }),
+                     "iterator"_a)
+                .def(py::init([&](py::dict dict) {
+                       return MapFromDict<Map, Key>(dict, MapCastValue<Map, Key, Value>);
+                     }),
+                     "dictionary"_a)
+                .def(py::self == py::self)
+                .def("clear", &Map::clear)
+                .def(
+                    "get",
+                    [](const Map& map, const Key& key,
+                       std::optional<py::object> default_value) -> std::variant<py::object, Value> {
+                      const auto it = map.find(key);
+                      if (it == map.cend()) {
+                        if (default_value)
+                          return *default_value;
+                        throw py::key_error();
+                      }
+                      return it->second;
+                    },
+                    "key"_a, "default"_a = std::nullopt, py::keep_alive<0, 1>());
   py::implicitly_convertible<py::dict, Map>();
   return cl;
 }
