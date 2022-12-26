@@ -35,7 +35,7 @@ This will download and install a precompiled version of oead for the following p
 
 The following versions of Python are supported:
 
-* CPython 3.6 to 3.10
+* CPython 3.6 to 3.11
 * PyPy3.7 to 3.9
 
 If you are using any other platform, you must build oead from source (refer to the next section).
