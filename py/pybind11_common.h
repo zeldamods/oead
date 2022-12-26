@@ -140,6 +140,17 @@ py::class_<Map, holder_type> BindMap(py::handle scope, const std::string& name, 
                      }),
                      "dictionary"_a)
                 .def(py::self == py::self)
+                .def(
+                    "__contains__",
+                    [](const Map& map, const py::object& arg) {
+                      try {
+                        auto key = py::cast<Key>(arg);
+                        return map.find(key) != map.end();
+                      } catch (const py::cast_error&) {
+                        return false;
+                      }
+                    },
+                    py::prepend{})
                 .def("clear", &Map::clear)
                 .def(
                     "get",
