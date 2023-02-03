@@ -8,6 +8,7 @@ dist/
 build/
 .mypy_cache/
 .idea/
+.cache/
 .vscode/
 .benchmarks/
 
@@ -22,6 +23,7 @@ build/
 perf.data
 perf.data.old
 .gdb_history
+compile_commands.json
 
 test/files/TwnObj_HyruleCastle_A.Tex.sbfres
 
