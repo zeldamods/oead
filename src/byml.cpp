@@ -158,9 +158,12 @@ public:
     // In MK8 byamls, there is an extra offset to a path table here
     u32 root_node_offset = *m_reader.Read<u32>(offsetof(ResHeader, root_node_offset));
     size_t header_end = m_reader.Tell();
-    const auto type = m_reader.Read<NodeType>(root_node_offset);
-    if (type == NodeType::PathTable)
-      throw UnsupportedError("Path nodes unsupported");
+    if (root_node_offset != 0)
+    {
+      const auto type = m_reader.Read<NodeType>(root_node_offset);
+      if (type == NodeType::PathTable)
+        throw UnsupportedError("Path nodes unsupported");
+    }
 
     m_root_node_offset = root_node_offset;
     m_reader.Seek(header_end);
