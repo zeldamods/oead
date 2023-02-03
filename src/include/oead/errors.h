@@ -33,4 +33,9 @@ struct InvalidDataError : std::runtime_error {
   using std::runtime_error::runtime_error;
 };
 
+/// Thrown when unsupported feature is detected.
+struct UnsupportedError : std::runtime_error {
+  using std::runtime_error::runtime_error;
+};
+
 }  // namespace oead

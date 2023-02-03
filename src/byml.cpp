@@ -39,7 +39,7 @@ namespace byml {
 struct ResHeader {
   /// “BY” (big endian) or “YB” (little endian).
   std::array<char, 2> magic;
-  /// Format version (2 or 3).
+  /// Format version (1-4).
   u16 version;
   /// Offset to the hash key table, relative to start (usually 0x010)
   /// May be 0 if no hash nodes are used. Must be a string table node (0xc2).
@@ -59,6 +59,7 @@ enum class NodeType : u8 {
   Array = 0xc0,
   Hash = 0xc1,
   StringTable = 0xc2,
+  PathTable = 0xc3, // Unsupported
   Bool = 0xd0,
   Int = 0xd1,
   Float = 0xd2,
@@ -94,7 +95,7 @@ constexpr bool IsNonInlineType(T type) {
 }
 
 constexpr bool IsValidVersion(int version) {
-  return 2 <= version && version <= 4;
+  return 1 <= version && version <= 4;
 }
 
 class StringTableParser {
@@ -153,7 +154,16 @@ public:
         m_reader, *m_reader.Read<u32>(offsetof(ResHeader, hash_key_table_offset)));
     m_string_table =
         StringTableParser(m_reader, *m_reader.Read<u32>(offsetof(ResHeader, string_table_offset)));
-    m_root_node_offset = *m_reader.Read<u32>(offsetof(ResHeader, root_node_offset));
+        
+    // In MK8 byamls, there is an extra offset to a path table here
+    u32 root_node_offset = *m_reader.Read<u32>(offsetof(ResHeader, root_node_offset));
+    size_t header_end = m_reader.Tell();
+    const auto type = m_reader.Read<NodeType>(root_node_offset);
+    if (type == NodeType::PathTable)
+      throw UnsupportedError("Path nodes unsupported");
+
+    m_root_node_offset = root_node_offset;
+    m_reader.Seek(header_end);
   }
 
   Byml Parse() {
