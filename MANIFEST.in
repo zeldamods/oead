@@ -1,3 +1,6 @@
 include versioneer.py
 include readme.rst
+include CMakeLists.txt
+include CMakeRC.cmake
+recursive-include src *
 recursive-include lib *.*
