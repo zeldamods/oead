@@ -31,7 +31,9 @@ This will download and install a precompiled version of oead for the following p
 
 * Windows (x86-64 / 64-bit)
 * Recent Linux distributions (x86-64, glibc and musl)
-* macOS 10.14 / 10.15 (x86-64)
+
+Precompiled builds for macOS are currently unavailable as the wheel build process seems to be broken.
+Please help us fix this `release failure <https://github.com/zeldamods/oead/actions/runs/9588470856/job/26440567392>` if you know how!
 
 The following versions of Python are supported:
 
