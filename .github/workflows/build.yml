@@ -30,17 +30,10 @@ jobs:
         pip install --upgrade pip setuptools wheel build
     - name: Install
       run: pip install .
-    - name: Build
-      run: python -m build
     - name: Test with pytest
       run: |
         pip install pytest
         pytest test/ --ignore-glob "*benchmark*"
-    - name: Upload wheels
-      uses: actions/upload-artifact@master
-      with:
-        name: dist
-        path: dist
 
   build-and-test-ubu:
     runs-on: [ubuntu-latest]
