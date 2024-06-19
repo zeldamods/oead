@@ -29,9 +29,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install --upgrade pip setuptools wheel
     - name: Install
-      run: python setup.py install --user
+      run: pip install .
     - name: Build
-      run: python setup.py bdist_wheel
+      run: python -m build
     - name: Test with pytest
       run: |
         pip install pytest
@@ -60,7 +60,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install --upgrade pip setuptools wheel
     - name: Install
-      run: python setup.py install --user
+      run: pip install .
     - name: Test with pytest
       run: |
         pip install pytest
@@ -86,7 +86,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install --upgrade pip setuptools wheel
     - name: Install
-      run: python setup.py install --user
+      run: pip install .
     - name: Test with pytest
       run: |
         pip install pytest
