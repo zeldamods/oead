@@ -79,14 +79,20 @@ static Byml ScalarToValue(std::string_view tag, yml::Scalar&& scalar) {
 
 static bool ShouldUseInlineYamlStyle(const Byml& container) {
   const auto is_simple = [](const Byml& item) {
-    return !util::IsAnyOf(item.GetType(), Byml::Type::Array, Byml::Type::Hash);
+    return !util::IsAnyOf(item.GetType(), Byml::Type::Array, Byml::Type::Dictionary, Byml::Type::Hash32, Byml::Type::Hash64);
   };
   switch (container.GetType()) {
   case Byml::Type::Array:
     return container.GetArray().size() <= 10 && absl::c_all_of(container.GetArray(), is_simple);
-  case Byml::Type::Hash:
-    return container.GetHash().size() <= 10 &&
-           absl::c_all_of(container.GetHash(), [&](const auto& p) { return is_simple(p.second); });
+  case Byml::Type::Dictionary:
+    return container.GetDictionary().size() <= 10 &&
+           absl::c_all_of(container.GetDictionary(), [&](const auto& p) { return is_simple(p.second); });
+  case Byml::Type::Hash32:
+    return container.GetHash32().size() <= 10 &&
+           absl::c_all_of(container.GetHash32(), [&](const auto& p) { return is_simple(p.second); });
+  case Byml::Type::Hash64:
+    return container.GetHash64().size() <= 10 &&
+           absl::c_all_of(container.GetHash64(), [&](const auto& p) { return is_simple(p.second); });
   default:
     return false;
   }
@@ -106,13 +112,42 @@ Byml ParseYamlNode(const c4::yml::NodeRef& node) {
   }
 
   if (node.is_map()) {
-    auto hash = Byml::Hash{};
-    for (const auto& child : node) {
-      std::string key{yml::RymlSubstrToStrView(child.key())};
-      Byml value = ParseYamlNode(child);
-      hash.emplace(std::move(key), std::move(value));
+    if (!node.has_val_tag()) {
+      auto dict = Byml::Dictionary{};
+      for (const auto& child : node) {
+        std::string key{yml::RymlSubstrToStrView(child.key())};
+        Byml value = ParseYamlNode(child);
+        dict.emplace(std::move(key), std::move(value));
+      }
+      return Byml{std::move(dict)};
+    } else if (yml::RymlGetValTag(node) == "!h32") {
+      auto hash = Byml::Hash32{};
+      for (const auto& child : node) {
+        u32 key = std::stoul(child.key().data(), nullptr, 16);
+        Byml value = ParseYamlNode(child);
+        hash.emplace(key, std::move(value));
+      }
+      return Byml{std::move(hash)};
+    } else if (yml::RymlGetValTag(node) == "!h64") {
+      auto hash = Byml::Hash64{};
+      for (const auto& child : node) {
+        u64 key = std::stoull(child.key().data(), nullptr, 16);
+        Byml value = ParseYamlNode(child);
+        hash.emplace(key, std::move(value));
+      }
+      return Byml{std::move(hash)};
+    } else if (yml::RymlGetValTag(node) == "!file") {
+      const auto& align = node["Alignment"];
+      const auto& data = node["Data"];
+      return Byml::File{
+        byml::ScalarToValue(yml::RymlGetValTag(data),
+                            yml::ParseScalar(data, byml::RecognizeTag)).GetBinary(),
+        byml::ScalarToValue(yml::RymlGetValTag(align),
+                            yml::ParseScalar(align, byml::RecognizeTag)).GetUInt() 
+      };
+    } else {
+      throw InvalidDataError("Unknown node tag");
     }
-    return Byml{std::move(hash)};
   }
 
   if (node.has_val()) {
@@ -146,7 +181,16 @@ std::string Byml::ToText() const {
         [&](const String& v) { emitter.EmitString(v); },
         [&](const std::vector<u8>& v) {
           const std::string encoded =
-              absl::Base64Escape(std::string_view((const char*)v.data(), v.size()));
+              absl::Base64Escape(absl::string_view((const char*)v.data(), v.size()));
+          emitter.EmitString(encoded, "tag:yaml.org,2002:binary");
+        },
+        [&](const File& v) {
+          yml::LibyamlEmitter::MappingScope scope{emitter, "!file", YAML_BLOCK_MAPPING_STYLE};
+          const std::string encoded =
+              absl::Base64Escape(absl::string_view((const char*)v.data.data(), v.data.size()));
+          emitter.EmitString("Alignment");
+          emitter.EmitScalar(absl::StrFormat("0x%08x", v.align), false, false, "!u");
+          emitter.EmitString("Data");
           emitter.EmitString(encoded, "tag:yaml.org,2002:binary");
         },
         [&](const Array& v) {
@@ -162,13 +206,33 @@ std::string Byml::ToText() const {
           yaml_sequence_end_event_initialize(&event);
           emitter.Emit(event);
         },
-        [&](const Hash& v) {
+        [&](const Dictionary& v) {
           const auto style = byml::ShouldUseInlineYamlStyle(v) ? YAML_FLOW_MAPPING_STYLE :
                                                                  YAML_BLOCK_MAPPING_STYLE;
           yml::LibyamlEmitter::MappingScope scope{emitter, {}, style};
 
           for (const auto& [k, v] : v) {
             emitter.EmitString(k);
+            self(self, v);
+          }
+        },
+        [&](const Hash32& v) {
+          const auto style = byml::ShouldUseInlineYamlStyle(v) ? YAML_FLOW_MAPPING_STYLE :
+                                                                 YAML_BLOCK_MAPPING_STYLE;
+          yml::LibyamlEmitter::MappingScope scope{emitter, "!h32", style};
+
+          for (const auto& [k, v] : v) {
+            emitter.EmitString(absl::StrFormat("0x%08x", k));
+            self(self, v);
+          }
+        },
+        [&](const Hash64& v) {
+          const auto style = byml::ShouldUseInlineYamlStyle(v) ? YAML_FLOW_MAPPING_STYLE :
+                                                                 YAML_BLOCK_MAPPING_STYLE;
+          yml::LibyamlEmitter::MappingScope scope{emitter, "!h64", style};
+
+          for (const auto& [k, v] : v) {
+            emitter.EmitString(absl::StrFormat("0x%016x", k));
             self(self, v);
           }
         },
