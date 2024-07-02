@@ -12,7 +12,7 @@ Features
 Currently, oead only handles very common formats that are extensively used in recent games such as *Breath of the Wild* and *Super Mario Odyssey*.
 
 * `AAMP <https://zeldamods.org/wiki/AAMP>`_ (binary parameter archive): Only version 2 is supported.
-* `BYML <https://zeldamods.org/wiki/BYML>`_ (binary YAML): Versions 1, 2, 3, and 4 are supported.
+* `BYML <https://zeldamods.org/wiki/BYML>`_ (binary YAML): Versions 1-4 are fully supported, version 5-10 have partial support.
 * `SARC <https://zeldamods.org/wiki/SARC>`_ (archive)
 * `Yaz0 <https://zeldamods.org/wiki/Yaz0>`_ (compression algorithm)
 

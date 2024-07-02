@@ -76333,6 +76333,7 @@ clothSetupDatas
 clothStateDatas
 clothStateSetupObjects
 cloth_centererd_at_location
+cloth_mesh_list
 cloth_num
 cloth_setup_file_path
 cloud
@@ -76397,6 +76398,7 @@ collidablePinchingDatas
 collidableTransformMap
 collidableTransformSet
 collidables
+collidable_list
 collideAndSolve
 collideWithLayerMask
 collidingParticles
