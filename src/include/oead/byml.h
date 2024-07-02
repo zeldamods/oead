@@ -37,15 +37,25 @@
 
 namespace oead {
 
+struct BinaryAligned {
+  std::vector<u8> data;
+  u32 align;
+  
+  OEAD_DEFINE_FIELDS(BinaryAligned, data, align);
+};
+
 /// BYML value class. This represents a generic value (array, dict, bool, float, u32, etc.)
 class Byml {
 public:
   enum class Type {
     Null = 0,
+    Hash32,
+    Hash64,
     String,
     Binary,
+    File,
     Array,
-    Hash,
+    Dictionary,
     Bool,
     Int,
     Float,
@@ -56,13 +66,17 @@ public:
   };
 
   using Null = std::nullptr_t;
+  using Hash32 = absl::btree_map<u32, Byml>;
+  using Hash64 = absl::btree_map<u64, Byml>;
   using String = std::string;
   using Array = std::vector<Byml>;
-  using Hash = absl::btree_map<std::string, Byml>;
+  using Dictionary = absl::btree_map<std::string, Byml>;
 
-  using Value = util::Variant<Type, Null, std::unique_ptr<String>, std::unique_ptr<std::vector<u8>>,
-                              std::unique_ptr<Array>, std::unique_ptr<Hash>, bool, S32, F32, U32,
-                              S64, U64, F64>;
+  using File = BinaryAligned;
+
+  using Value = util::Variant<Type, Null, std::unique_ptr<Hash32>, std::unique_ptr<Hash64>, std::unique_ptr<String>,
+                              std::unique_ptr<std::vector<u8>>, std::unique_ptr<File>, std::unique_ptr<Array>,
+                              std::unique_ptr<Dictionary>, bool, S32, F32, U32, S64, U64, F64>;
 
   Byml() = default;
   Byml(const Byml& other) { *this = other; }
@@ -107,15 +121,43 @@ public:
 
   template <Type Type, typename T>
   Reference<const T> Get(std::string_view key, T default_) const {
-    auto it = GetHash().find(key);
-    if (it == GetHash().end())
+    auto it = GetDictionary().find(key);
+    if (it == GetDictionary().end())
       return default_;
     return std::cref(it->second.Get<Type>());
   }
   template <Type Type, typename T>
   Reference<T> Get(std::string_view key, T default_) {
-    auto it = GetHash().find(key);
-    if (it == GetHash().end())
+    auto it = GetDictionary().find(key);
+    if (it == GetDictionary().end())
+      return default_;
+    return std::ref(it->second.Get<Type>());
+  }
+  template <Type Type, typename T>
+  Reference<const T> Get(u32 key, T default_) const {
+    auto it = GetHash32().find(key);
+    if (it == GetHash32().end())
+      return default_;
+    return std::cref(it->second.Get<Type>());
+  }
+  template <Type Type, typename T>
+  Reference<T> Get(u32 key, T default_) {
+    auto it = GetHash32().find(key);
+    if (it == GetHash32().end())
+      return default_;
+    return std::ref(it->second.Get<Type>());
+  }
+  template <Type Type, typename T>
+  Reference<const T> Get(u64 key, T default_) const {
+    auto it = GetHash64().find(key);
+    if (it == GetHash64().end())
+      return default_;
+    return std::cref(it->second.Get<Type>());
+  }
+  template <Type Type, typename T>
+  Reference<T> Get(u64 key, T default_) {
+    auto it = GetHash64().find(key);
+    if (it == GetHash64().end())
       return default_;
     return std::ref(it->second.Get<Type>());
   }
@@ -126,24 +168,30 @@ public:
   static Byml FromText(std::string_view yml_text);
 
   /// Serialize the document to BYML with the specified endianness and version number.
-  /// This can only be done for Null, Array or Hash nodes.
+  /// This can only be done for Null, Array or Dictionary nodes.
   std::vector<u8> ToBinary(bool big_endian, int version = 2) const;
   /// Serialize the document to YAML.
-  /// This can only be done for Null, Array or Hash nodes.
+  /// This can only be done for Null, Array or Dictionary nodes.
   std::string ToText() const;
 
   // These getters mirror the behaviour of Nintendo's BYML library.
   // Some of them will perform type conversions automatically.
   // If value types are incorrect, an exception is thrown.
 
-  Hash& GetHash();
+  Hash32& GetHash32();
+  Hash64& GetHash64();
+  Dictionary& GetDictionary();
   Array& GetArray();
   String& GetString();
   std::vector<u8>& GetBinary();
-  const Hash& GetHash() const;
+  File& GetFile();
+  const Hash32& GetHash32() const;
+  const Hash64& GetHash64() const;
+  const Dictionary& GetDictionary() const;
   const Array& GetArray() const;
   const String& GetString() const;
   const std::vector<u8>& GetBinary() const;
+  const File& GetFile() const;
   bool GetBool() const;
   s32 GetInt() const;
   u32 GetUInt() const;
