@@ -1,9 +1,9 @@
 [submodule "rapidyaml"]
 	path = lib/rapidyaml
-	url = https://github.com/leoetlino/rapidyaml
+	url = https://github.com/biojppm/rapidyaml.git
 [submodule "src/lib/pybind11"]
 	path = lib/pybind11
-	url = https://github.com/leoetlino/pybind11
+	url = https://github.com/pybind/pybind11.git
 [submodule "src/lib/libyaml"]
 	path = lib/libyaml
 	url = https://github.com/yaml/libyaml

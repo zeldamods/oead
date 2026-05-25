@@ -227,9 +227,9 @@ static const auto& GetAglEnvAlignmentRequirements() {
 
     yml::InitRymlIfNeeded();
     const auto tree =
-        ryml::parse(yml::StrViewToRymlSubstr({info_tsv_file.begin(), info_tsv_file.size()}));
+        ryml::parse_in_arena(yml::StrViewToRymlSubstr({info_tsv_file.begin(), info_tsv_file.size()}));
 
-    for (const ryml::NodeRef& entry : tree.rootref()) {
+    for (ryml::ConstNodeRef entry : tree.rootref()) {
       int alignment = 1;
       if (absl::SimpleAtoi(yml::RymlSubstrToStrView(entry["align"].val()), &alignment)) {
         requirements.emplace_back(std::string(yml::RymlSubstrToStrView(entry["ext"].val())),

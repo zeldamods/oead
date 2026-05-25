@@ -161,13 +161,13 @@ static Parameter ScalarToValue(std::string_view tag, yml::Scalar&& scalar) {
 }
 
 template <typename T>
-static T ParseIntOrFloat(const ryml::NodeRef& node) {
+static T ParseIntOrFloat(ryml::ConstNodeRef node) {
   using YmlType = std::conditional_t<std::is_integral_v<T>, u64, f64>;
   return T(std::get<YmlType>(yml::ParseScalar(node, RecognizeTag)));
 }
 
 template <typename T>
-static T ReadSequenceForNumericalStruct(const ryml::NodeRef& node) {
+static T ReadSequenceForNumericalStruct(ryml::ConstNodeRef node) {
   T value;
   auto fields = value.fields();
   if (node.num_children() != std::tuple_size<decltype(fields)>())
@@ -182,7 +182,7 @@ static T ReadSequenceForNumericalStruct(const ryml::NodeRef& node) {
 }
 
 template <typename T>
-static std::vector<T> ReadSequenceForBuffer(const ryml::NodeRef& node) {
+static std::vector<T> ReadSequenceForBuffer(ryml::ConstNodeRef node) {
   std::vector<T> vector;
   vector.reserve(node.num_children());
   for (const auto& child : node)
@@ -191,7 +191,7 @@ static std::vector<T> ReadSequenceForBuffer(const ryml::NodeRef& node) {
 }
 
 template <size_t N>
-static std::array<oead::Curve, N> ReadSequenceForCurve(const ryml::NodeRef& node) {
+static std::array<oead::Curve, N> ReadSequenceForCurve(ryml::ConstNodeRef node) {
   std::array<Curve, N> curves;
   size_t i = 0;
   for (Curve& curve : curves) {
@@ -203,8 +203,8 @@ static std::array<oead::Curve, N> ReadSequenceForCurve(const ryml::NodeRef& node
   return curves;
 }
 
-Parameter ReadParameter(const ryml::NodeRef& node) {
-  if (!node.valid())
+Parameter ReadParameter(ryml::ConstNodeRef node) {
+  if (!node.readable())
     throw InvalidDataError("Invalid YAML node for Parameter");
 
   if (node.is_seq()) {
@@ -256,8 +256,8 @@ Parameter ReadParameter(const ryml::NodeRef& node) {
 }
 
 template <typename Fn, typename Map>
-static void ReadMap(const ryml::NodeRef& node, Map& map, Fn read_fn) {
-  if (!node.valid())
+static void ReadMap(ryml::ConstNodeRef node, Map& map, Fn read_fn) {
+  if (!node.readable())
     throw InvalidDataError("Invalid YAML node for Map");
   if (!node.is_map())
     throw InvalidDataError("Expected map node");
@@ -274,8 +274,8 @@ static void ReadMap(const ryml::NodeRef& node, Map& map, Fn read_fn) {
   }
 }
 
-ParameterObject ReadParameterObject(const ryml::NodeRef& node) {
-  if (!node.valid())
+ParameterObject ReadParameterObject(ryml::ConstNodeRef node) {
+  if (!node.readable())
     throw InvalidDataError("Invalid YAML node for ParameterObject");
 
   ParameterObject object;
@@ -283,8 +283,8 @@ ParameterObject ReadParameterObject(const ryml::NodeRef& node) {
   return object;
 }
 
-ParameterList ReadParameterList(const ryml::NodeRef& node) {
-  if (!node.valid())
+ParameterList ReadParameterList(ryml::ConstNodeRef node) {
+  if (!node.readable())
     throw InvalidDataError("Invalid YAML node for ParameterList");
 
   ParameterList list;
@@ -293,8 +293,8 @@ ParameterList ReadParameterList(const ryml::NodeRef& node) {
   return list;
 }
 
-ParameterIO ReadParameterIO(const ryml::NodeRef& node) {
-  if (!node.valid())
+ParameterIO ReadParameterIO(ryml::ConstNodeRef node) {
+  if (!node.readable())
     throw InvalidDataError("Invalid YAML node for ParameterIO");
 
   ParameterIO pio;
@@ -309,7 +309,7 @@ ParameterIO ReadParameterIO(const ryml::NodeRef& node) {
 
 ParameterIO ParameterIO::FromText(std::string_view yml_text) {
   yml::InitRymlIfNeeded();
-  ryml::Tree tree = ryml::parse(yml::StrViewToRymlSubstr(yml_text));
+  ryml::Tree tree = ryml::parse_in_arena(yml::StrViewToRymlSubstr(yml_text));
   return ReadParameterIO(tree.rootref());
 }
 
