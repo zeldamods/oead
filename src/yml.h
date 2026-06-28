@@ -29,7 +29,7 @@
 
 #include <c4/std/string.hpp>
 #include <ryml.hpp>
-#include "../lib/libyaml/include/yaml.h"
+#include "yaml.h"
 
 #include <oead/types.h>
 #include <oead/util/type_utils.h>
