@@ -21,6 +21,53 @@ cmrc_add_resource_library(oead_res ALIAS oead::res NAMESPACE oead::res
   data/botw_resource_factory_info.tsv
 )
 
+include(FetchContent)
+
+FetchContent_Declare(
+  EasyIterator
+  GIT_REPOSITORY https://github.com/TheLartians/EasyIterator
+  GIT_TAG f3f89399ba8bca617040c1503f4f9fe3582a6abd
+)
+FetchContent_MakeAvailable(EasyIterator)
+
+FetchContent_Declare(
+  absl
+  GIT_REPOSITORY https://github.com/abseil/abseil-cpp
+  GIT_TAG 35b9f25ba74a3cd71b6342168e74bd0dc4abf58b
+)
+FetchContent_MakeAvailable(absl)
+
+FetchContent_Declare(
+  yaml
+  GIT_REPOSITORY https://github.com/yaml/libyaml
+  GIT_TAG 893682bb98d5ed663a3e314c46dceaf9b1c8802f
+)
+FetchContent_MakeAvailable(yaml)
+
+FetchContent_Declare(
+  ordered_map
+  GIT_REPOSITORY https://github.com/Tessil/ordered-map
+  GIT_TAG 88b7a58f5e9be7f87998bbcbdd3865023738ef92
+)
+FetchContent_MakeAvailable(ordered_map)
+
+FetchContent_Declare(
+  ryml
+  GIT_REPOSITORY https://github.com/biojppm/rapidyaml
+  GIT_TAG 141041e4d1700376871fb83e773bbe3ec8b8dccd
+)
+FetchContent_MakeAvailable(ryml)
+
+# Enabling AVX2 would require users to have a recent CPU
+option(WITH_AVX2 "" OFF)
+option(ZLIB_ENABLE_TESTS "" OFF)
+FetchContent_Declare(
+  zlib
+  GIT_REPOSITORY https://github.com/zeldamods/zlib-ng
+  GIT_TAG develop
+)
+FetchContent_MakeAvailable(zlib)
+
 add_library(oead
   src/include/oead/util/align.h
   src/include/oead/util/binary_reader.h
@@ -46,8 +93,8 @@ add_library(oead
   src/byml_text.cpp
   src/gsheet.cpp
   src/sarc.cpp
-  src/yaml.cpp
-  src/yaml.h
+  src/yml.cpp
+  src/yml.h
   src/yaz0.cpp
 )
 
@@ -62,15 +109,6 @@ endif()
 target_include_directories(oead SYSTEM PUBLIC lib/nonstd)
 
 set(BUILD_TESTING OFF)
-add_subdirectory(lib/abseil)
-add_subdirectory(lib/EasyIterator)
-add_subdirectory(lib/libyaml)
-add_subdirectory(lib/ordered-map)
-add_subdirectory(lib/rapidyaml)
-# Enabling AVX2 would require users to have a recent CPU
-option(WITH_AVX2 "" OFF)
-option(ZLIB_ENABLE_TESTS "" OFF)
-add_subdirectory(lib/zlib-ng)
 target_link_libraries(oead
   PUBLIC
     absl::btree

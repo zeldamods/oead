@@ -23,13 +23,12 @@
 
 #include <c4/std/string.hpp>
 #include <ryml.hpp>
-#include "../lib/libyaml/include/yaml.h"
 
 #include <oead/byml.h>
 #include <oead/util/iterator_utils.h>
 #include <oead/util/type_utils.h>
 #include <oead/util/variant_utils.h>
-#include "yaml.h"
+#include "yml.h"
 
 namespace oead {
 

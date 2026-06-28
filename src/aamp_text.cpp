@@ -25,7 +25,6 @@
 
 #include <c4/std/string.hpp>
 #include <ryml.hpp>
-#include "../lib/libyaml/include/yaml.h"
 
 #include <cmrc/cmrc.hpp>
 
@@ -34,7 +33,7 @@
 #include <oead/util/iterator_utils.h>
 #include <oead/util/string_utils.h>
 #include <oead/util/variant_utils.h>
-#include "yaml.h"
+#include "yml.h"
 
 CMRC_DECLARE(oead::res);
 

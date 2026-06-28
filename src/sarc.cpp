@@ -31,7 +31,7 @@
 #include <oead/util/align.h>
 #include <oead/util/magic_utils.h>
 #include <oead/util/string_utils.h>
-#include "yaml.h"
+#include "yml.h"
 
 CMRC_DECLARE(oead::res);
 
