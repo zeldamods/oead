@@ -19,7 +19,6 @@
 
 #pragma once
 
-#include <array>
 #include <cstring>
 #include <nonstd/span.h>
 #include <optional>

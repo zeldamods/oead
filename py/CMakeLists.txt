@@ -34,8 +34,13 @@ pybind11_add_module(oead-py
   main.h
   main.cpp
   py_aamp.cpp
+  py_amta.cpp
+  py_bars.cpp
   py_byml.cpp
   py_common_types.cpp
+  py_fstm.cpp
+  py_fstp.cpp
+  py_fwav.cpp
   py_gsheet.cpp
   py_sarc.cpp
   py_yaz0.cpp
