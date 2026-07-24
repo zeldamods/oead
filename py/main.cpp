@@ -24,7 +24,12 @@
 PYBIND11_MODULE(oead, m) {
   oead::bind::BindCommonTypes(m);
   oead::bind::BindAamp(m);
+  oead::bind::BindAmta(m);
+  oead::bind::BindBars(m);
   oead::bind::BindByml(m);
+  oead::bind::BindFstm(m);
+  oead::bind::BindFstp(m);
+  oead::bind::BindFwav(m);
   oead::bind::BindGsheet(m);
   oead::bind::BindSarc(m);
   oead::bind::BindYaz0(m);
