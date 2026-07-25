@@ -1,9 +1,6 @@
 [submodule "rapidyaml"]
 	path = lib/rapidyaml
 	url = https://github.com/leoetlino/rapidyaml
-[submodule "src/lib/pybind11"]
-	path = lib/pybind11
-	url = https://github.com/leoetlino/pybind11
 [submodule "src/lib/libyaml"]
 	path = lib/libyaml
 	url = https://github.com/yaml/libyaml
@@ -19,3 +16,6 @@
 [submodule "lib/abseil"]
 	path = lib/abseil
 	url = https://github.com/abseil/abseil-cpp
+[submodule "lib/pybind11"]
+	path = lib/pybind11
+	url = https://github.com/pybind/pybind11
