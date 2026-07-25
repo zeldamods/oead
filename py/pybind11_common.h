@@ -38,27 +38,34 @@ namespace py = pybind11;
 using namespace py::literals;
 
 #define OEAD_MAKE_OPAQUE(NAME, ...)                                                                \
-  namespace pybind11::detail {                                                                     \
+  PYBIND11_NAMESPACE_BEGIN(PYBIND11_NAMESPACE)                                                     \
+  namespace detail {                                                                               \
   template <>                                                                                      \
   class type_caster<__VA_ARGS__> : public type_caster_base<__VA_ARGS__> {                          \
   public:                                                                                          \
     static constexpr auto name = _(NAME);                                                          \
   };                                                                                               \
-  }
+  }                                                                                                \
+  PYBIND11_NAMESPACE_END(PYBIND11_NAMESPACE)
 
 #define OEAD_MAKE_VARIANT_CASTER(...)                                                              \
-  namespace pybind11::detail {                                                                     \
+  PYBIND11_NAMESPACE_BEGIN(PYBIND11_NAMESPACE)                                                     \
+  namespace detail {                                                                               \
   template <>                                                                                      \
   struct type_caster<__VA_ARGS__::Storage> : oead_variant_caster<__VA_ARGS__::Storage> {};         \
   template <>                                                                                      \
   struct type_caster<__VA_ARGS__> : oead_variant_wrapper_caster<__VA_ARGS__> {};                   \
-  }
+  }                                                                                                \
+  PYBIND11_NAMESPACE_END(PYBIND11_NAMESPACE)
 
 namespace pybind11::detail {
-template <typename T>
+template <typename T, typename std::enable_if_t<std::is_same_v<std::decay_t<T>, u8>, bool> = true>
 constexpr auto OeadGetSpanCasterName() {
-  if constexpr (std::is_same_v<std::decay_t<T>, u8>)
-    return _("BytesLike");
+  return _("BytesLike");
+}
+
+template <typename T, typename std::enable_if_t<!std::is_same_v<std::decay_t<T>, u8>, bool> = true>
+constexpr auto OeadGetSpanCasterName() {
   return _("Span[") + detail::concat(make_caster<T>::name) + _("]");
 }
 
@@ -126,46 +133,209 @@ static Value MapCastValue(py::handle handle) {
   return handle.cast<Value>();
 }
 
-template <typename Map, typename holder_type = std::unique_ptr<Map>, typename... Args>
-py::class_<Map, holder_type> BindMap(py::handle scope, const std::string& name, Args&&... args) {
-  using Key = typename Map::key_type;
-  using Value = typename Map::mapped_type;
-  auto cl = py::bind_map<Map, holder_type>(scope, name, std::forward<Args>(args)...)
-                .def(py::init([&](py::iterator it) {
-                       return MapFromIter<Map, Key>(it, MapCastValue<Map, Key, Value>);
-                     }),
-                     "iterator"_a)
-                .def(py::init([&](py::dict dict) {
-                       return MapFromDict<Map, Key>(dict, MapCastValue<Map, Key, Value>);
-                     }),
-                     "dictionary"_a)
-                .def(py::self == py::self)
-                .def(
-                    "__contains__",
-                    [](const Map& map, const py::object& arg) {
-                      try {
-                        auto key = py::cast<Key>(arg);
-                        return map.find(key) != map.end();
-                      } catch (const py::cast_error&) {
-                        return false;
-                      }
-                    },
-                    py::prepend{})
-                .def("clear", &Map::clear)
-                .def(
-                    "get",
-                    [](const Map& map, const Key& key,
-                       std::optional<py::object> default_value) -> std::variant<py::object, Value> {
-                      const auto it = map.find(key);
-                      if (it == map.cend()) {
-                        if (default_value)
-                          return *default_value;
-                        throw py::key_error();
-                      }
-                      return it->second;
-                    },
-                    "key"_a, "default"_a = std::nullopt, py::keep_alive<0, 1>());
+template <class T, class = void>
+struct iterator_has_value_member_fn : std::false_type {};
+template <class T>
+struct iterator_has_value_member_fn<T, std::void_t<decltype(std::declval<T>().value())>> : std::true_type {};
+
+// If we detect a tsl::ordered_map, use a custom
+// assignment algorithm, else just use the one
+// provided by pybind
+template <typename Map, typename Class_>
+void MapAssignment(
+    std::enable_if_t<std::is_copy_assignable<typename Map::mapped_type>::value, Class_> &cl) {
+    using KeyType = typename Map::key_type;
+    using MappedType = typename Map::mapped_type;
+
+    if constexpr (iterator_has_value_member_fn<typename Map::iterator>())
+      cl.def("__setitem__", [](Map &m, const KeyType &k, const MappedType &v) {
+          m.insert_or_assign(k, v);
+      });
+    else
+      py::detail::map_assignment<Map, Class_>(cl);
+}
+
+template <typename Map, typename Class_>
+void DefineCustomMap(Class_& cl) {
+  using KeyType = typename Map::key_type;
+  using MappedType = typename Map::mapped_type;
+  
+  cl.def(py::init([&](py::iterator it) {
+      return MapFromIter<Map, KeyType>(it, MapCastValue<Map, KeyType, MappedType>);
+    }),
+    "iterator"_a
+  );
+
+  cl.def(py::init([&](py::dict dict) {
+      return MapFromDict<Map, KeyType>(dict, MapCastValue<Map, KeyType, MappedType>);
+    }),
+    "dictionary"_a
+  );
+
+  cl.def(
+    "__contains__",
+    [](const Map& map, const py::object& arg) {
+      try {
+        auto key = py::cast<KeyType>(arg);
+        return map.find(key) != map.end();
+      } catch (const py::cast_error&) {
+        return false;
+      }
+    },
+    py::prepend{}
+  );
+
+  cl.def("clear", &Map::clear);
+
+  cl.def(
+    "get",
+    [](const Map& map, const KeyType& key,
+       std::optional<py::object> default_value) -> std::variant<py::object, MappedType> {
+      const auto it = map.find(key);
+      if (it == map.cend()) {
+        if (default_value)
+          return *default_value;
+        throw py::key_error();
+      }
+      return it->second;
+    },
+    "key"_a, 
+    "default"_a = std::nullopt, 
+    py::keep_alive<0, 1>()
+  );
+
   py::implicitly_convertible<py::dict, Map>();
+}
+
+template <typename Map, typename holder_type = std::unique_ptr<Map>, typename... Args, 
+          typename std::enable_if_t<!iterator_has_value_member_fn<typename Map::iterator>::value, bool> = true>
+py::class_<Map, holder_type> BindMap(py::handle scope, const std::string& name, Args&&... args) {
+  auto cl = py::bind_map<Map, holder_type>(scope, name, std::forward<Args>(args)...);
+  DefineCustomMap<Map>(cl);
+  return cl;
+}
+
+// Reimplementation of pybind11::bind_map
+// to support tsl::ordered_map
+template <typename Map, typename holder_type = std::unique_ptr<Map>, typename... Args, 
+          typename std::enable_if_t<iterator_has_value_member_fn<typename Map::iterator>::value, bool> = false>
+py::class_<Map, holder_type> BindMap(py::handle scope, const std::string& name, Args&&... args) {
+  using KeyType = typename Map::key_type;
+  using MappedType = typename Map::mapped_type;
+  using KeysView = py::detail::keys_view;
+  using ValuesView = py::detail::values_view;
+  using ItemsView = py::detail::items_view;
+  using Class_ = py::class_<Map, holder_type>;
+
+  auto *tinfo = py::detail::get_type_info(typeid(MappedType));
+  bool local = !tinfo || tinfo->module_local;
+  if (local) {
+      tinfo = py::detail::get_type_info(typeid(KeyType));
+      local = !tinfo || tinfo->module_local;
+  }
+
+  Class_ cl(scope, name.c_str(), pybind11::module_local(local), std::forward<Args>(args)...);
+
+
+  if (!py::detail::get_type_info(typeid(KeysView))) {
+      py::class_<KeysView> keys_view(scope, "KeysView", pybind11::module_local(local));
+      keys_view.def("__len__", &KeysView::len);
+      keys_view.def("__iter__",
+                    &KeysView::iter,
+                    py::keep_alive<0, 1>()
+      );
+      keys_view.def("__contains__", &KeysView::contains);
+  }
+
+  if (!py::detail::get_type_info(typeid(ValuesView))) {
+      py::class_<ValuesView> values_view(scope, "ValuesView", pybind11::module_local(local));
+      values_view.def("__len__", &ValuesView::len);
+      values_view.def("__iter__",
+                      &ValuesView::iter,
+                      py::keep_alive<0, 1>() 
+      );
+  }
+
+  if (!py::detail::get_type_info(typeid(ItemsView))) {
+      py::class_<ItemsView> items_view(scope, "ItemsView", pybind11::module_local(local));
+      items_view.def("__len__", &ItemsView::len);
+      items_view.def("__iter__",
+                      &ItemsView::iter,
+                      py::keep_alive<0, 1>()
+      );
+  }
+
+  cl.def(py::init<>());
+
+  py::detail::map_if_insertion_operator<Map, Class_>(cl, name);
+
+  cl.def(
+      "__bool__",
+      [](const Map &m) -> bool { return !m.empty(); },
+      "Check whether the map is nonempty");
+
+  cl.def(
+      "__iter__",
+      [](Map &m) { return py::make_key_iterator(m.begin(), m.end()); },
+      py::keep_alive<0, 1>()
+  );
+
+  cl.def(
+      "keys",
+      [](Map &m) { return std::unique_ptr<KeysView>(new py::detail::KeysViewImpl<Map>(m)); },
+      py::keep_alive<0, 1>()
+  );
+
+  cl.def(
+      "values",
+      [](Map &m) { return std::unique_ptr<ValuesView>(new py::detail::ValuesViewImpl<Map>(m)); },
+      py::keep_alive<0, 1>()
+  );
+
+  cl.def(
+      "items",
+      [](Map &m) { return std::unique_ptr<ItemsView>(new py::detail::ItemsViewImpl<Map>(m)); },
+      py::keep_alive<0, 1>()
+  );
+
+  cl.def(
+    "__getitem__",
+    [](Map &m, const KeyType &k) -> MappedType & {
+      auto it = m.find(k);
+      if (it == m.end()) {
+          set_error(PyExc_KeyError, py::detail::format_message_key_error(k));
+          throw py::error_already_set();
+      }
+      return it.value();
+    },
+    py::return_value_policy::reference_internal
+  );
+
+  cl.def("__contains__", [](Map &m, const KeyType &k) -> bool {
+      auto it = m.find(k);
+      if (it == m.end()) {
+          return false;
+      }
+      return true;
+  });
+ 
+  cl.def("__contains__", [](Map &, const py::object &) -> bool { return false; });
+
+  MapAssignment<Map, Class_>(cl);
+
+  cl.def("__delitem__", [](Map &m, const KeyType &k) {
+    auto it = m.find(k);
+    if (it == m.end()) {
+        set_error(PyExc_KeyError, py::detail::format_message_key_error(k));
+        throw py::error_already_set();
+    }
+    m.erase(it);
+  });
+
+
+  cl.def("__len__", [](const Map &m) { return m.size(); });
+
+  DefineCustomMap<Map>(cl);
   return cl;
 }
 }  // namespace oead::bind
