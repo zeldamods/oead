@@ -3,13 +3,14 @@
 #include <variant>
 #include <vector>
 
+#include "oead/audio/element_type.h"
 #include "oead/types.h"
 
 namespace oead::audio {
 // Reference (nn::atk::detail::Util::Reference)
 struct Reference {
-  std::uint16_t type_id;
-  std::int32_t offset;
+  ElementType type_id {ElementType::Blank};
+  std::int32_t offset {0};
 
   OEAD_DEFINE_FIELDS(Reference, type_id, offset);
 };

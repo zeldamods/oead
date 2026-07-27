@@ -188,7 +188,5 @@ void BindCommonTypes(py::module& m) {
       .value("PCMS16", audio::SampleFormat::PCMS16)  
       .value("DSPADPCM", audio::SampleFormat::DSPADPCM)  
       .value("PCMS32", audio::SampleFormat::PCMS32);
-
-  
 }
 }  // namespace oead::bind

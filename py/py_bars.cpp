@@ -7,14 +7,24 @@ void BindBars(py::module& parent) {
   py::module m = parent.def_submodule("audio");
 
   py::class_<audio::bars::Bars>(m, "Bars")
-    // .def(py::init<std::string>())
+    .def(py::init<>())
     .def(py::init<tcb::span<const u8>>())
-    .def("version", &audio::bars::Bars::Version)
     .def("get_files", &audio::bars::Bars::GetFiles)
     .def("get_file", py::overload_cast<int>(&audio::bars::Bars::GetFile, py::const_))
     .def("get_file", py::overload_cast<std::string>(&audio::bars::Bars::GetFile, py::const_))
+    .def("add_file", &audio::bars::Bars::AddFile)
     .def("to_binary", py::overload_cast<>(&audio::bars::Bars::ToBinary, py::const_))
-    .def("to_binary", py::overload_cast<util::Endianness>(&audio::bars::Bars::ToBinary, py::const_));
+    .def("to_binary", py::overload_cast<util::Endianness>(&audio::bars::Bars::ToBinary, py::const_))
+    .def_property(
+      "version", 
+      py::overload_cast<>(&audio::bars::Bars::Version, py::const_),
+      py::overload_cast<u16>(&audio::bars::Bars::Version)
+    )
+    .def_property(
+      "endian",
+      py::overload_cast<>(&audio::bars::Bars::Endianness, py::const_),
+      py::overload_cast<util::Endianness>(&audio::bars::Bars::Endianness)
+    );
 
   py::class_<audio::bars::Bars::FileWithMetadata>(m, "FileWithMetadata")
     .def_readwrite("metadata", &audio::bars::Bars::FileWithMetadata::metadata)

@@ -7,7 +7,6 @@
 
 #include "oead/audio/element_type.h"
 #include "oead/audio/types.h"
-
 #include "oead/util/binary_reader.h"
 
 namespace oead::util {
