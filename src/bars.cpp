@@ -1,6 +1,5 @@
 #include <oead/audio/bars.h>
 
-#include "oead/errors.h"
 #include "oead/util/magic_utils.h"
 
 #include "oead/audio/fstp.h"
@@ -32,7 +31,7 @@ void Bars::Deserialize(util::AudioReader& reader) {
     throw InvalidDataError("Unsupported BARS version"); 
 
   m_version = header.version;
-  m_endianness = reader.Endian();
+  m_endian = reader.Endian();
 
   m_hashes.resize(header.asset_count);
   for (auto& hash : m_hashes)
@@ -83,21 +82,11 @@ void Bars::Deserialize(util::AudioReader& reader) {
 }
 
 void Bars::SwapEndianness() {
-  if (m_endianness == util::Endianness::Little)
-    m_endianness = util::Endianness::Big;
-  else
-    m_endianness = util::Endianness::Little;
-
-  for (auto& file : m_files) {
-    file.metadata.Endianness(m_endianness);
-    if (file.asset != nullptr) {
-      file.asset->Endianness(m_endianness);
-    }
-  }
+  Endianness(m_endian == util::Endianness::Little ? util::Endianness::Big : util::Endianness::Little);
 }
 
 std::vector<u8> Bars::ToBinary() const {
-  util::AudioWriter writer {m_endianness};
+  util::AudioWriter writer {m_endian};
   Serialize(writer);
   return writer.Finalize();
 }
