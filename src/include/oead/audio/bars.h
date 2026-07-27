@@ -4,7 +4,6 @@
 #include <nonstd/span.h>
 
 #include "oead/audio/amta.h"
-
 #include "oead/audio/interface.h"
 #include "oead/util/hash.h"
 
@@ -46,11 +45,12 @@ public:
   /// Serialize to a .bars file of a specific endianness
   std::vector<u8> ToBinary(util::Endianness endian) const;
 
-  auto Version() const { return m_version; }
-
+  /// Get an array of all files
   const auto& GetFiles() const { return m_files; }
-  
+
+  /// Get a file by index
   const auto& GetFile(int idx) const { return m_files[idx]; }
+  /// Get a file by name
   const auto& GetFile(std::string name) const {
     std::uint32_t hash {util::crc32(name)};
     auto iter {std::lower_bound(m_hashes.begin(), m_hashes.end(), hash)};
@@ -60,13 +60,51 @@ public:
     return GetFile(std::distance(m_hashes.begin(), iter));
   }
 
+  /// Add a file alongside its metadata
+  void AddFile(const amta::Amta& meta, const std::shared_ptr<IAssetFile> file) {
+    FileWithMetadata new_file {};
+    new_file.metadata = meta;
+    if (file != nullptr)
+      new_file.asset = file;
+
+    u32 name_hash {util::crc32(new_file.metadata.AssetName())};
+
+    m_hashes.push_back(name_hash);
+    std::sort(m_hashes.begin(), m_hashes.end());
+
+    auto iter {std::lower_bound(m_hashes.begin(), m_hashes.end(), name_hash)};
+
+    m_files.insert(m_files.begin() + std::distance(m_hashes.begin(), iter), new_file);
+  }
+
+  /// Get the file version the object will serialize to
+  auto Version() const { return m_version; }
+  /// Set the file version the object will serialize to
+  void Version(u16 version) { m_version = version; }
+
+  /// Get the endianness the object will serialize to
+  auto Endianness() const { return m_endian; }
+  /// Set the endianness of the object, and the 
+  /// endianness of all sub files
+  void Endianness(util::Endianness endianness) { 
+    m_endian = endianness;
+
+    for (auto& file : m_files) {
+      file.metadata.Endianness(m_endian);
+      if (file.asset != nullptr) {
+        file.asset->Endianness(m_endian);
+      }
+    }
+  }
+
+  /// Swap the endianness
   void SwapEndianness();
 
 private:
-  u16 m_version {};
-  std::vector<u32> m_hashes;
+  std::uint16_t m_version {};
+  std::vector<std::uint32_t> m_hashes;
   std::vector<FileOffsetSet> m_offset_sets;
   std::vector<FileWithMetadata> m_files;
-  util::Endianness m_endianness {util::Endianness::Little};
+  util::Endianness m_endian {util::Endianness::Little};
 };
 } // namespace oead::bars

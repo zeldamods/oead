@@ -1,6 +1,5 @@
 #include <oead/audio/fwav.h>
 
-#include "oead/errors.h"
 #include "oead/util/magic_utils.h"
 
 namespace oead::audio::fwav {
@@ -25,7 +24,7 @@ void Fwav::Deserialize(util::AudioReader& reader) {
   if (m_version > 0x10200)
     throw InvalidDataError("Unsupported FWAV version");
 
-  m_endianness = reader.Endian();
+  m_endian = reader.Endian();
 
   for (auto& ref : header.block_refs) {
     reader.Seek(file_start + ref.offset);
@@ -47,7 +46,7 @@ void Fwav::Deserialize(util::AudioReader& reader) {
 
 void Fwav::DeserializeInfoBlock(util::AudioReader& reader) {
   reader.Read<BlockHeader>();
-  auto info = reader.Read<WaveInfo>();
+  auto info = reader.Read<InfoBlock>();
 
   m_encoding = info.encoding;
   m_is_loop = info.is_loop;
@@ -78,18 +77,24 @@ void Fwav::DeserializeDataBlock(util::AudioReader& reader) {
   reader.Read<BlockHeader>();
 
   m_samples.resize(m_channel_infos.size());
-  reader.Align(GetAlignment(m_endianness));
+  reader.Align(GetAlignment(m_endian));
 
   for (uint i {0}; i < m_channel_infos.size(); ++i) {
     m_samples[i] = reader.ReadSamples(m_loop_end_frame, 
                                       m_encoding, 
                                       true);
-    reader.Align(GetAlignment(m_endianness));
+    reader.Align(GetAlignment(m_endian));
   }
 }
 
 std::vector<u8> Fwav::ToBinary() const {
-  util::AudioWriter writer {m_endianness};
+  util::AudioWriter writer {m_endian};
+  Serialize(writer);
+  return writer.Finalize();
+}
+
+std::vector<u8> Fwav::ToBinary(util::Endianness endian) const {
+  util::AudioWriter writer {endian};
   Serialize(writer);
   return writer.Finalize();
 }

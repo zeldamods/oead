@@ -63,6 +63,12 @@ std::vector<u8> Fstp::ToBinary() const {
   return writer.Finalize();
 }
 
+std::vector<u8> Fstp::ToBinary(util::Endianness endian) const {
+  util::AudioWriter writer {endian};
+  Serialize(writer);
+  return writer.Finalize();
+}
+
 void Fstp::Serialize(util::AudioWriter& writer) const {
   std::size_t file_start {writer.Tell()};
 

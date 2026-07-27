@@ -2,7 +2,6 @@
 
 #include <algorithm>
 
-#include "oead/errors.h"
 #include "oead/util/magic_utils.h"
 
 namespace oead::audio::amta {
@@ -31,7 +30,7 @@ void Amta::Deserialize(util::AudioReader& reader) {
     throw InvalidDataError("Unsupported AMTA version");
 
   m_version = header.version;
-  m_endianness = reader.Endian();
+  m_endian = reader.Endian();
 
   // DATA
   reader.SectionSeek(header.data_offset);
@@ -42,11 +41,11 @@ void Amta::Deserialize(util::AudioReader& reader) {
   m_channel_count = reader.Read<u8>();
   m_used_stream_tracks = reader.Read<u8>();
   m_flags = reader.Read<u8>();
-  m_duration = reader.Read<u32>();
+  m_unknown = reader.Read<float>();
   m_sample_rate = reader.Read<u32>();
   m_loop_start_frame = reader.Read<u32>();
   m_loop_end_frame = reader.Read<u32>();
-  m_loudness = reader.Read<float>();
+  m_volume = reader.Read<float>();
 
   for (auto& track : m_stream_tracks)
     track = reader.Read<StreamTrack>();
@@ -98,7 +97,13 @@ void Amta::DeserializeExtBlock(util::AudioReader& reader, u32 to_string_table) {
 }
 
 std::vector<u8> Amta::ToBinary() const {
-  util::AudioWriter writer {m_endianness};
+  util::AudioWriter writer {m_endian};
+  Serialize(writer);
+  return writer.Finalize();
+}
+
+std::vector<u8> Amta::ToBinary(util::Endianness endian) const {
+  util::AudioWriter writer {endian};
   Serialize(writer);
   return writer.Finalize();
 }
@@ -144,11 +149,11 @@ void Amta::SerializeData(util::AudioWriter& writer) const {
   writer.Write(m_channel_count);
   writer.Write(m_used_stream_tracks);
   writer.Write(m_flags);
-  writer.Write(m_duration);
+  writer.Write(m_unknown);
   writer.Write(m_sample_rate);
   writer.Write(m_loop_start_frame);
   writer.Write(m_loop_end_frame);
-  writer.Write(m_loudness);
+  writer.Write(m_volume);
   
   for (auto& track : m_stream_tracks)
     writer.Write(track);

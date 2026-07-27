@@ -7,30 +7,65 @@ void BindFstm(py::module& parent) {
   py::module m = parent.def_submodule("audio");
 
   py::class_<audio::fstm::Fstm>(m, "Fstm")
+    .def(py::init<>())
     .def(py::init<tcb::span<const u8>>())
-    .def("info", &audio::fstm::Fstm::Info)
+    .def("to_binary", py::overload_cast<>(&audio::fstm::Fstm::ToBinary, py::const_))
+    .def("to_binary", py::overload_cast<util::Endianness>(&audio::fstm::Fstm::ToBinary, py::const_))
+    .def_property(
+      "info", 
+      py::overload_cast<>(&audio::fstm::Fstm::Info, py::const_),
+      py::overload_cast<audio::fstm::InfoBlock>(&audio::fstm::Fstm::Info)
+    )
+    .def_property(
+      "seek_infos",
+      py::overload_cast<>(&audio::fstm::Fstm::SeekInfos, py::const_),
+      py::overload_cast<const std::vector<std::vector<audio::fstm::SeekInfo>>&>(&audio::fstm::Fstm::SeekInfos)
+    )
+    .def("get_seek_info", &audio::fstm::Fstm::GetSeekInfo)
+    .def("set_seek_info", &audio::fstm::Fstm::SetSeekInfo)
+    .def_property(
+      "region_infos",
+      py::overload_cast<>(&audio::fstm::Fstm::RegionInfos, py::const_),
+      py::overload_cast<const std::vector<audio::fstm::RegionInfo>&>(&audio::fstm::Fstm::RegionInfos)
+    )
+    .def("get_region_info", &audio::fstm::Fstm::GetRegionInfo)
+    .def("set_region_info", &audio::fstm::Fstm::SetRegionInfo)
+    .def_property(
+      "samples",
+      py::overload_cast<>(&audio::fstm::Fstm::Samples, py::const_),
+      py::overload_cast<const std::vector<audio::Channel>&>(&audio::fstm::Fstm::Samples)
+    )
     .def("has_region", &audio::fstm::Fstm::HasRegion)
-    .def("endian", py::overload_cast<util::Endianness>(&audio::fstm::Fstm::Endianness))
-    .def("endian", py::overload_cast<>(&audio::fstm::Fstm::Endianness, py::const_))
-    .def("to_binary", &audio::fstm::Fstm::ToBinary);
+    .def_property(
+      "endian",
+      py::overload_cast<>(&audio::fstm::Fstm::Endianness, py::const_),
+      py::overload_cast<util::Endianness>(&audio::fstm::Fstm::Endianness)
+    );
 
   py::class_<audio::fstm::InfoBlock>(m, "StreamInfoBlock")
-    .def("stream_info", &audio::fstm::InfoBlock::StreamInfo)
-    .def("track_infos", &audio::fstm::InfoBlock::TrackInfos)
-    .def("channel_infos", &audio::fstm::InfoBlock::DetailChannelInfos);
-
-  py::class_<audio::fstm::RegionInfo>(m, "StreamRegionInfo")
-    .def_readwrite("start", &audio::fstm::RegionInfo::start)
-    .def_readwrite("end", &audio::fstm::RegionInfo::end)
-    .def_readwrite("adpcm_context", &audio::fstm::RegionInfo::adpcm_context)
-    .def_readwrite("is_enabled", &audio::fstm::RegionInfo::is_enabled)
-    .def_readwrite("region_name", &audio::fstm::RegionInfo::region_name);
-
-  py::class_<audio::fstm::SeekInfo>(m, "StreamSeekInfo")
-    .def_readwrite("yn1", &audio::fstm::SeekInfo::yn1)
-    .def_readwrite("yn2", &audio::fstm::SeekInfo::yn2);
+    .def(py::init<>())
+    .def_property(
+      "stream_info", 
+      py::overload_cast<>(&audio::fstm::InfoBlock::StreamInfo, py::const_),
+      py::overload_cast<audio::fstm::StreamSoundInfo>(&audio::fstm::InfoBlock::StreamInfo)
+    )
+    .def_property(
+      "track_infos", 
+      py::overload_cast<>(&audio::fstm::InfoBlock::TrackInfos, py::const_),
+      py::overload_cast<const std::vector<audio::fstm::TrackInfo>&>(&audio::fstm::InfoBlock::TrackInfos)
+    )
+    .def("get_track_info", &audio::fstm::InfoBlock::GetTrackInfo)
+    .def("set_track_info", &audio::fstm::InfoBlock::SetTrackInfo)
+    .def_property(
+      "channel_infos", 
+      py::overload_cast<>(&audio::fstm::InfoBlock::DetailChannelInfos, py::const_),
+      py::overload_cast<const std::vector<audio::DspAdpcmInfo>&>(&audio::fstm::InfoBlock::DetailChannelInfos)
+    )
+    .def("get_channel_info", &audio::fstm::InfoBlock::GetDetailChannelInfo)
+    .def("set_channel_info", &audio::fstm::InfoBlock::SetDetailChannelInfo);
 
   py::class_<audio::fstm::StreamSoundInfo>(m, "StreamSoundInfo")
+    .def(py::init<>())
     .def_readwrite("encoding", &audio::fstm::StreamSoundInfo::encoding)
     .def_readwrite("is_loop", &audio::fstm::StreamSoundInfo::is_loop)
     .def_readwrite("channel_count", &audio::fstm::StreamSoundInfo::channel_count)
@@ -50,7 +85,21 @@ void BindFstm(py::module& parent) {
     .def_readwrite("original_loop_start", &audio::fstm::StreamSoundInfo::original_loop_start)
     .def_readwrite("original_loop_end", &audio::fstm::StreamSoundInfo::original_loop_end);
 
-  py::class_<audio::fstm::TrackInfo>(m, "TrackInfo")
+  py::class_<audio::fstm::SeekInfo>(m, "StreamSeekInfo")
+    .def(py::init<>())
+    .def_readwrite("yn1", &audio::fstm::SeekInfo::yn1)
+    .def_readwrite("yn2", &audio::fstm::SeekInfo::yn2);
+
+  py::class_<audio::fstm::RegionInfo>(m, "StreamRegionInfo")
+    .def(py::init<>())
+    .def_readwrite("start", &audio::fstm::RegionInfo::start)
+    .def_readwrite("end", &audio::fstm::RegionInfo::end)
+    .def_readwrite("adpcm_context", &audio::fstm::RegionInfo::adpcm_context)
+    .def_readwrite("is_enabled", &audio::fstm::RegionInfo::is_enabled)
+    .def_readwrite("region_name", &audio::fstm::RegionInfo::region_name);
+
+  py::class_<audio::fstm::TrackInfo>(m, "StreamTrackInfo")
+    .def(py::init<>())
     .def_readwrite("volume", &audio::fstm::TrackInfo::volume)
     .def_readwrite("pan", &audio::fstm::TrackInfo::pan)
     .def_readwrite("span", &audio::fstm::TrackInfo::span)
