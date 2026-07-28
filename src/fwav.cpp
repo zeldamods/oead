@@ -21,7 +21,8 @@ void Fwav::Deserialize(util::AudioReader& reader) {
     throw InvalidDataError("Invalid FWAV magic");
   
   m_version = header.version;
-  if (m_version > 0x10200)
+  // Version 1.2.0
+  if (m_version != 0x10200)
     throw InvalidDataError("Unsupported FWAV version");
 
   m_endian = reader.Endian();

@@ -128,12 +128,14 @@ public:
         sample = Read<std::int16_t>();
       break;
     case audio::SampleFormat::DSPADPCM: {
-      channel.resize(sample_block_size * 2);
-      for (uint i {0}; i < channel.size(); i += 2) {
-        auto sample_bytes = Read<std::uint8_t>();
-        channel[i] = static_cast<std::uint8_t>(sample_bytes & 0b1111);
-        channel[i + 1] = static_cast<std::uint8_t>(sample_bytes >> 4);
-      }
+      channel.resize(sample_block_size);
+      for (auto& sample : channel)
+        sample = Read<std::uint8_t>();
+      // for (uint i {0}; i < channel.size(); i += 2) {
+      //   auto sample_bytes = Read<std::uint8_t>();
+      //   channel[i] = static_cast<std::uint8_t>(sample_bytes & 0b1111);
+      //   channel[i + 1] = static_cast<std::uint8_t>(sample_bytes >> 4);
+      // }
       break;
     }
     case audio::SampleFormat::PCMS32:
