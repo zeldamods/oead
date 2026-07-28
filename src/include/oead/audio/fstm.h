@@ -77,8 +77,8 @@ public:
   const auto& TrackInfos() const { return m_track_infos; }
   void TrackInfos(const std::vector<TrackInfo>& track_infos) { m_track_infos = track_infos; }
 
-  auto GetTrackInfo(int track_idx) const { return m_track_infos[track_idx]; }
-  void SetTrackInfo(TrackInfo info, int track_idx) { m_track_infos[track_idx] = info; }
+  auto GetTrackInfo(int id) const { return m_track_infos[id]; }
+  void SetTrackInfo(TrackInfo info, int id) { m_track_infos[id] = info; }
 
   const auto& DetailChannelInfos() const { return m_detail_channel_infos; }
   void DetailChannelInfos(const std::vector<DspAdpcmInfo>& channel_infos) { m_detail_channel_infos = channel_infos; }
@@ -138,9 +138,9 @@ public:
   }
 
   /// Get a single RegionInfo by index
-  auto GetRegionInfo(int idx) const { return m_region_infos[idx]; }
+  auto GetRegionInfo(int id) const { return m_region_infos[id]; }
   /// Set a single RegionInfo by index
-  void SetRegionInfo(RegionInfo info, int idx) { m_region_infos[idx] = info; }
+  void SetRegionInfo(RegionInfo info, int id) { m_region_infos[id] = info; }
 
   /// Get all samples
   const auto& Samples() const { return m_samples; }
@@ -163,10 +163,8 @@ private:
   u32 m_version;
   InfoBlock m_info;
   bool m_has_region {false};
-  
   // Unsure if channels per block, or blocks per channel
   std::vector<std::vector<SeekInfo>> m_seek_infos;
-
   std::vector<RegionInfo> m_region_infos;
   std::vector<Channel> m_samples;
   util::Endianness m_endian;
