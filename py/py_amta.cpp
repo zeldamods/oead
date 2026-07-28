@@ -10,7 +10,7 @@ void BindAmta(py::module& parent) {
     .def(py::init<>())
     .def(py::init<tcb::span<const u8>>())
     .def("to_binary", py::overload_cast<>(&audio::amta::Amta::ToBinary, py::const_))
-    .def("to_binary", py::overload_cast<util::Endianness>(&audio::amta::Amta::ToBinary, py::const_))
+    .def("to_binary", py::overload_cast<util::Endianness>(&audio::amta::Amta::ToBinary, py::const_), "endian"_a)
     .def_property(
       "asset_name", 
       py::overload_cast<>(&audio::amta::Amta::AssetName, py::const_),

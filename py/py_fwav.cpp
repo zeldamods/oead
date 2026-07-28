@@ -11,7 +11,7 @@ void BindFwav(py::module& parent) {
     .def(py::init<>())
     .def(py::init<tcb::span<const u8>>())
     .def("to_binary", py::overload_cast<>(&audio::fwav::Fwav::ToBinary, py::const_))
-    .def("to_binary", py::overload_cast<util::Endianness>(&audio::fwav::Fwav::ToBinary, py::const_))
+    .def("to_binary", py::overload_cast<util::Endianness>(&audio::fwav::Fwav::ToBinary, py::const_), "endian"_a)
     .def_property(
       "encoding", 
       py::overload_cast<>(&audio::fwav::Fwav::Encoding, py::const_), 
@@ -47,8 +47,8 @@ void BindFwav(py::module& parent) {
       py::overload_cast<>(&audio::fwav::Fwav::ChannelInfos, py::const_), 
       py::overload_cast<const std::vector<audio::fwav::ChannelInfo>&>(&audio::fwav::Fwav::ChannelInfos)
     )
-    .def("get_channel_info", &audio::fwav::Fwav::GetChannelInfo)
-    .def("set_channel_info", &audio::fwav::Fwav::SetChannelInfo)
+    .def("get_channel_info", &audio::fwav::Fwav::GetChannelInfo, "channel"_a)
+    .def("set_channel_info", &audio::fwav::Fwav::SetChannelInfo, "info"_a, "channel"_a)
     .def_property(
       "samples", 
       py::overload_cast<>(&audio::fwav::Fwav::Samples, py::const_), 
