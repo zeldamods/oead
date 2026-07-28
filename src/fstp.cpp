@@ -20,7 +20,8 @@ void Fstp::Deserialize(util::AudioReader& reader) {
     throw InvalidDataError("Invalid FSTP magic");
   
   m_version = header.version;
-  if (m_version > 0x20100)
+  // Version 2.1.0
+  if (m_version != 0x20100)
     throw InvalidDataError("Unsupported FSTP version");
 
   m_endian = reader.Endian();

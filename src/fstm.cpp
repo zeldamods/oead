@@ -24,7 +24,8 @@ void Fstm::Deserialize(util::AudioReader& reader) {
     throw InvalidDataError("Invalid FSTM magic");
   
   m_version = header.version;
-  if (m_version > 0x40000)
+  // Version 4.0.0
+  if (m_version != 0x40000)
     throw InvalidDataError("Unsupported FSTM version");
 
   m_endian = reader.Endian();
