@@ -36,6 +36,7 @@ public:
 
   Bars() = default;
   Bars(tcb::span<const u8> data);
+  Bars(const std::string& file_path);
 
   void Deserialize(util::AudioReader& reader);
   void Serialize(util::AudioWriter& writer) const;
@@ -55,7 +56,7 @@ public:
     std::uint32_t hash {util::crc32(name)};
     auto iter {std::lower_bound(m_hashes.begin(), m_hashes.end(), hash)};
     if (iter == m_hashes.end())
-      throw std::runtime_error("Name not found");
+      throw InvalidDataError("Name not found");
     
     return GetFile(std::distance(m_hashes.begin(), iter));
   }
