@@ -35,12 +35,10 @@ void BindFstp(py::module& parent) {
   py::class_<audio::fstp::PrefetchData>(m, "PrefetchData")
     .def(py::init<>())
     .def_readwrite("start_frame", &audio::fstp::PrefetchData::start_frame)
-    .def_readwrite("prefetch_size", &audio::fstp::PrefetchData::prefetch_size)
-    .def_readwrite("reserved", &audio::fstp::PrefetchData::reserved);
+    .def_readwrite("prefetch_samples", &audio::fstp::PrefetchData::prefetch_samples);
 
   py::class_<audio::fstp::PrefetchDataBlock>(m, "PrefetchDataBlock")
     .def(py::init<>())
-    .def_readwrite("prefetch_metadata", &audio::fstp::PrefetchDataBlock::prefetch_metadata)
-    .def_readwrite("sample_data", &audio::fstp::PrefetchDataBlock::sample_data);
+    .def_readwrite("prefetch_data", &audio::fstp::PrefetchDataBlock::prefetch_data);
 }
 } // namespace oead::bind
