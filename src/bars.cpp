@@ -62,7 +62,7 @@ void Bars::Deserialize(util::AudioReader& reader) {
   std::map<std::int32_t, std::shared_ptr<IAssetFile>> found_assets;
   for (uint i {0}; i < header.asset_count; ++i) {
     reader.Seek(m_offset_sets[i].meta_offset);
-    m_files[i].metadata.Deserialize(reader);
+    m_files[i].meta.Deserialize(reader);
 
     auto found_asset {found_assets.find(m_offset_sets[i].asset_offset)};
 
@@ -72,7 +72,7 @@ void Bars::Deserialize(util::AudioReader& reader) {
     else if (m_offset_sets[i].asset_offset != -1) {
       reader.Seek(m_offset_sets[i].asset_offset);
 
-      switch (m_files[i].metadata.Type()) {
+      switch (m_files[i].meta.Type()) {
       case oead::audio::AssetType::Wave: {
         auto fwav = std::make_shared<fwav::Fwav>();
         fwav->Deserialize(reader);
@@ -113,6 +113,22 @@ std::vector<u8> Bars::ToBinary(util::Endianness endian) const {
   return writer.Finalize();
 }
 
+std::vector<u8> Bars::MetaToBinary(int idx) const {
+  return GetFile(idx).meta.ToBinary();
+}
+
+std::vector<u8> Bars::MetaToBinary(const std::string& name) const {
+  return GetFile(name).meta.ToBinary();
+}
+
+std::vector<u8> Bars::FileToBinary(int idx) const {
+  return GetFile(idx).asset->ToBinary();
+}
+
+std::vector<u8> Bars::FileToBinary(const std::string& name) const {
+  return GetFile(name).asset->ToBinary();
+}
+
 void Bars::Serialize(util::AudioWriter& writer) const {
   std::size_t file_start {writer.Tell()};
 
@@ -138,7 +154,7 @@ void Bars::Serialize(util::AudioWriter& writer) const {
 
   for (uint i{0}; i < m_files.size(); ++i) {
     writer.WriteCurrentOffsetAt<std::uint32_t>(offset_sets_pos[i].meta_offset, file_start);
-    m_files[i].metadata.Serialize(writer);
+    m_files[i].meta.Serialize(writer);
   }
 
   // TODO: describe what happens next
@@ -156,7 +172,7 @@ void Bars::Serialize(util::AudioWriter& writer) const {
         writer.AlignUp(0x40);
         writer.WriteCurrentOffsetAt<std::int32_t>(offset_sets_pos[i].asset_offset, file_start);
         done_assets[m_files[i].asset] = writer.Tell();
-        switch (m_files[i].metadata.Type()) {
+        switch (m_files[i].meta.Type()) {
         case AssetType::Wave: {
           auto fwav = std::static_pointer_cast<fwav::Fwav>(m_files[i].asset);
           fwav->Serialize(writer);
