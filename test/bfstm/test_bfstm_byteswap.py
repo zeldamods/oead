@@ -9,10 +9,10 @@ cases, cases_data = make_test_cases("bfstm/files/*.bfstm")
 def test_bfstm_byteswap(file):
     stm = oead.audio.Fstm(cases_data[file])
     
-    stm.endian(oead.Endianness.Little)
+    stm.endian = oead.Endianness.Little
     data_le = stm.to_binary() 
 
-    stm.endian(oead.Endianness.Big)
+    stm.endian = oead.Endianness.Big
     data_be = stm.to_binary()
 
     stm_le = oead.audio.Fstm(data_le)

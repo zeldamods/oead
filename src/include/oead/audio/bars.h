@@ -30,7 +30,7 @@ struct ResourceHeader {
 class Bars {
 public:
   struct FileWithMetadata {
-    amta::Amta metadata;
+    amta::Amta meta;
     std::shared_ptr<IAssetFile> asset;
   };
 
@@ -46,13 +46,23 @@ public:
   /// Serialize to a .bars file of a specific endianness
   std::vector<u8> ToBinary(util::Endianness endian) const;
 
+  /// Get a file's meta by index and serialize only that file's meta
+  std::vector<u8> MetaToBinary(int idx) const;
+  /// Get a file's meta by name and serialize only that file's meta
+  std::vector<u8> MetaToBinary(const std::string& name) const;
+  
+  /// Get a file by index and serialize only that file's data
+  std::vector<u8> FileToBinary(int idx) const;
+  /// Get a file by name and serialize only that file's data
+  std::vector<u8> FileToBinary(const std::string& name) const;
+
   /// Get an array of all files
   const auto& GetFiles() const { return m_files; }
 
   /// Get a file by index
   const auto& GetFile(int idx) const { return m_files[idx]; }
   /// Get a file by name
-  const auto& GetFile(std::string name) const {
+  const auto& GetFile(const std::string& name) const {
     std::uint32_t hash {util::crc32(name)};
     auto iter {std::lower_bound(m_hashes.begin(), m_hashes.end(), hash)};
     if (iter == m_hashes.end())
@@ -64,11 +74,11 @@ public:
   /// Add a file alongside its metadata
   void AddFile(const amta::Amta& meta, const std::shared_ptr<IAssetFile> file) {
     FileWithMetadata new_file {};
-    new_file.metadata = meta;
+    new_file.meta = meta;
     if (file != nullptr)
       new_file.asset = file;
 
-    u32 name_hash {util::crc32(new_file.metadata.AssetName())};
+    u32 name_hash {util::crc32(new_file.meta.AssetName())};
 
     m_hashes.push_back(name_hash);
     std::sort(m_hashes.begin(), m_hashes.end());
@@ -91,7 +101,7 @@ public:
     m_endian = endianness;
 
     for (auto& file : m_files) {
-      file.metadata.Endianness(m_endian);
+      file.meta.Endianness(m_endian);
       if (file.asset != nullptr) {
         file.asset->Endianness(m_endian);
       }
