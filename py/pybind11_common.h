@@ -238,7 +238,7 @@ template <typename Map, typename Class_>
 void DefineCustomMap(Class_& cl) {
   using KeyType = typename Map::key_type;
   using MappedType = typename Map::mapped_type;
-  
+
   cl.def(py::init([&](py::iterator it) {
       return MapFromIter<Map, KeyType>(it, MapCastValue<Map, KeyType, MappedType>);
     }),
@@ -282,7 +282,7 @@ void DefineCustomMap(Class_& cl) {
   py::implicitly_convertible<py::dict, Map>();
 }
 
-template <typename Map, typename holder_type = std::unique_ptr<Map>, typename... Args, 
+template <typename Map, typename holder_type = std::unique_ptr<Map>, typename... Args,
           typename std::enable_if_t<!iterator_has_value_member_fn<typename Map::iterator>::value, bool> = true>
 py::class_<Map, holder_type> BindMap(py::handle scope, const std::string& name, Args&&... args) {
   auto cl = py::bind_map<Map, holder_type>(scope, name, std::forward<Args>(args)...);
@@ -292,7 +292,7 @@ py::class_<Map, holder_type> BindMap(py::handle scope, const std::string& name, 
 
 // Reimplementation of pybind11::bind_map
 // to support tsl::ordered_map
-template <typename Map, typename holder_type = std::unique_ptr<Map>, typename... Args, 
+template <typename Map, typename holder_type = std::unique_ptr<Map>, typename... Args,
           typename std::enable_if_t<iterator_has_value_member_fn<typename Map::iterator>::value, bool> = false>
 py::class_<Map, holder_type> BindMap(py::handle scope, const std::string& name, Args&&... args) {
   using KeyType = typename Map::key_type;
@@ -365,7 +365,7 @@ py::class_<Map, holder_type> BindMap(py::handle scope, const std::string& name, 
       }
       return true;
   });
- 
+
   cl.def("__contains__", [](Map &, const py::object &) -> bool { return false; });
 
   MapAssignment<Map, Class_>(cl);
