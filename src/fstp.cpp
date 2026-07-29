@@ -38,22 +38,20 @@ void Fstp::Deserialize(util::AudioReader& reader) {
       reader.Read<BlockHeader>();
 
       std::size_t table_start {reader.Tell()};
-      auto prefetch_data_table {reader.ReadTable<PrefetchData>()};
+      auto prefetch_data_table {reader.ReadTable<PrefetchDataBin>()};
 
-      m_data.prefetch_metadata.resize(prefetch_data_table.count);
-      m_data.sample_data.resize(prefetch_data_table.count);
+      m_data.prefetch_data.resize(prefetch_data_table.count);
 
       for (uint i {0}; i < prefetch_data_table.count; ++i) {
-        m_data.prefetch_metadata[i] = prefetch_data_table.items[i];
+        m_data.prefetch_data[i].start_frame = prefetch_data_table.items[i].start_frame;
         std::size_t offset {table_start + sizeof(std::uint32_t) + 
-                            m_data.prefetch_metadata[i].to_prefetch_samples.offset};
+                            prefetch_data_table.items[i].to_prefetch_samples.offset};
         
         reader.Seek(offset);
-        m_data.sample_data[i].resize(m_data.prefetch_metadata[i].prefetch_size);
-        for (auto& data : m_data.sample_data[i])
-          data = reader.Read<std::uint8_t>();
+        m_data.prefetch_data[i].prefetch_samples.resize(prefetch_data_table.items[i].prefetch_size);
+        for (auto& sample : m_data.prefetch_data[i].prefetch_samples)
+          sample = reader.Read<std::uint8_t>();
       }
-
     }
   }
 }
@@ -110,13 +108,13 @@ void Fstp::SerializeDataBlock(util::AudioWriter& writer) const {
   // Do size calculations later 
   std::size_t section_size_pos {writer.WritePendingValue()};
 
-  std::vector<std::size_t> sample_data_offsets_pos(m_data.prefetch_metadata.size());
+  std::vector<std::size_t> sample_data_offsets_pos(m_data.prefetch_data.size());
   
-  writer.Write<std::uint32_t>(m_data.prefetch_metadata.size());
+  writer.Write<std::uint32_t>(m_data.prefetch_data.size());
   std::size_t pdat_table_start {writer.Tell()};
-  for (uint i {0}; i < m_data.prefetch_metadata.size(); ++i) {
-    writer.Write(m_data.prefetch_metadata[i].start_frame);
-    writer.Write(m_data.prefetch_metadata[i].prefetch_size);
+  for (uint i {0}; i < m_data.prefetch_data.size(); ++i) {
+    writer.Write<std::uint32_t>(m_data.prefetch_data[i].start_frame);
+    writer.Write<std::uint32_t>(m_data.prefetch_data[i].prefetch_samples.size());
     writer.Write(0); // reserved
 
     sample_data_offsets_pos[i] = writer.WriteEmptyOffsetReference(ElementType::Blank, true);
@@ -124,10 +122,10 @@ void Fstp::SerializeDataBlock(util::AudioWriter& writer) const {
 
   writer.AlignUp(GetAlignment(writer.Endian()));
 
-  for (uint i {0}; i < m_data.sample_data.size(); ++i) {
+  for (uint i {0}; i < m_data.prefetch_data.size(); ++i) {
     writer.WriteCurrentOffsetAt<std::int32_t>(sample_data_offsets_pos[i], pdat_table_start);
 
-    for (auto& data : m_data.sample_data[i])
+    for (auto& data : m_data.prefetch_data[i].prefetch_samples)
       writer.Write(data);
   }
 
