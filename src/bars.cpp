@@ -1,5 +1,7 @@
 #include <oead/audio/bars.h>
 
+#include <fstream>
+
 #include "oead/util/magic_utils.h"
 
 #include "oead/audio/fstp.h"
@@ -10,6 +12,20 @@ namespace oead::audio::bars {
 constexpr auto BarsMagic = util::MakeMagic("BARS");
 
 Bars::Bars(tcb::span<const u8> data) {
+  util::AudioReader reader {data, util::Endianness::Little};
+  Deserialize(reader);
+}
+
+Bars::Bars(const std::string& file_path) {
+  std::ifstream ifs {file_path, std::ios_base::binary};
+  if (!ifs)
+    throw std::runtime_error("Could not open file");
+
+  std::istreambuf_iterator<char> buffer_begin{ifs}, end;
+  std::vector<u8> data(buffer_begin, end);
+
+  ifs.close();
+
   util::AudioReader reader {data, util::Endianness::Little};
   Deserialize(reader);
 }

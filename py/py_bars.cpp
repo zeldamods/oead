@@ -9,6 +9,7 @@ void BindBars(py::module& parent) {
   py::class_<audio::bars::Bars>(m, "Bars")
     .def(py::init<>())
     .def(py::init<tcb::span<const u8>>())
+    .def(py::init<const std::string&>())
     .def("get_files", &audio::bars::Bars::GetFiles)
     .def("get_file", py::overload_cast<int>(&audio::bars::Bars::GetFile, py::const_), "idx"_a)
     .def("get_file", py::overload_cast<std::string>(&audio::bars::Bars::GetFile, py::const_), "name"_a)
