@@ -23,7 +23,7 @@ struct InfoBlock {
                      loop_end_frame, original_loop_start_frame);
 };
 
-/// WaveFile
+/// Wave
 class Fwav : public IAssetFile {
 public:
   Fwav() = default;

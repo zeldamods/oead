@@ -53,24 +53,24 @@ void Bars::Deserialize(util::AudioReader& reader) {
   for (auto& hash : m_hashes)
     hash = reader.Read<std::uint32_t>();
 
-  m_offset_sets.resize(header.asset_count);
-  for (auto& offset_set : m_offset_sets)
+  std::vector<FileOffsetSet> offset_sets(header.asset_count);
+  for (auto& offset_set : offset_sets)
     offset_set = reader.Read<FileOffsetSet>();
 
   m_files.resize(header.asset_count);
   // TODO: describe what's happening next
   std::map<std::int32_t, std::shared_ptr<IAssetFile>> found_assets;
   for (uint i {0}; i < header.asset_count; ++i) {
-    reader.Seek(m_offset_sets[i].meta_offset);
+    reader.Seek(offset_sets[i].meta_offset);
     m_files[i].meta.Deserialize(reader);
 
-    auto found_asset {found_assets.find(m_offset_sets[i].asset_offset)};
+    auto found_asset {found_assets.find(offset_sets[i].asset_offset)};
 
     if (found_asset != found_assets.end()) {
       m_files[i].asset = found_asset->second;
     }
-    else if (m_offset_sets[i].asset_offset != -1) {
-      reader.Seek(m_offset_sets[i].asset_offset);
+    else if (offset_sets[i].asset_offset != -1) {
+      reader.Seek(offset_sets[i].asset_offset);
 
       switch (m_files[i].meta.Type()) {
       case oead::audio::AssetType::Wave: {
@@ -93,7 +93,7 @@ void Bars::Deserialize(util::AudioReader& reader) {
       m_files[i].asset = nullptr;
     }
 
-    found_assets[m_offset_sets[i].asset_offset] = m_files[i].asset;
+    found_assets[offset_sets[i].asset_offset] = m_files[i].asset;
   }
 }
 

@@ -114,7 +114,6 @@ public:
 private:
   std::uint16_t m_version {};
   std::vector<std::uint32_t> m_hashes;
-  std::vector<FileOffsetSet> m_offset_sets;
   std::vector<FileWithMetadata> m_files;
   util::Endianness m_endian {util::Endianness::Little};
 };
