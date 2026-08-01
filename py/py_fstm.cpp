@@ -10,7 +10,7 @@ void BindFstm(py::module& parent) {
     .def(py::init<>())
     .def(py::init<tcb::span<const u8>>())
     .def("to_binary", py::overload_cast<>(&audio::fstm::Fstm::ToBinary, py::const_))
-    .def("to_binary", py::overload_cast<util::Endianness>(&audio::fstm::Fstm::ToBinary, py::const_), "idx"_a)
+    .def("to_binary", py::overload_cast<util::Endianness>(&audio::fstm::Fstm::ToBinary, py::const_), "endian"_a)
     .def_property(
       "info", 
       py::overload_cast<>(&audio::fstm::Fstm::Info, py::const_),
