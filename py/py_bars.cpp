@@ -15,10 +15,10 @@ void BindBars(py::module& parent) {
     .def("add_file", &audio::bars::Bars::AddFile, "meta"_a, "file"_a)
     .def("to_binary", py::overload_cast<>(&audio::bars::Bars::ToBinary, py::const_))
     .def("to_binary", py::overload_cast<util::Endianness>(&audio::bars::Bars::ToBinary, py::const_), "endian"_a)
-    .def("meta_to_binary", py::overload_cast<int>(&audio::bars::Bars::MetaToBinary, py::const_))
-    .def("meta_to_binary", py::overload_cast<const std::string&>(&audio::bars::Bars::MetaToBinary, py::const_))
-    .def("file_to_binary", py::overload_cast<int>(&audio::bars::Bars::FileToBinary, py::const_))
-    .def("file_to_binary", py::overload_cast<const std::string&>(&audio::bars::Bars::FileToBinary, py::const_))
+    .def("meta_to_binary", py::overload_cast<int>(&audio::bars::Bars::MetaToBinary, py::const_), "idx"_a)
+    .def("meta_to_binary", py::overload_cast<const std::string&>(&audio::bars::Bars::MetaToBinary, py::const_), "name"_a)
+    .def("file_to_binary", py::overload_cast<int>(&audio::bars::Bars::FileToBinary, py::const_), "idx"_a)
+    .def("file_to_binary", py::overload_cast<const std::string&>(&audio::bars::Bars::FileToBinary, py::const_), "name")
     .def_property(
       "version", 
       py::overload_cast<>(&audio::bars::Bars::Version, py::const_),
