@@ -69,9 +69,6 @@ struct type_caster<tcb::span<T>> {
   }
 
   bool load(handle src, bool) {
-    if (!isinstance<py::sequence>(src) || isinstance<py::str>(src))
-      return false;
-
     const py::buffer_info buffer = src.cast<py::buffer>().request(!std::is_const_v<T>);
     if (buffer.itemsize != sizeof(T) || buffer.ndim != 1)
       return false;
