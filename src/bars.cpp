@@ -43,6 +43,7 @@ void Bars::Deserialize(util::AudioReader& reader) {
   if (header.signature != BarsMagic)
     throw InvalidDataError("Invalid BARS magic");
   
+  // Version 1.1
   if (header.version > 0x101)
     throw InvalidDataError("Unsupported BARS version"); 
 

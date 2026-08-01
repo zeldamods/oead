@@ -26,6 +26,7 @@ void Amta::Deserialize(util::AudioReader& reader) {
   if (header.signature != AmtaMagic)
     throw InvalidDataError("Invalid AMTA magic");
 
+  // Version 4.0
   if (header.version > 0x400)
     throw InvalidDataError("Unsupported AMTA version");
 
