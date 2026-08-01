@@ -12,7 +12,12 @@ Features
 Currently, oead only handles very common formats that are extensively used in recent games such as *Breath of the Wild* and *Super Mario Odyssey*.
 
 * `AAMP <https://zeldamods.org/wiki/AAMP>`_ (binary parameter archive): Only version 2 is supported.
+* `AMTA` (audio meta): Version 4.0 is supported
+* `BARS` (binary audio resource): Version 1.1 is supported
 * `BYML <https://zeldamods.org/wiki/BYML>`_ (binary YAML): Versions 1, 2, 3, and 4 are supported.
+* `FSTM` (cafe stream): Version 4.0.0 is supported
+* `FSTP` (cafe stream prefetch): Version 2.1.0 is supported
+* `FWAV` (cafe wave): Version 1.2.0 is supported
 * `SARC <https://zeldamods.org/wiki/SARC>`_ (archive)
 * `Yaz0 <https://zeldamods.org/wiki/Yaz0>`_ (compression algorithm)
 

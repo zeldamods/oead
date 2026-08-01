@@ -28,8 +28,13 @@ namespace py = pybind11;
 namespace oead::bind {
 
 void BindAamp(py::module& m);
+void BindAmta(py::module& m);
+void BindBars(py::module& m);
 void BindByml(py::module& m);
 void BindCommonTypes(py::module& m);
+void BindFstm(py::module& m);
+void BindFstp(py::module& m);
+void BindFwav(py::module& m);
 void BindGsheet(py::module& m);
 void BindSarc(py::module& m);
 void BindYaz0(py::module& m);
