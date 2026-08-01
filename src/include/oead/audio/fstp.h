@@ -26,6 +26,7 @@ struct PrefetchDataBlock {
   std::vector<PrefetchData> prefetch_data;
 };
 
+/// Stream Prefetch Sound
 class Fstp : public IAssetFile {
 public:
   Fstp() = default;
