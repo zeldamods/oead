@@ -72,6 +72,7 @@ void BindFixedSafeString(py::module& m, const char* name) {
 }  // namespace detail
 
 void BindCommonTypes(py::module& m) {
+  BindMapViews(m);
   BindVector<std::vector<u8>>(
       m, "Bytes", py::buffer_protocol(),
       "Mutable bytes-like object. This is used to avoid possibly expensive data copies.");

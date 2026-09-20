@@ -20,7 +20,7 @@
 #include <oead/sarc.h>
 #include "main.h"
 
-OEAD_MAKE_OPAQUE("FileMap", oead::SarcWriter::FileMap);
+OEAD_MAKE_OPAQUE("oead.SarcWriter.FileMap", oead::SarcWriter::FileMap);
 
 namespace oead::bind {
 
@@ -58,8 +58,8 @@ void BindSarc(py::module& m) {
   BindMap<SarcWriter::FileMap>(writer_cl, "FileMap");
 
   writer_cl
-      .def(py::init<util::Endianness, SarcWriter::Mode>(), "endian"_a = util::Endianness::Little,
-           "mode"_a = SarcWriter::Mode::New)
+      .def(py::init<util::Endianness, SarcWriter::Mode>(), py::arg_v("endian", util::Endianness::Little, "oead.Endianness.Little"),
+           py::arg_v("mode", SarcWriter::Mode::New, "oead.SarcWriter.Mode.New"))
       .def("write", &SarcWriter::Write, py::return_value_policy::move)
       .def("set_endianness", &SarcWriter::SetEndianness, "endian"_a)
       .def("set_min_alignment", &SarcWriter::SetMinAlignment, "alignment"_a)
