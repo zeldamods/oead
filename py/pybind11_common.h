@@ -37,6 +37,20 @@
 namespace py = pybind11;
 using namespace py::literals;
 
+namespace pybind11::detail {
+// pybind11 3.1 runs postcall hooks even when the arguments failed to load, in which case the
+// return value is the "try next overload" sentinel and keep_alive<0, N> dereferences it.
+// This has to be declared before anything instantiates the primary template, including
+// bind_map and bind_vector, which use keep_alive<0, 1> themselves.
+template <>
+struct process_attribute<keep_alive<0, 1>> : process_attribute_default<keep_alive<0, 1>> {
+  static void postcall(function_call& call, handle ret) {
+    if (ret.ptr() != PYBIND11_TRY_NEXT_OVERLOAD)
+      keep_alive_impl(0, 1, call, ret);
+  }
+};
+}  // namespace pybind11::detail
+
 #define OEAD_MAKE_OPAQUE(NAME, ...)                                                                \
   PYBIND11_NAMESPACE_BEGIN(PYBIND11_NAMESPACE)                                                     \
   namespace detail {                                                                               \
