@@ -18,7 +18,7 @@
  */
 
 #include <map>
-#include <nonstd/span.h>
+#include <span>
 #include <type_traits>
 #include <vector>
 

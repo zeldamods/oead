@@ -23,6 +23,7 @@
 #include <absl/strings/numbers.h>
 #include <absl/strings/str_format.h>
 #include <mutex>
+#include <stdexcept>
 
 #include <c4/error.hpp>
 #include <ryml.hpp>

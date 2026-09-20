@@ -23,7 +23,7 @@
 #include <absl/hash/hash.h>
 #include <array>
 #include <memory>
-#include <nonstd/span.h>
+#include <span>
 #include <string>
 #include <string_view>
 #include <tsl/ordered_map.h>
@@ -212,7 +212,7 @@ struct ParameterIO : ParameterList {
   OEAD_DEFINE_FIELDS(ParameterIO, objects, lists, version, type);
 
   /// Load a ParameterIO from a binary parameter archive.
-  static ParameterIO FromBinary(tcb::span<const u8> data);
+  static ParameterIO FromBinary(std::span<const u8> data);
   /// Load a ParameterIO from a YAML representation.
   static ParameterIO FromText(std::string_view yml_text);
 

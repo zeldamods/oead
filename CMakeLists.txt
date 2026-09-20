@@ -8,7 +8,7 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   add_compile_options(-fcolor-diagnostics)
 endif()
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -63,7 +63,6 @@ target_include_directories(oead SYSTEM PUBLIC lib/nonstd)
 
 set(BUILD_TESTING OFF)
 add_subdirectory(lib/abseil)
-add_subdirectory(lib/EasyIterator)
 add_subdirectory(lib/libyaml)
 add_subdirectory(lib/ordered-map)
 add_subdirectory(lib/rapidyaml)
@@ -76,7 +75,6 @@ target_link_libraries(oead
     absl::btree
     absl::flat_hash_map
     absl::hash
-    EasyIterator
     tsl::ordered_map
   PRIVATE
     oead::res

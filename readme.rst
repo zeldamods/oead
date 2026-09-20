@@ -50,7 +50,7 @@ Building from source
 Building oead from source requires:
 
 * CMake 3.15+
-* A compiler that supports C++17
+* A compiler that supports C++20
 * Everything needed to build libyaml
 
 First, clone the repository then enter the oead directory and run ``git submodule update --init --recursive``.

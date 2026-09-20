@@ -17,7 +17,7 @@
  * along with syaz0.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <nonstd/span.h>
+#include <span>
 #include <vector>
 
 #include <oead/errors.h>
@@ -40,7 +40,7 @@ void BindYaz0(py::module& parent) {
 
   m.def(
       "decompress",
-      [](tcb::span<const u8> src) {
+      [](std::span<const u8> src) {
         const auto header = yaz0::GetHeader(src);
         if (!header)
           throw InvalidDataError("Invalid Yaz0 header");
@@ -52,7 +52,7 @@ void BindYaz0(py::module& parent) {
 
   m.def(
       "decompress_unsafe",
-      [](tcb::span<const u8> src) {
+      [](std::span<const u8> src) {
         const auto header = yaz0::GetHeader(src);
         if (!header)
           throw InvalidDataError("Invalid Yaz0 header");

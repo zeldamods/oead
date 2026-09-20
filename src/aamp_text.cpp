@@ -432,7 +432,7 @@ private:
     EmitParameterList(pio, ParameterIO::ParamRootKey);
   }
 
-  void EmitCurves(tcb::span<const Curve> curves) {
+  void EmitCurves(std::span<const Curve> curves) {
     yaml_event_t event;
     yaml_sequence_start_event_initialize(&event, nullptr, (const u8*)"!curve", 0,
                                          YAML_FLOW_SEQUENCE_STYLE);

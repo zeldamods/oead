@@ -21,12 +21,12 @@
 
 #include <absl/container/flat_hash_map.h>
 #include <memory>
-#include <nonstd/span.h>
+#include <ranges>
+#include <span>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <vector>
-
-#include <easy_iterator.h>
 
 #include <oead/types.h>
 #include <oead/util/binary_reader.h>
@@ -122,7 +122,7 @@ struct ResField {
 
   ResField();
 
-  tcb::span<ResField> GetFields() const { return {fields, num_fields}; }
+  std::span<ResField> GetFields() const { return {fields, num_fields}; }
 
   /// Name (guaranteed to be non-null).
   const char* name;
@@ -163,8 +163,8 @@ struct Nullable {
 /// For defining datasheet structures.
 template <typename T>
 struct Array {
-  tcb::span<T> Span() const { return {data, size}; }
-  operator tcb::span<T>() const { return Span(); }
+  std::span<T> Span() const { return {data, size}; }
+  operator std::span<T>() const { return Span(); }
 
   T* data = nullptr;
   u32 size = 0;
@@ -186,7 +186,7 @@ private:
 };
 
 using FieldMap = absl::flat_hash_map<std::string_view, ResField*>;
-FieldMap MakeFieldMap(tcb::span<ResField> fields);
+FieldMap MakeFieldMap(std::span<ResField> fields);
 
 /// Represents a piece of field data in a datasheet.
 struct Data {
@@ -263,24 +263,12 @@ struct Data {
 };
 static_assert(sizeof(Data) == 0x10);
 
-/// An iterator for opaque blobs for which only the element size is known.
-class OpaqueIterator : public easy_iterator::InitializedIterable {
-public:
-  OpaqueIterator(void* begin, void* end, size_t item_size)
-      : m_current{begin}, m_end{end}, m_item_size{item_size} {}
-
-  bool advance() {
-    m_current = reinterpret_cast<void*>(uintptr_t(m_current) + m_item_size);
-    return m_current != m_end;
-  }
-  bool init() { return m_current != m_end; }
-  void* value() { return m_current; }
-
-private:
-  void* m_current;
-  void* m_end;
-  size_t m_item_size;
-};
+/// A range over opaque blobs for which only the element size is known.
+inline auto MakeOpaqueRange(void* begin, size_t num_items, size_t item_size) {
+  return std::views::iota(size_t(0), num_items) | std::views::transform([=](size_t i) {
+           return reinterpret_cast<void*>(uintptr_t(begin) + i * item_size);
+         });
+}
 
 /// Grezzo datasheet.
 ///
@@ -305,24 +293,21 @@ struct SheetRw {
 /// See also SheetRw for a version of this class that allows for reflection and modifications.
 class Sheet {
 public:
-  Sheet(tcb::span<u8> data);
+  Sheet(std::span<u8> data);
 
   ResHeader& GetHeader() const { return *reinterpret_cast<ResHeader*>(m_data.data()); }
   std::string_view GetName() const { return GetHeader().name; }
 
   /// Get the datasheet root fields.
-  tcb::span<ResField> GetRootFields() const;
+  std::span<ResField> GetRootFields() const;
 
   /// Get every single datasheet field (including nested fields).
-  tcb::span<ResField> GetAllFields() const;
+  std::span<ResField> GetAllFields() const;
 
   /// Get the datasheet values (as an iterable).
   auto GetValues() const {
     const auto& header = GetHeader();
-    return easy_iterator::MakeIterable<OpaqueIterator>(
-        header.values,
-        reinterpret_cast<void*>((uintptr_t)header.values + header.value_size * header.num_values),
-        header.value_size);
+    return MakeOpaqueRange(header.values, header.num_values, header.value_size);
   }
 
   using IntMap = absl::flat_hash_map<int, void*>;
@@ -337,7 +322,7 @@ public:
 private:
   ResField* GetAllFieldsRaw() const { return reinterpret_cast<ResField*>(&GetHeader() + 1); }
 
-  tcb::span<u8> m_data;
+  std::span<u8> m_data;
   /// Key field. Nullptr if there is no key field.
   ResField* m_key_field = nullptr;
   /// Only valid if there is a valid key field and the key field type is Int.
