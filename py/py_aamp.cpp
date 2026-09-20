@@ -65,9 +65,8 @@ static void BindAampParameter(py::module& m) {
       .def(py::init<F32>())
       .def(py::init<aamp::Parameter::Value>())
       .def(py::self == py::self)
-      .def("__copy__", [](const aamp::Parameter::Value& o) { return aamp::Parameter::Value(o); })
-      .def("__deepcopy__",
-           [](const aamp::Parameter::Value& o, py::dict) { return aamp::Parameter::Value(o); });
+      .def("__copy__", [](const aamp::Parameter& o) { return aamp::Parameter(o); })
+      .def("__deepcopy__", [](const aamp::Parameter& o, py::dict) { return aamp::Parameter(o); });
 
   clas.def("type", &aamp::Parameter::GetType)
       .def("__repr__",
