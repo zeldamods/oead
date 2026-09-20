@@ -205,19 +205,13 @@ void DefineCustomMap(Class_& cl) {
 
   cl.def(
     "get",
-    [](const Map& map, const KeyType& key,
-       std::optional<py::object> default_value) -> std::variant<py::object, MappedType> {
-      const auto it = map.find(key);
-      if (it == map.cend()) {
-        if (default_value)
-          return *default_value;
-        throw py::key_error();
-      }
-      return it->second;
+    [](const Map& map, const KeyType& key, py::object default_value) -> py::object {
+      if (map.find(key) == map.end())
+        return default_value;
+      return py::cast(&map).attr("__getitem__")(key);
     },
-    "key"_a, 
-    "default"_a = std::nullopt, 
-    py::keep_alive<0, 1>()
+    "key"_a,
+    "default"_a = py::none()
   );
 
   py::implicitly_convertible<py::dict, Map>();
