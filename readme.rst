@@ -4,7 +4,7 @@
 
 **oead** is a C++ library for common file formats that are used in modern first-party Nintendo EAD (now EPD) titles.
 
-Python bindings for 3.6+ are also available.
+Python bindings for 3.10+ are also available.
 
 Features
 ========
@@ -35,8 +35,7 @@ This will download and install a precompiled version of oead for the following p
 
 The following versions of Python are supported:
 
-* CPython 3.6 to 3.12
-* PyPy3.7 to 3.9
+* CPython 3.10 to 3.14
 
 If you are using any other platform, you must build oead from source (refer to the next section).
 
@@ -50,7 +49,7 @@ Building from source
 
 Building oead from source requires:
 
-* CMake 3.12+
+* CMake 3.15+
 * A compiler that supports C++17
 * Everything needed to build libyaml
 
@@ -59,8 +58,8 @@ First, clone the repository then enter the oead directory and run ``git submodul
 Building the Python module
 --------------------------
 
-* To install the module, run ``pip install -e .``. This requires the following Python modules to be installed: setuptools, wheel
-* If you just want to build the Python module from source without installing it, run ``python setup.py bdist_wheel``.
+* To install the module, run ``pip install .``
+* If you just want to build the Python module from source without installing it, run ``pip wheel --no-deps .``
 
 C++ usage
 ---------

@@ -4,13 +4,14 @@ on:
   release:
     types:
       - created
+  workflow_dispatch:
 
 jobs:
   build_sdist:
     name: Make SDist
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v7
       with:
         submodules: recursive
 
@@ -28,22 +29,20 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # Universal wheels error on Mac, so use macos-latest for arm, and 13 for x64
-        os: [ubuntu-latest, windows-latest, macos-latest, macos-13]
+        # Universal wheels error on Mac, so use macos-latest for arm, and an Intel runner for x64
+        os: [ubuntu-latest, windows-latest, macos-latest, macos-15-intel]
     env:
       MACOSX_DEPLOYMENT_TARGET: "10.14"
       CIBW_ARCHS: auto64
-      CIBW_SKIP: cp36-* cp37-* cp38-macosx_arm64
+      CIBW_SKIP: cp31?t-*
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
 
-      - uses: actions/setup-python@v2
-
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.19.1
+        uses: pypa/cibuildwheel@v4.2.1
 
       - uses: actions/upload-artifact@v4
         with:
@@ -52,6 +51,7 @@ jobs:
 
 
   upload_pypi:
+    if: github.event_name == 'release'
     needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
     steps:
