@@ -23,6 +23,13 @@ def test_sarc_get_file_by_index(file):
 
 
 @pytest.mark.parametrize("file", cases)
+def test_sarc_get_file_index_out_of_range(file):
+    arc = oead.Sarc(cases_data[file])
+    with pytest.raises(IndexError):
+        arc.get_file(arc.get_num_files())
+
+
+@pytest.mark.parametrize("file", cases)
 def test_sarc_get_file_bad_argument(file):
     arc = oead.Sarc(cases_data[file])
     with pytest.raises(TypeError):
