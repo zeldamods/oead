@@ -41,7 +41,7 @@ void BindSarc(py::module& m) {
              std::optional<Sarc> sarc;
            };
            auto storage = std::make_shared<Storage>();
-           tcb::span<const u8> span;
+           std::span<const u8> span;
            if (!RequestSpan(data, storage->buffer, span))
              throw py::type_error("data must be a contiguous bytes-like object");
            storage->sarc.emplace(span);

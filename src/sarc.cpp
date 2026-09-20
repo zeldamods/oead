@@ -22,6 +22,7 @@
 #include <absl/strings/numbers.h>
 #include <array>
 #include <numeric>
+#include <stdexcept>
 
 #include <cmrc/cmrc.hpp>
 #include <ryml.hpp>
@@ -93,7 +94,7 @@ constexpr u32 HashName(u32 multiplier, std::string_view name) {
 }  // namespace sarc
 
 // Note: This mirrors what sead::SharcArchiveRes::prepareArchive_ does.
-Sarc::Sarc(tcb::span<const u8> data) : m_reader{data, util::Endianness::Big} {
+Sarc::Sarc(std::span<const u8> data) : m_reader{data, util::Endianness::Big} {
   m_reader = {data, util::ByteOrderMarkToEndianness(m_reader.Read<sarc::ResHeader>().value().bom)};
   const auto header = *m_reader.Read<sarc::ResHeader>();
 
@@ -358,14 +359,14 @@ void SarcWriter::AddAlignmentRequirement(std::string extension, size_t alignment
   m_alignment_map.insert_or_assign(std::move(extension), alignment);
 }
 
-static bool IsSarc(tcb::span<const u8> data) {
+static bool IsSarc(std::span<const u8> data) {
   return data.size() >= 0x20 && (std::memcmp(data.data(), "SARC", 4) == 0 ||
                                  (std::memcmp(data.data(), "Yaz0", 4) == 0 &&
                                   std::memcmp(data.data() + 0x11, "SARC", 4) == 0));
 }
 
 /// Detects alignment requirements for binary files that use nn::util::BinaryFileHeader.
-static u32 GetAlignmentForNewBinaryFile(tcb::span<const u8> data) {
+static u32 GetAlignmentForNewBinaryFile(std::span<const u8> data) {
   util::BinaryReader reader{data, util::Endianness::Big};
   if (data.size() <= 0x20)
     return 1;
@@ -384,7 +385,7 @@ static u32 GetAlignmentForNewBinaryFile(tcb::span<const u8> data) {
   return 1 << data[0xE];
 }
 
-static u32 GetAlignmentForCafeBflim(tcb::span<const u8> data) {
+static u32 GetAlignmentForCafeBflim(std::span<const u8> data) {
   if (data.size() <= 0x28 || std::memcmp(data.data() + data.size() - 0x28, "FLIM", 4) != 0)
     return 1;
 
@@ -392,7 +393,7 @@ static u32 GetAlignmentForCafeBflim(tcb::span<const u8> data) {
                             util::Endianness::Big);
 }
 
-u32 SarcWriter::GetAlignmentForFile(std::string_view name, tcb::span<const u8> data) const {
+u32 SarcWriter::GetAlignmentForFile(std::string_view name, std::span<const u8> data) const {
   const std::string_view::size_type dot_pos = name.rfind('.');
   const std::string_view ext = dot_pos + 1 < name.size() ? name.substr(dot_pos + 1) : "";
 

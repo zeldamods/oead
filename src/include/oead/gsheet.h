@@ -21,7 +21,8 @@
 
 #include <absl/container/flat_hash_map.h>
 #include <memory>
-#include <nonstd/span.h>
+#include <span>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -122,7 +123,7 @@ struct ResField {
 
   ResField();
 
-  tcb::span<ResField> GetFields() const { return {fields, num_fields}; }
+  std::span<ResField> GetFields() const { return {fields, num_fields}; }
 
   /// Name (guaranteed to be non-null).
   const char* name;
@@ -163,8 +164,8 @@ struct Nullable {
 /// For defining datasheet structures.
 template <typename T>
 struct Array {
-  tcb::span<T> Span() const { return {data, size}; }
-  operator tcb::span<T>() const { return Span(); }
+  std::span<T> Span() const { return {data, size}; }
+  operator std::span<T>() const { return Span(); }
 
   T* data = nullptr;
   u32 size = 0;
@@ -186,7 +187,7 @@ private:
 };
 
 using FieldMap = absl::flat_hash_map<std::string_view, ResField*>;
-FieldMap MakeFieldMap(tcb::span<ResField> fields);
+FieldMap MakeFieldMap(std::span<ResField> fields);
 
 /// Represents a piece of field data in a datasheet.
 struct Data {
@@ -305,16 +306,16 @@ struct SheetRw {
 /// See also SheetRw for a version of this class that allows for reflection and modifications.
 class Sheet {
 public:
-  Sheet(tcb::span<u8> data);
+  Sheet(std::span<u8> data);
 
   ResHeader& GetHeader() const { return *reinterpret_cast<ResHeader*>(m_data.data()); }
   std::string_view GetName() const { return GetHeader().name; }
 
   /// Get the datasheet root fields.
-  tcb::span<ResField> GetRootFields() const;
+  std::span<ResField> GetRootFields() const;
 
   /// Get every single datasheet field (including nested fields).
-  tcb::span<ResField> GetAllFields() const;
+  std::span<ResField> GetAllFields() const;
 
   /// Get the datasheet values (as an iterable).
   auto GetValues() const {
@@ -337,7 +338,7 @@ public:
 private:
   ResField* GetAllFieldsRaw() const { return reinterpret_cast<ResField*>(&GetHeader() + 1); }
 
-  tcb::span<u8> m_data;
+  std::span<u8> m_data;
   /// Key field. Nullptr if there is no key field.
   ResField* m_key_field = nullptr;
   /// Only valid if there is a valid key field and the key field type is Int.

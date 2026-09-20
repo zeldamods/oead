@@ -21,8 +21,9 @@
 
 #include <array>
 #include <cstring>
-#include <nonstd/span.h>
+#include <span>
 #include <optional>
+#include <stdexcept>
 #include <type_traits>
 #include <vector>
 
@@ -37,7 +38,7 @@ namespace oead::util {
 class BinaryReader final {
 public:
   BinaryReader() = default;
-  BinaryReader(tcb::span<const u8> data, Endianness endian) : m_data{data}, m_endian{endian} {}
+  BinaryReader(std::span<const u8> data, Endianness endian) : m_data{data}, m_endian{endian} {}
 
   const auto& span() const { return m_data; }
   size_t Tell() const { return m_offset; }
@@ -90,13 +91,13 @@ public:
   }
 
 private:
-  tcb::span<const u8> m_data{};
+  std::span<const u8> m_data{};
   size_t m_offset = 0;
   Endianness m_endian = Endianness::Big;
 };
 
 template <typename T>
-inline void RelocateWithSize(tcb::span<u8> buffer, T*& ptr, size_t size) {
+inline void RelocateWithSize(std::span<u8> buffer, T*& ptr, size_t size) {
   const u64 offset = reinterpret_cast<u64>(ptr);
   if (buffer.size() < offset || buffer.size() < offset + size)
     throw std::out_of_range("RelocateWithSize: out of bounds");
@@ -104,11 +105,11 @@ inline void RelocateWithSize(tcb::span<u8> buffer, T*& ptr, size_t size) {
 }
 
 template <typename T>
-inline void Relocate(tcb::span<u8> buffer, T*& ptr, size_t num_objects = 1) {
+inline void Relocate(std::span<u8> buffer, T*& ptr, size_t num_objects = 1) {
   RelocateWithSize(buffer, ptr, sizeof(T) * num_objects);
 }
 
-inline std::string_view ReadString(tcb::span<u8> buffer, const char* ptr_) {
+inline std::string_view ReadString(std::span<u8> buffer, const char* ptr_) {
   const u8* ptr = reinterpret_cast<const u8*>(ptr_);
   if (ptr < buffer.data() || buffer.data() + buffer.size() <= ptr)
     throw std::out_of_range("ReadString: out of bounds");
@@ -135,7 +136,7 @@ public:
   Endianness Endian() const { return m_endian; }
   BinaryReader Reader() const { return {m_data, m_endian}; }
 
-  void WriteBytes(tcb::span<const u8> bytes) {
+  void WriteBytes(std::span<const u8> bytes) {
     if (m_offset + bytes.size() > m_data.size())
       m_data.resize(m_offset + bytes.size());
 

@@ -23,7 +23,7 @@
 #include <absl/container/flat_hash_map.h>
 #include <functional>
 #include <memory>
-#include <nonstd/span.h>
+#include <span>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -121,7 +121,7 @@ public:
   }
 
   /// Load a document from binary data.
-  static Byml FromBinary(tcb::span<const u8> data);
+  static Byml FromBinary(std::span<const u8> data);
   /// Load a document from YAML text.
   static Byml FromText(std::string_view yml_text);
 

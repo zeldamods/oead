@@ -25,6 +25,7 @@
 #include <array>
 #include <limits>
 #include <queue>
+#include <stdexcept>
 #include "absl/container/flat_hash_set.h"
 
 #include <oead/errors.h>
@@ -112,7 +113,7 @@ static_assert(sizeof(ResParameterList) == 0xc);
 
 class Parser {
 public:
-  Parser(tcb::span<const u8> data) : m_reader{data, util::Endianness::Little} {
+  Parser(std::span<const u8> data) : m_reader{data, util::Endianness::Little} {
     if (data.size() < sizeof(ResHeader))
       throw InvalidDataError("Invalid header");
 
@@ -460,7 +461,7 @@ public:
   absl::flat_hash_map<std::string_view, u32> string_offsets;
 };
 
-ParameterIO ParameterIO::FromBinary(tcb::span<const u8> data) {
+ParameterIO ParameterIO::FromBinary(std::span<const u8> data) {
   Parser parser{data};
   return parser.Parse();
 }

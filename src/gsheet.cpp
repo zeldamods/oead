@@ -20,6 +20,7 @@
 #include <absl/strings/str_format.h>
 #include <algorithm>
 #include <any>
+#include <stdexcept>
 
 #include <oead/errors.h>
 #include <oead/gsheet.h>
@@ -28,7 +29,7 @@
 
 namespace oead::gsheet {
 
-FieldMap MakeFieldMap(tcb::span<ResField> fields) {
+FieldMap MakeFieldMap(std::span<ResField> fields) {
   FieldMap map;
   for (ResField& field : fields)
     map.emplace(field.name, &field);
@@ -361,7 +362,7 @@ std::vector<u8> SheetRw::ToBinary() const {
 }
 
 namespace {
-void RelocateField(ResField& field, ResField* parent, tcb::span<u8> buffer) {
+void RelocateField(ResField& field, ResField* parent, std::span<u8> buffer) {
   if (!field.name || !field.type_name)
     throw InvalidDataError("Missing field name or field type name");
 
@@ -385,7 +386,7 @@ void RelocateField(ResField& field, ResField* parent, tcb::span<u8> buffer) {
   }
 }
 
-void RelocateFieldData(void* data, const ResField& field, tcb::span<u8> buffer,
+void RelocateFieldData(void* data, const ResField& field, std::span<u8> buffer,
                        bool ignore_array_flag = false, bool ignore_nullable_flag = false) {
   if (field.flags[Field::Flag::IsArray] && !ignore_array_flag) {
     auto* array = static_cast<OpaqueArray*>(data);
@@ -425,7 +426,7 @@ void RelocateFieldData(void* data, const ResField& field, tcb::span<u8> buffer,
 }
 }  // namespace
 
-Sheet::Sheet(tcb::span<u8> data) : m_data{data} {
+Sheet::Sheet(std::span<u8> data) : m_data{data} {
   if (data.size() < sizeof(ResHeader))
     throw InvalidDataError("Invalid header");
 
@@ -489,11 +490,11 @@ Sheet::Sheet(tcb::span<u8> data) : m_data{data} {
   }
 }
 
-tcb::span<ResField> Sheet::GetRootFields() const {
+std::span<ResField> Sheet::GetRootFields() const {
   return {GetAllFieldsRaw(), GetHeader().num_root_fields};
 }
 
-tcb::span<ResField> Sheet::GetAllFields() const {
+std::span<ResField> Sheet::GetAllFields() const {
   return {GetAllFieldsRaw(), GetHeader().num_fields};
 }
 

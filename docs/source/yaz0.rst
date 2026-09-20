@@ -13,6 +13,6 @@ API
 .. doxygenfunction:: oead::yaz0::GetHeader
 
 .. doxygenfunction:: oead::yaz0::Compress
-.. doxygenfunction:: oead::yaz0::Decompress(tcb::span<const u8>)
-.. doxygenfunction:: oead::yaz0::Decompress(tcb::span<const u8>, tcb::span<u8>)
+.. doxygenfunction:: oead::yaz0::Decompress(std::span<const u8>)
+.. doxygenfunction:: oead::yaz0::Decompress(std::span<const u8>, std::span<u8>)
 .. doxygenfunction:: oead::yaz0::DecompressUnsafe

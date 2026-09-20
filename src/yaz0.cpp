@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <bitset>
 #include <cstring>
+#include <stdexcept>
 
 #include <zlib-ng.h>
 
@@ -41,7 +42,7 @@ static std::optional<Header> GetHeader(util::BinaryReader& reader) {
   return header;
 }
 
-std::optional<Header> GetHeader(tcb::span<const u8> data) {
+std::optional<Header> GetHeader(std::span<const u8> data) {
   util::BinaryReader reader{data, util::Endianness::Big};
   return GetHeader(reader);
 }
@@ -103,7 +104,7 @@ private:
 };
 }  // namespace
 
-std::vector<u8> Compress(tcb::span<const u8> src, u32 data_alignment, int level) {
+std::vector<u8> Compress(std::span<const u8> src, u32 data_alignment, int level) {
   util::BinaryWriter writer{util::Endianness::Big};
   writer.Buffer().reserve(src.size());
 
@@ -131,7 +132,7 @@ std::vector<u8> Compress(tcb::span<const u8> src, u32 data_alignment, int level)
   return writer.Finalize();
 }
 
-std::vector<u8> Decompress(tcb::span<const u8> src) {
+std::vector<u8> Decompress(std::span<const u8> src) {
   const auto header = GetHeader(src);
   if (!header)
     return {};
@@ -141,13 +142,14 @@ std::vector<u8> Decompress(tcb::span<const u8> src) {
 }
 
 template <bool Safe>
-static void Decompress(tcb::span<const u8> src, tcb::span<u8> dst) {
+static void Decompress(std::span<const u8> src, std::span<u8> dst) {
   util::BinaryReader reader{src, util::Endianness::Big};
   reader.Seek(sizeof(Header));
 
   u8 group_header = 0;
   size_t remaining_chunks = 0;
-  for (auto dst_it = dst.begin(); dst_it < dst.end();) {
+  u8* const dst_end = dst.data() + dst.size();
+  for (u8* dst_it = dst.data(); dst_it < dst_end;) {
     if (remaining_chunks == 0) {
       group_header = reader.Read<u8, Safe>().value();
       remaining_chunks = ChunksPerGroup;
@@ -162,7 +164,7 @@ static void Decompress(tcb::span<const u8> src, tcb::span<u8> dst) {
           ((pair >> 12) ? (pair >> 12) : (reader.Read<u8, Safe>().value() + 16)) + 2;
 
       const u8* base = dst_it - distance;
-      if (base < dst.begin() || dst_it + length > dst.end()) {
+      if (base < dst.data() || dst_it + length > dst_end) {
         throw std::invalid_argument("Copy is out of bounds");
       }
       for (size_t i = 0; i < length; ++i)
@@ -174,11 +176,11 @@ static void Decompress(tcb::span<const u8> src, tcb::span<u8> dst) {
   }
 }
 
-void Decompress(tcb::span<const u8> src, tcb::span<u8> dst) {
+void Decompress(std::span<const u8> src, std::span<u8> dst) {
   Decompress<true>(src, dst);
 }
 
-void DecompressUnsafe(tcb::span<const u8> src, tcb::span<u8> dst) {
+void DecompressUnsafe(std::span<const u8> src, std::span<u8> dst) {
   Decompress<false>(src, dst);
 }
 

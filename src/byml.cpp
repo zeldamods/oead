@@ -23,6 +23,7 @@
 #include <array>
 #include <cstring>
 #include <map>
+#include <stdexcept>
 #include <string_view>
 
 #include <oead/byml.h>
@@ -134,7 +135,7 @@ private:
 
 class Parser {
 public:
-  Parser(tcb::span<const u8> data) {
+  Parser(std::span<const u8> data) {
     if (data.size() < sizeof(ResHeader))
       throw InvalidDataError("Invalid header");
 
@@ -446,7 +447,7 @@ struct WriteContext {
 
 }  // namespace byml
 
-Byml Byml::FromBinary(tcb::span<const u8> data) {
+Byml Byml::FromBinary(std::span<const u8> data) {
   byml::Parser parser{data};
   return parser.Parse();
 }

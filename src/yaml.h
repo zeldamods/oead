@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include <nonstd/span.h>
+#include <span>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -90,7 +90,7 @@ public:
 
 class LibyamlParser {
 public:
-  LibyamlParser(tcb::span<const u8> data) {
+  LibyamlParser(std::span<const u8> data) {
     yaml_parser_initialize(&m_parser);
     yaml_parser_set_input_string(&m_parser, data.data(), data.size());
   }
@@ -157,7 +157,7 @@ public:
 
   /// Emits an inline sequence of bools, ints or floats.
   template <typename T>
-  void EmitSimpleSequence(tcb::span<const T> sequence, std::string_view sequence_tag = {}) {
+  void EmitSimpleSequence(std::span<const T> sequence, std::string_view sequence_tag = {}) {
     yaml_event_t event;
     yaml_sequence_start_event_initialize(&event, nullptr, (const u8*)sequence_tag.data(),
                                          sequence_tag.empty(), YAML_FLOW_SEQUENCE_STYLE);
@@ -180,7 +180,7 @@ public:
 
   template <typename T>
   void EmitSimpleSequence(std::initializer_list<T> l, std::string_view tag = {}) {
-    EmitSimpleSequence(tcb::span<const T>(l.begin(), l.end()), tag);
+    EmitSimpleSequence(std::span<const T>(l.begin(), l.end()), tag);
   }
 
   template <typename... Ts>

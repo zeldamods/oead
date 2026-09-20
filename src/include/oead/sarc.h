@@ -23,7 +23,7 @@
 #include <absl/container/btree_map.h>
 #include <absl/container/flat_hash_map.h>
 #include <easy_iterator.h>
-#include <nonstd/span.h>
+#include <span>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -41,7 +41,7 @@ public:
     /// File name. May be empty for file entries that do not use the file name table.
     std::string_view name;
     /// File data (as a view).
-    tcb::span<const u8> data;
+    std::span<const u8> data;
 
     bool operator==(const File& other) const {
       return name == other.name && absl::c_equal(data, other.data);
@@ -63,7 +63,7 @@ public:
     const Sarc& m_parent;
   };
 
-  Sarc(tcb::span<const u8> data);
+  Sarc(std::span<const u8> data);
 
   /// Get the number of files that are stored in the archive.
   u16 GetNumFiles() const { return m_num_files; }
@@ -142,7 +142,7 @@ public:
 
 private:
   void AddDefaultAlignmentRequirements();
-  u32 GetAlignmentForFile(std::string_view name, tcb::span<const u8> data) const;
+  u32 GetAlignmentForFile(std::string_view name, std::span<const u8> data) const;
 
   util::Endianness m_endian = util::Endianness::Little;
   Mode m_mode = Mode::New;

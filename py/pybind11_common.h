@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include <nonstd/span.h>
+#include <span>
 #include <optional>
 #include <vector>
 
@@ -84,7 +84,7 @@ struct SpanView {
 
 /// Exports src as a contiguous 1-D buffer of T. The span is only valid while info is alive.
 template <typename T>
-bool RequestSpan(py::handle src, py::buffer_info& info, tcb::span<T>& span) {
+bool RequestSpan(py::handle src, py::buffer_info& info, std::span<T>& span) {
   if (!PyObject_CheckBuffer(src.ptr()))
     return false;
   try {
@@ -113,8 +113,8 @@ constexpr auto OeadGetSpanCasterName() {
 }
 
 template <typename T>
-struct type_caster<tcb::span<T>> {
-  static handle cast(tcb::span<T> span, return_value_policy, handle parent) {
+struct type_caster<std::span<T>> {
+  static handle cast(std::span<T> span, return_value_policy, handle parent) {
     oead::bind::SpanView view{reinterpret_borrow<object>(parent), span.data(), span.size_bytes(),
                               std::is_const_v<T>};
     return py::memoryview(py::cast(std::move(view))).release();
@@ -130,12 +130,12 @@ private:
   py::buffer_info m_buffer;
 
 public:
-  PYBIND11_TYPE_CASTER(tcb::span<T>, OeadGetSpanCasterName<T>());
+  PYBIND11_TYPE_CASTER(std::span<T>, OeadGetSpanCasterName<T>());
 };
 }  // namespace pybind11::detail
 
 namespace oead::bind {
-inline tcb::span<u8> PyBytesToSpan(py::bytes b) {
+inline std::span<u8> PyBytesToSpan(py::bytes b) {
   return {reinterpret_cast<u8*>(PYBIND11_BYTES_AS_STRING(b.ptr())),
           size_t(PYBIND11_BYTES_SIZE(b.ptr()))};
 }
