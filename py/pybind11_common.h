@@ -72,6 +72,35 @@ struct process_attribute<keep_alive<0, 1>> : process_attribute_default<keep_aliv
   }                                                                                                \
   PYBIND11_NAMESPACE_END(PYBIND11_NAMESPACE)
 
+namespace oead::bind {
+/// Exposes memory that belongs to another Python object as a buffer and keeps that object alive.
+/// A plain memoryview over raw memory has no owner and dangles once the owner is collected.
+struct SpanView {
+  py::object owner;
+  const void* data;
+  size_t size_bytes;
+  bool readonly;
+};
+
+/// Exports src as a contiguous 1-D buffer of T. The span is only valid while info is alive.
+template <typename T>
+bool RequestSpan(py::handle src, py::buffer_info& info, tcb::span<T>& span) {
+  if (!PyObject_CheckBuffer(src.ptr()))
+    return false;
+  try {
+    info = py::reinterpret_borrow<py::buffer>(src).request(!std::is_const_v<T>);
+  } catch (const py::error_already_set&) {
+    return false;
+  }
+  if (info.itemsize != sizeof(T) || info.ndim != 1)
+    return false;
+  if (info.size > 1 && info.strides[0] != info.itemsize)
+    return false;
+  span = {static_cast<T*>(info.ptr), size_t(info.size)};
+  return true;
+}
+}  // namespace oead::bind
+
 namespace pybind11::detail {
 template <typename T, typename std::enable_if_t<std::is_same_v<std::decay_t<T>, u8>, bool> = true>
 constexpr auto OeadGetSpanCasterName() {
@@ -85,21 +114,22 @@ constexpr auto OeadGetSpanCasterName() {
 
 template <typename T>
 struct type_caster<tcb::span<T>> {
-  static handle cast(tcb::span<T> span, return_value_policy, handle) {
-    return py::memoryview::from_memory(span.data(), ssize_t(span.size_bytes())).release();
+  static handle cast(tcb::span<T> span, return_value_policy, handle parent) {
+    oead::bind::SpanView view{reinterpret_borrow<object>(parent), span.data(), span.size_bytes(),
+                              std::is_const_v<T>};
+    return py::memoryview(py::cast(std::move(view))).release();
   }
 
   bool load(handle src, bool) {
-    if (!isinstance<py::sequence>(src) || isinstance<py::str>(src))
-      return false;
-
-    const py::buffer_info buffer = src.cast<py::buffer>().request(!std::is_const_v<T>);
-    if (buffer.itemsize != sizeof(T) || buffer.ndim != 1)
-      return false;
-    value = {static_cast<T*>(buffer.ptr), size_t(buffer.size)};
-    return true;
+    return oead::bind::RequestSpan(src, m_buffer, value);
   }
 
+private:
+  // The export has to outlive the call: releasing it would let the owner resize or free
+  // the memory that the span points to.
+  py::buffer_info m_buffer;
+
+public:
   PYBIND11_TYPE_CASTER(tcb::span<T>, OeadGetSpanCasterName<T>());
 };
 }  // namespace pybind11::detail

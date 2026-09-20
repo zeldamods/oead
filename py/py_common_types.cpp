@@ -73,6 +73,13 @@ void BindFixedSafeString(py::module& m, const char* name) {
 
 void BindCommonTypes(py::module& m) {
   BindMapViews(m);
+
+  py::class_<SpanView>(m, "_SpanView", py::buffer_protocol(), py::module_local())
+      .def_buffer([](SpanView& view) {
+        return py::buffer_info(const_cast<void*>(view.data), 1, py::format_descriptor<u8>::format(),
+                               1, {py::ssize_t(view.size_bytes)}, {py::ssize_t(1)}, view.readonly);
+      });
+
   BindVector<std::vector<u8>>(
       m, "Bytes", py::buffer_protocol(),
       "Mutable bytes-like object. This is used to avoid possibly expensive data copies.");

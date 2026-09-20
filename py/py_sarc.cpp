@@ -17,6 +17,11 @@
  * along with oead.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <memory>
+#include <optional>
+
+#include <pybind11/typing.h>
+
 #include <oead/sarc.h>
 #include "main.h"
 
@@ -25,10 +30,24 @@ OEAD_MAKE_OPAQUE("oead.SarcWriter.FileMap", oead::SarcWriter::FileMap);
 namespace oead::bind {
 
 void BindSarc(py::module& m) {
-  py::class_<Sarc> cl(m, "Sarc");
+  py::class_<Sarc, std::shared_ptr<Sarc>> cl(m, "Sarc");
   py::class_<Sarc::File> file_cl(m, "File");
 
-  cl.def(py::init<tcb::span<const u8>>(), "data"_a, py::keep_alive<1, 2>())
+  cl.def(py::init([](py::buffer data) {
+           // Sarc reads from the buffer for its whole lifetime, so it has to own the export;
+           // keeping the Python object alive would not stop it from being resized or closed.
+           struct Storage {
+             py::buffer_info buffer;
+             std::optional<Sarc> sarc;
+           };
+           auto storage = std::make_shared<Storage>();
+           tcb::span<const u8> span;
+           if (!RequestSpan(data, storage->buffer, span))
+             throw py::type_error("data must be a contiguous bytes-like object");
+           storage->sarc.emplace(span);
+           return std::shared_ptr<Sarc>(storage, &*storage->sarc);
+         }),
+         "data"_a)
       .def(py::self == py::self)
       .def("are_files_equal", &Sarc::AreFilesEqual)
       .def("get_num_files", &Sarc::GetNumFiles)
@@ -38,10 +57,15 @@ void BindSarc(py::module& m) {
            py::keep_alive<0, 1>())
       .def("get_file", py::overload_cast<u16>(&Sarc::GetFile, py::const_), "index"_a,
            py::keep_alive<0, 1>())
-      .def(
-          "get_files",
-          [](const Sarc& s) { return py::make_iterator(s.GetFiles().begin(), s.GetFiles().end()); },
-          py::keep_alive<0, 1>())
+      .def("get_files",
+           [](const Sarc& s) -> py::typing::Iterator<Sarc::File> {
+             // Going through get_file makes every File keep the archive alive, which values
+             // yielded by py::make_iterator do not.
+             const auto self = py::cast(&s, py::return_value_policy::reference);
+             const auto builtins = py::module_::import("builtins");
+             const auto num_files = self.attr("get_num_files")();
+             return builtins.attr("map")(self.attr("get_file"), builtins.attr("range")(num_files));
+           })
       .def("guess_min_alignment", &Sarc::GuessMinAlignment);
 
   file_cl.def_readonly("name", &Sarc::File::name)

@@ -53,7 +53,10 @@ void BindYaz0(py::module& parent) {
   m.def(
       "decompress_unsafe",
       [](tcb::span<const u8> src) {
-        py::bytes dst_py{nullptr, yaz0::GetHeader(src)->uncompressed_size};
+        const auto header = yaz0::GetHeader(src);
+        if (!header)
+          throw InvalidDataError("Invalid Yaz0 header");
+        py::bytes dst_py{nullptr, header->uncompressed_size};
         yaz0::DecompressUnsafe(src, PyBytesToSpan(dst_py));
         return dst_py;
       },
