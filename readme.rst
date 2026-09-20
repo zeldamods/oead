@@ -4,7 +4,7 @@
 
 **oead** is a C++ library for common file formats that are used in modern first-party Nintendo EAD (now EPD) titles.
 
-Python bindings for 3.6+ are also available.
+Python bindings for 3.10+ are also available.
 
 Features
 ========
@@ -35,8 +35,7 @@ This will download and install a precompiled version of oead for the following p
 
 The following versions of Python are supported:
 
-* CPython 3.6 to 3.12
-* PyPy3.7 to 3.9
+* CPython 3.10 to 3.14
 
 If you are using any other platform, you must build oead from source (refer to the next section).
 

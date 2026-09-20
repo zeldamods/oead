@@ -79,7 +79,7 @@ setuptools.setup(
         "Programming Language :: C++",
         "Programming Language :: Python :: 3 :: Only",
     ],
-    python_requires=">=3.6",
+    python_requires=">=3.10",
     ext_modules=[CMakeExtension(name="oead", sourcedir="py")],
     data_files=[('data', [str(p) for p in Path('data').glob('**/*')])],
     zip_safe=False,
