@@ -73,7 +73,7 @@ inline std::string_view RymlGetKeyTag(ryml::ConstNodeRef n) {
 }
 inline ryml::ConstNodeRef RymlGetMapItem(const ryml::ConstNodeRef& n, std::string_view key) {
   auto child = n.is_map() ? n.find_child(StrViewToRymlSubstr(key)) : ryml::ConstNodeRef{};
-  if (child.valid())
+  if (child.readable())
     return child;
   throw std::out_of_range("No such key: " + std::string(key));
 }

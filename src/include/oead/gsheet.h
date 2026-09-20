@@ -120,8 +120,6 @@ struct ResField {
   using Type = Field::Type;
   using Flag = Field::Flag;
 
-  ResField();
-
   std::span<ResField> GetFields() const { return {fields, num_fields}; }
 
   /// Name (guaranteed to be non-null).
@@ -145,6 +143,7 @@ struct ResField {
   u16 data_size;
   /// [For structs] Number of fields
   u16 num_fields;
+  u32 padding = 0;
   /// [For structs] Fields
   ResField* fields;
   /// [For structs] Parent field (filled in during parsing; always 0xdeadbeefdeadbeef when

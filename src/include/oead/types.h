@@ -194,6 +194,7 @@ struct FixedSafeString {
   FixedSafeString() = default;
   FixedSafeString(std::string_view str) { *this = str; }
 
+  FixedSafeString(const FixedSafeString& other) : length(other.length), data(other.data) {}
   auto& operator=(const FixedSafeString& other) {
     length = other.length;
     data = other.data;
