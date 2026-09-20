@@ -25575,6 +25575,7 @@ Icon3DXlu
 IconChange
 IconOff
 IconType
+id
 @ID
 マテリアルID
 マテリアルIDフォーマット
