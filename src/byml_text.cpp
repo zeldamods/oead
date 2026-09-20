@@ -92,8 +92,8 @@ static bool ShouldUseInlineYamlStyle(const Byml& container) {
   }
 }
 
-Byml ParseYamlNode(const c4::yml::NodeRef& node) {
-  if (!node.valid())
+Byml ParseYamlNode(ryml::ConstNodeRef node) {
+  if (!node.readable())
     throw InvalidDataError("Invalid YAML node");
 
   if (node.is_seq()) {
@@ -126,7 +126,7 @@ Byml ParseYamlNode(const c4::yml::NodeRef& node) {
 
 Byml Byml::FromText(std::string_view yml_text) {
   yml::InitRymlIfNeeded();
-  ryml::Tree tree = ryml::parse(yml::StrViewToRymlSubstr(yml_text));
+  ryml::Tree tree = ryml::parse_in_arena(yml::StrViewToRymlSubstr(yml_text));
   return byml::ParseYamlNode(tree.rootref());
 }
 

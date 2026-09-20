@@ -148,8 +148,8 @@ bool StringNeedsQuotes(const std::string_view value) {
   return false;
 }
 
-Scalar ParseScalar(const ryml::NodeRef& node, TagRecognizer recognizer) {
-  if (!node.valid())
+Scalar ParseScalar(ryml::ConstNodeRef node, TagRecognizer recognizer) {
+  if (!node.readable())
     throw InvalidDataError("Invalid YAML node for ParseScalar");
 
   const std::string_view tag = RymlGetValTag(node);
@@ -162,8 +162,8 @@ Scalar ParseScalar(const ryml::NodeRef& node, TagRecognizer recognizer) {
   return ParseScalar(tag, value, is_quoted, recognizer);
 }
 
-Scalar ParseScalarKey(const ryml::NodeRef& node, TagRecognizer recognizer) {
-  if (!node.valid())
+Scalar ParseScalarKey(ryml::ConstNodeRef node, TagRecognizer recognizer) {
+  if (!node.readable())
     throw InvalidDataError("Invalid YAML node for ParseScalarKey");
 
   const std::string_view tag = RymlGetKeyTag(node);
@@ -180,9 +180,9 @@ void InitRymlIfNeeded() {
   static std::once_flag s_flag;
   std::call_once(s_flag, [] {
     ryml::Callbacks callbacks = ryml::get_callbacks();
-    callbacks.m_error = [](const char* msg, size_t msg_len, ryml::Location, void*) {
-      throw RymlError("RymlError: " + std::string(msg, msg_len));
-    };
+    callbacks.set_error_parse([](c4::csubstr msg, ryml::ErrorDataParse const&, void*) {
+      throw RymlError("RymlError: " + std::string(msg.str, msg.len));
+    });
     ryml::set_callbacks(callbacks);
     c4::set_error_callback([](const char* msg, size_t msg_size) {
       throw RymlError("RymlError (c4): " + std::string(msg, msg_size));
