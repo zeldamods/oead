@@ -11,3 +11,26 @@ def test_sarc_get_file(file):
     arc = oead.Sarc(cases_data[file])
     for sarc_file in arc.get_files():
         assert arc.get_file(sarc_file.name) is not None
+
+
+@pytest.mark.parametrize("file", cases)
+def test_sarc_get_file_by_index(file):
+    arc = oead.Sarc(cases_data[file])
+    for i, sarc_file in enumerate(arc.get_files()):
+        by_index = arc.get_file(i)
+        assert by_index.name == sarc_file.name
+        assert bytes(by_index.data) == bytes(sarc_file.data)
+
+
+@pytest.mark.parametrize("file", cases)
+def test_sarc_get_file_index_out_of_range(file):
+    arc = oead.Sarc(cases_data[file])
+    with pytest.raises(IndexError):
+        arc.get_file(arc.get_num_files())
+
+
+@pytest.mark.parametrize("file", cases)
+def test_sarc_get_file_bad_argument(file):
+    arc = oead.Sarc(cases_data[file])
+    with pytest.raises(TypeError):
+        arc.get_file(0.5)

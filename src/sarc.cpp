@@ -130,7 +130,7 @@ Sarc::Sarc(tcb::span<const u8> data) : m_reader{data, util::Endianness::Big} {
 }
 
 Sarc::File Sarc::GetFile(u16 index) const {
-  if (index > m_num_files)
+  if (index >= m_num_files)
     throw std::out_of_range("Sarc::GetFile: out of range: " + std::to_string(index));
 
   const auto entry_offset = m_entries_offset + sizeof(sarc::ResFatEntry) * index;
