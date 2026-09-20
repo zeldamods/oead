@@ -3,7 +3,9 @@ project(oead CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_BUILD_TYPE Release)
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR MINGW)
   # GNU ar: Create thin archive files.
@@ -28,6 +30,7 @@ if(CCACHE_BIN)
   endif()
 endif()
 
+set(PYBIND11_FINDPYTHON ON)
 add_subdirectory(../lib/pybind11 pybind11)
 
 pybind11_add_module(oead-py
@@ -45,3 +48,8 @@ pybind11_add_module(oead-py
 set_target_properties(oead-py PROPERTIES OUTPUT_NAME oead)
 add_subdirectory(../ oead)
 target_link_libraries(oead-py PRIVATE oead)
+
+install(TARGETS oead-py
+  LIBRARY DESTINATION . COMPONENT python
+  RUNTIME DESTINATION . COMPONENT python
+)

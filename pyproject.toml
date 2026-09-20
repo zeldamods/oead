@@ -1,3 +1,38 @@
 [build-system]
-requires = ["setuptools", "cmake>=3.15"]
-build-backend = "setuptools.build_meta"
+requires = ["scikit-build-core>=0.10", "setuptools-scm>=8"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "oead"
+dynamic = ["version"]
+description = "Library for recent Nintendo EAD formats in first-party games"
+readme = "readme.rst"
+license = "GPL-2.0-or-later"
+license-files = ["LICENSE.md"]
+authors = [{ name = "leoetlino", email = "leo@leolam.fr" }]
+requires-python = ">=3.10"
+classifiers = [
+    "Topic :: Software Development :: Libraries",
+    "Operating System :: OS Independent",
+    "Programming Language :: C++",
+    "Programming Language :: Python :: 3 :: Only",
+]
+
+[project.urls]
+Homepage = "https://github.com/zeldamods/oead"
+Documentation = "https://oead.readthedocs.io/"
+Issues = "https://github.com/zeldamods/oead/issues"
+
+[tool.scikit-build]
+minimum-version = "build-system.requires"
+cmake.version = ">=3.15"
+cmake.source-dir = "py"
+install.components = ["python"]
+metadata.version.provider = "scikit_build_core.metadata.setuptools_scm"
+sdist.include = ["/lib/"]
+sdist.exclude = [".github/", "/docs/", "/test/", ".git_archival.txt"]
+
+[tool.setuptools_scm]
+
+[tool.pytest.ini_options]
+norecursedirs = ["helpers"]
