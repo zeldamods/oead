@@ -60,14 +60,19 @@ struct ResHeader {
 };
 static_assert(sizeof(ResHeader) == 0x30);
 
+template <typename T>
+struct CompactOffsetMaxRawValue {
+  static constexpr size_t value = std::numeric_limits<typename NumberType<T>::type>::max();
+};
+
+template <bool BigEndian>
+struct CompactOffsetMaxRawValue<U24<BigEndian>> {
+  static constexpr size_t value = 1 << 24;
+};
+
 template <typename T, size_t Factor = 4>
 struct CompactOffset {
-  static constexpr size_t MaxDistance = [] {
-    if constexpr (util::IsAnyOfType<T, U24<false>, U24<true>>())
-      return Factor * (1 << 24);
-    else
-      return Factor * std::numeric_limits<typename NumberType<T>::type>::max();
-  }();
+  static constexpr size_t MaxDistance = Factor * CompactOffsetMaxRawValue<T>::value;
 
   constexpr CompactOffset() = default;
   constexpr CompactOffset(size_t value) { Set(value); }
