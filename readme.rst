@@ -58,8 +58,8 @@ First, clone the repository then enter the oead directory and run ``git submodul
 Building the Python module
 --------------------------
 
-* To install the module, run ``pip install -e .``. This requires the following Python modules to be installed: setuptools, wheel
-* If you just want to build the Python module from source without installing it, run ``python setup.py bdist_wheel``.
+* To install the module, run ``pip install .``
+* If you just want to build the Python module from source without installing it, run ``pip wheel --no-deps .``
 
 C++ usage
 ---------

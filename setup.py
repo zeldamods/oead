@@ -1,6 +1,3 @@
-import setuptools
-import versioneer
-
 import os
 import re
 import sys
@@ -8,14 +5,13 @@ import platform
 import subprocess
 from pathlib import Path
 
+import setuptools
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
-from distutils.version import LooseVersion
 
-# Intended to make building in manylinux images easier.
-# CentOS (or the EPEL package?) calls CMake cmake3...
-cmake3_path = Path("/usr/bin/cmake3")
-cmake_name = "cmake3" if cmake3_path.exists() else "cmake"
+# setuptools.build_meta does not put the project directory on sys.path.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import versioneer
 
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
@@ -51,8 +47,8 @@ class CMakeBuild(build_ext):
                                                               self.distribution.get_version())
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
-        subprocess.check_call([cmake_name, ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
-        subprocess.check_call([cmake_name, '--build', '.'] + build_args, cwd=self.build_temp)
+        subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
+        subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
 
 with open("readme.rst", "r") as fh:
