@@ -29,9 +29,9 @@
 #include "main.h"
 
 OEAD_MAKE_VARIANT_CASTER(oead::aamp::Parameter::Value);
-OEAD_MAKE_OPAQUE("aamp.ParameterMap", oead::aamp::ParameterMap);
-OEAD_MAKE_OPAQUE("aamp.ParameterObjectMap", oead::aamp::ParameterObjectMap);
-OEAD_MAKE_OPAQUE("aamp.ParameterListMap", oead::aamp::ParameterListMap);
+OEAD_MAKE_OPAQUE("oead.aamp.ParameterMap", oead::aamp::ParameterMap);
+OEAD_MAKE_OPAQUE("oead.aamp.ParameterObjectMap", oead::aamp::ParameterObjectMap);
+OEAD_MAKE_OPAQUE("oead.aamp.ParameterListMap", oead::aamp::ParameterListMap);
 
 namespace oead::bind {
 static void BindAampParameter(py::module& m) {

@@ -61,7 +61,7 @@ using namespace py::literals;
 namespace pybind11::detail {
 template <typename T, typename std::enable_if_t<std::is_same_v<std::decay_t<T>, u8>, bool> = true>
 constexpr auto OeadGetSpanCasterName() {
-  return _("BytesLike");
+  return _("collections.abc.Buffer");
 }
 
 template <typename T, typename std::enable_if_t<!std::is_same_v<std::decay_t<T>, u8>, bool> = true>
@@ -115,6 +115,27 @@ py::class_<Vector, holder_type> BindVector(py::handle scope, const std::string& 
   cl.def(py::self == py::self);
   py::implicitly_convertible<py::list, Vector>();
   return cl;
+}
+
+// Registered once at the top level so that every bound map shares the same view types
+// regardless of which map happens to be bound first.
+inline void BindMapViews(py::handle scope) {
+  using KeysView = py::detail::keys_view;
+  using ValuesView = py::detail::values_view;
+  using ItemsView = py::detail::items_view;
+
+  py::class_<KeysView>(scope, "KeysView", py::module_local())
+      .def("__len__", &KeysView::len)
+      .def("__iter__", &KeysView::iter, py::keep_alive<0, 1>())
+      .def("__contains__", &KeysView::contains);
+
+  py::class_<ValuesView>(scope, "ValuesView", py::module_local())
+      .def("__len__", &ValuesView::len)
+      .def("__iter__", &ValuesView::iter, py::keep_alive<0, 1>());
+
+  py::class_<ItemsView>(scope, "ItemsView", py::module_local())
+      .def("__len__", &ItemsView::len)
+      .def("__iter__", &ItemsView::iter, py::keep_alive<0, 1>());
 }
 
 template <typename Map, typename Key, typename CastFn>
@@ -246,34 +267,6 @@ py::class_<Map, holder_type> BindMap(py::handle scope, const std::string& name, 
 
   Class_ cl(scope, name.c_str(), pybind11::module_local(local), std::forward<Args>(args)...);
 
-
-  if (!py::detail::get_type_info(typeid(KeysView))) {
-      py::class_<KeysView> keys_view(scope, "KeysView", pybind11::module_local(local));
-      keys_view.def("__len__", &KeysView::len);
-      keys_view.def("__iter__",
-                    &KeysView::iter,
-                    py::keep_alive<0, 1>()
-      );
-      keys_view.def("__contains__", &KeysView::contains);
-  }
-
-  if (!py::detail::get_type_info(typeid(ValuesView))) {
-      py::class_<ValuesView> values_view(scope, "ValuesView", pybind11::module_local(local));
-      values_view.def("__len__", &ValuesView::len);
-      values_view.def("__iter__",
-                      &ValuesView::iter,
-                      py::keep_alive<0, 1>() 
-      );
-  }
-
-  if (!py::detail::get_type_info(typeid(ItemsView))) {
-      py::class_<ItemsView> items_view(scope, "ItemsView", pybind11::module_local(local));
-      items_view.def("__len__", &ItemsView::len);
-      items_view.def("__iter__",
-                      &ItemsView::iter,
-                      py::keep_alive<0, 1>()
-      );
-  }
 
   cl.def(py::init<>());
 

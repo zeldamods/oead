@@ -30,8 +30,8 @@
 #include <oead/util/scope_guard.h>
 #include "main.h"
 
-OEAD_MAKE_OPAQUE("Array", oead::Byml::Array);
-OEAD_MAKE_OPAQUE("Hash", oead::Byml::Hash);
+OEAD_MAKE_OPAQUE("oead.byml.Array", oead::Byml::Array);
+OEAD_MAKE_OPAQUE("oead.byml.Hash", oead::Byml::Hash);
 OEAD_MAKE_VARIANT_CASTER(oead::Byml::Value);
 
 namespace pybind11::detail {
