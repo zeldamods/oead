@@ -22,9 +22,10 @@
 #include <absl/algorithm/container.h>
 #include <absl/container/btree_map.h>
 #include <absl/container/flat_hash_map.h>
-#include <easy_iterator.h>
 #include <span>
+#include <iterator>
 #include <optional>
+#include <ranges>
 #include <string>
 #include <string_view>
 
@@ -51,16 +52,31 @@ public:
   };
 
   /// File iterator.
-  class FileIterator : public easy_iterator::InitializedIterable {
+  class FileIterator {
   public:
-    FileIterator(u16 index, const Sarc& parent) : m_index{index}, m_parent{parent} {}
-    File value() { return m_parent.GetFile(m_index); }
-    bool advance() { return ++m_index < m_parent.GetNumFiles(); }
-    bool init() { return m_index != m_parent.GetNumFiles(); }
+    using iterator_category = std::input_iterator_tag;
+    using value_type = File;
+    using difference_type = std::ptrdiff_t;
+    using pointer = void;
+    using reference = File;
+
+    FileIterator() = default;
+    FileIterator(u16 index, const Sarc& parent) : m_index{index}, m_parent{&parent} {}
+    File operator*() const { return m_parent->GetFile(m_index); }
+    FileIterator& operator++() {
+      ++m_index;
+      return *this;
+    }
+    FileIterator operator++(int) {
+      auto copy = *this;
+      ++m_index;
+      return copy;
+    }
+    bool operator==(const FileIterator& other) const = default;
 
   private:
-    u16 m_index;
-    const Sarc& m_parent;
+    u16 m_index = 0;
+    const Sarc* m_parent = nullptr;
   };
 
   Sarc(std::span<const u8> data);
@@ -77,7 +93,9 @@ public:
   /// Get a file by index. Throws if index >= m_num_files.
   File GetFile(u16 index) const;
   /// Returns an iterator over the contained files.
-  auto GetFiles() const { return easy_iterator::MakeIterable<FileIterator>(0, *this); }
+  auto GetFiles() const {
+    return std::ranges::subrange(FileIterator(0, *this), FileIterator(m_num_files, *this));
+  }
 
   /// Guess the minimum data alignment for files that are stored in the archive.
   size_t GuessMinAlignment() const;

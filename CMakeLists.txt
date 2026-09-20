@@ -63,7 +63,6 @@ target_include_directories(oead SYSTEM PUBLIC lib/nonstd)
 
 set(BUILD_TESTING OFF)
 add_subdirectory(lib/abseil)
-add_subdirectory(lib/EasyIterator)
 add_subdirectory(lib/libyaml)
 add_subdirectory(lib/ordered-map)
 add_subdirectory(lib/rapidyaml)
@@ -76,7 +75,6 @@ target_link_libraries(oead
     absl::btree
     absl::flat_hash_map
     absl::hash
-    EasyIterator
     tsl::ordered_map
   PRIVATE
     oead::res

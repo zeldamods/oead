@@ -177,11 +177,7 @@ bool Sarc::AreFilesEqual(const Sarc& other) const {
   if (GetNumFiles() != other.GetNumFiles())
     return false;
 
-  for (const auto& [file1, file2] : easy_iterator::zip(GetFiles(), other.GetFiles())) {
-    if (file1 != file2)
-      return false;
-  }
-  return true;
+  return std::ranges::equal(GetFiles(), other.GetFiles());
 }
 
 static constexpr bool IsValidAlignment(size_t alignment) {
@@ -330,9 +326,9 @@ std::pair<u32, std::vector<u8>> SarcWriter::Write() {
   const u32 required_alignment = absl::c_accumulate(alignments, 1u, std::lcm<u32, u32>);
   writer.AlignUp(required_alignment);
   const u32 data_offset_begin = u32(writer.Tell());
-  for (const auto& [pair, alignment] : easy_iterator::zip(files, alignments)) {
-    writer.AlignUp(alignment);
-    writer.WriteBytes(pair.second);
+  for (size_t i = 0; i < files.size(); ++i) {
+    writer.AlignUp(alignments[i]);
+    writer.WriteBytes(files[i].get().second);
   }
 
   sarc::ResHeader header{};

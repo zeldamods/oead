@@ -21,13 +21,12 @@
 
 #include <absl/container/flat_hash_map.h>
 #include <memory>
+#include <ranges>
 #include <span>
 #include <stdexcept>
 #include <string>
 #include <string_view>
 #include <vector>
-
-#include <easy_iterator.h>
 
 #include <oead/types.h>
 #include <oead/util/binary_reader.h>
@@ -264,24 +263,12 @@ struct Data {
 };
 static_assert(sizeof(Data) == 0x10);
 
-/// An iterator for opaque blobs for which only the element size is known.
-class OpaqueIterator : public easy_iterator::InitializedIterable {
-public:
-  OpaqueIterator(void* begin, void* end, size_t item_size)
-      : m_current{begin}, m_end{end}, m_item_size{item_size} {}
-
-  bool advance() {
-    m_current = reinterpret_cast<void*>(uintptr_t(m_current) + m_item_size);
-    return m_current != m_end;
-  }
-  bool init() { return m_current != m_end; }
-  void* value() { return m_current; }
-
-private:
-  void* m_current;
-  void* m_end;
-  size_t m_item_size;
-};
+/// A range over opaque blobs for which only the element size is known.
+inline auto MakeOpaqueRange(void* begin, size_t num_items, size_t item_size) {
+  return std::views::iota(size_t(0), num_items) | std::views::transform([=](size_t i) {
+           return reinterpret_cast<void*>(uintptr_t(begin) + i * item_size);
+         });
+}
 
 /// Grezzo datasheet.
 ///
@@ -320,10 +307,7 @@ public:
   /// Get the datasheet values (as an iterable).
   auto GetValues() const {
     const auto& header = GetHeader();
-    return easy_iterator::MakeIterable<OpaqueIterator>(
-        header.values,
-        reinterpret_cast<void*>((uintptr_t)header.values + header.value_size * header.num_values),
-        header.value_size);
+    return MakeOpaqueRange(header.values, header.num_values, header.value_size);
   }
 
   using IntMap = absl::flat_hash_map<int, void*>;
