@@ -61,6 +61,7 @@ Building the Python module
 * To install the module, run ``pip install .``
 * If you just want to build the Python module from source without installing it, run ``pip wheel --no-deps .``
 * For a debug build, pass ``-Ccmake.build-type=Debug`` to pip.
+* After changing the bindings, regenerate the type stubs with ``python tools/generate_stubs.py`` (requires the ``stubs`` dependency group: ``pip install --group stubs``).
 
 C++ usage
 ---------

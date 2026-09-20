@@ -104,7 +104,7 @@ bool RequestSpan(py::handle src, py::buffer_info& info, std::span<T>& span) {
 namespace pybind11::detail {
 template <typename T, typename std::enable_if_t<std::is_same_v<std::decay_t<T>, u8>, bool> = true>
 constexpr auto OeadGetSpanCasterName() {
-  return _("collections.abc.Buffer");
+  return io_name("collections.abc.Buffer", "memoryview");
 }
 
 template <typename T, typename std::enable_if_t<!std::is_same_v<std::decay_t<T>, u8>, bool> = true>
