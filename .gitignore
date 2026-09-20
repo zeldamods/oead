@@ -8,6 +8,7 @@ dist/
 build/
 .mypy_cache/
 .idea/
+cmake-build-*/
 .cache/
 .vscode/
 .benchmarks/
