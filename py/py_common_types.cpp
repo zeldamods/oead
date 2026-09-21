@@ -38,6 +38,19 @@ void BindNumber(py::module& m, const char* name) {
       .def(py::self <= py::self)
       .def(py::self > py::self)
       .def(py::self >= py::self)
+      .def(py::self + py::self)
+      .def(py::self - py::self)
+      .def(py::self * py::self)
+      .def(py::self / py::self)
+      .def(+py::self)
+      .def(-py::self)
+      .def("__abs__",
+           [](const T& self) {
+             if constexpr (std::is_signed<decltype(T::value)>())
+               return T(std::abs(self.value));
+             else
+               return self;
+           })
       .def_property(
           "v", [](const T& self) { return self.value; }, [](T& self, PyT vnew) { self = vnew; },
           "Value")
@@ -53,7 +66,14 @@ void BindNumber(py::module& m, const char* name) {
       .def("__repr__", [name](const T& self) { return "{}({})"_s.format(name, self.value); });
 
   if constexpr (std::is_integral<decltype(T::value)>()) {
-    cl.def("__index__", [](const T& self) { return self.value; });
+    cl.def("__index__", [](const T& self) { return self.value; })
+       .def(py::self % py::self)
+       .def(py::self << py::self)
+       .def(py::self >> py::self)
+       .def(py::self & py::self)
+       .def(py::self | py::self)
+       .def(py::self ^ py::self)
+       .def(~py::self);
   }
 }
 
