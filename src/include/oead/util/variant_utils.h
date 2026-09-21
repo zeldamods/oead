@@ -31,7 +31,7 @@ struct Overloaded : Ts... {
   using Ts::operator()...;
 };
 template <class... Ts>
-Overloaded(Ts...)->Overloaded<Ts...>;
+Overloaded(Ts...) -> Overloaded<Ts...>;
 
 /// Helper function to visit a std::variant efficiently.
 template <typename Visitor, typename... Variants>

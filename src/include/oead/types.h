@@ -45,12 +45,18 @@ using f64 = double;
 namespace oead {
 
 #define OEAD_DEFINE_FIELDS(TYPE, ...)                                                              \
-  constexpr auto fields() { return std::tie(__VA_ARGS__); }                                        \
-  constexpr auto fields() const { return std::tie(__VA_ARGS__); }                                  \
+  constexpr auto fields() {                                                                        \
+    return std::tie(__VA_ARGS__);                                                                  \
+  }                                                                                                \
+  constexpr auto fields() const {                                                                  \
+    return std::tie(__VA_ARGS__);                                                                  \
+  }                                                                                                \
   constexpr friend bool operator==(const TYPE& lhs, const TYPE& rhs) {                             \
     return lhs.fields() == rhs.fields();                                                           \
   }                                                                                                \
-  constexpr friend bool operator!=(const TYPE& lhs, const TYPE& rhs) { return !(lhs == rhs); }     \
+  constexpr friend bool operator!=(const TYPE& lhs, const TYPE& rhs) {                             \
+    return !(lhs == rhs);                                                                          \
+  }                                                                                                \
   template <typename H>                                                                            \
   friend H AbslHashValue(H h, const TYPE& self) {                                                  \
     return H::combine(std::move(h), self.fields());                                                \

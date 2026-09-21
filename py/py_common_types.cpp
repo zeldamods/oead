@@ -67,13 +67,13 @@ void BindNumber(py::module& m, const char* name) {
 
   if constexpr (std::is_integral<decltype(T::value)>()) {
     cl.def("__index__", [](const T& self) { return self.value; })
-       .def(py::self % py::self)
-       .def(py::self << py::self)
-       .def(py::self >> py::self)
-       .def(py::self & py::self)
-       .def(py::self | py::self)
-       .def(py::self ^ py::self)
-       .def(~py::self);
+        .def(py::self % py::self)
+        .def(py::self << py::self)
+        .def(py::self >> py::self)
+        .def(py::self & py::self)
+        .def(py::self | py::self)
+        .def(py::self ^ py::self)
+        .def(~py::self);
   }
 }
 
