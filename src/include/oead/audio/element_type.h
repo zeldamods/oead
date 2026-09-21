@@ -51,7 +51,7 @@ struct ElementTypeCategory {
     Blocks = 0x7800,
     ItemInfos = 0x7900,
   };
-  
+
   enum class AnimSoundFile {
     Blocks = 0x8000,
     Items = 0x8100,
@@ -143,7 +143,7 @@ enum class ElementType {
   BankFile_IndexReferenceTable,
 
   WaveArchiveFile_InfoBlock = static_cast<int>(ElementTypeCategory::WaveArchiveFile::Blocks),
-  
+
   WaveFile_InfoBlock = static_cast<int>(ElementTypeCategory::WaveFile::Blocks),
   WaveFile_DataBlock,
 

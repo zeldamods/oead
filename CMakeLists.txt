@@ -22,14 +22,6 @@ cmrc_add_resource_library(oead_res ALIAS oead::res NAMESPACE oead::res
 )
 
 add_library(oead
-  src/include/oead/audio/amta.h
-  src/include/oead/audio/audio_reader.h
-  src/include/oead/audio/audio_writer.h
-  src/include/oead/audio/bars.h
-  src/include/oead/audio/fstm.h
-  src/include/oead/audio/fstp.h
-  src/include/oead/audio/fwav.h
-  src/include/oead/audio/interface.h
   src/include/oead/util/align.h
   src/include/oead/util/binary_reader.h
   src/include/oead/util/bit_utils.h
@@ -41,6 +33,14 @@ add_library(oead
   src/include/oead/util/swap.h
   src/include/oead/util/type_utils.h
   src/include/oead/util/variant_utils.h
+  src/include/oead/audio/interface.h
+  src/include/oead/audio/audio_reader.h
+  src/include/oead/audio/audio_writer.h
+  src/include/oead/audio/amta.h
+  src/include/oead/audio/bars.h
+  src/include/oead/audio/fstm.h
+  src/include/oead/audio/fstp.h
+  src/include/oead/audio/fwav.h
   src/include/oead/aamp.h
   src/include/oead/byml.h
   src/include/oead/errors.h

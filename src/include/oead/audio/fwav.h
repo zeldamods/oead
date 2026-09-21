@@ -14,10 +14,10 @@ struct ChannelInfo {
 struct InfoBlock {
   SampleFormat encoding{SampleFormat::DSPADPCM};
   bool is_loop{0};
-  std::uint32_t sample_rate{48000};
-  std::uint32_t loop_start_frame{0};
-  std::uint32_t loop_end_frame{0};
-  std::uint32_t original_loop_start_frame{0};
+  u32 sample_rate{48000};
+  u32 loop_start_frame{0};
+  u32 loop_end_frame{0};
+  u32 original_loop_start_frame{0};
 
   OEAD_DEFINE_FIELDS(InfoBlock, encoding, is_loop, sample_rate, loop_start_frame, loop_end_frame,
                      original_loop_start_frame);

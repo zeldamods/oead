@@ -4,19 +4,19 @@
 
 namespace oead::audio {
 struct DspAdpcmParam {
-  std::array<std::array<uint16_t, 2>, 8> coefficients;
-  uint16_t predictor_scale;
-  int16_t yn1;
-  int16_t yn2;
+  std::array<std::array<u16, 2>, 8> coefficients;
+  u16 predictor_scale;
+  s16 yn1;
+  s16 yn2;
 
   OEAD_DEFINE_FIELDS(DspAdpcmParam, coefficients, predictor_scale, yn1, yn2);
 };
 
 struct DspAdpcmLoopParam {
-  uint16_t loop_predictor_scale;
-  int16_t loop_yn1;
-  int16_t loop_yn2;
-  
+  u16 loop_predictor_scale;
+  s16 loop_yn1;
+  s16 loop_yn2;
+
   OEAD_DEFINE_FIELDS(DspAdpcmLoopParam, loop_predictor_scale, loop_yn1,
                      loop_yn2);
 };

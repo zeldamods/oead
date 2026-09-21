@@ -10,16 +10,16 @@ namespace oead::audio {
 // Reference (nn::atk::detail::Util::Reference)
 struct Reference {
   ElementType type_id {ElementType::Blank};
-  std::int32_t offset {0};
+  s32 offset {0};
 
   OEAD_DEFINE_FIELDS(Reference, type_id, offset);
 };
 
 // ReferenceWithSize (nn::atk::detail::Util::ReferenceWithSize)
 struct SizedReference {
-  std::uint16_t type_id;
-  std::int32_t offset;
-  std::uint32_t size;
+  u16 type_id;
+  s32 offset;
+  u32 size;
 
   OEAD_DEFINE_FIELDS(SizedReference, type_id, offset, size);
 };
@@ -27,14 +27,14 @@ struct SizedReference {
 // Table (nn::atk::detail::Util::Table)
 template <typename T>
 struct Table {
-  std::uint32_t count;
+  u32 count;
   std::vector<T> items;
 };
 
 // ReferenceTable (nn::atk::detail::Util::ReferenceTable)
 struct ReferenceTable : Table<Reference> {};
 
-using Sample = std::variant<std::int8_t, std::int16_t, std::uint8_t, std::int32_t>;
+using Sample = std::variant<std::int8_t, std::int16_t, std::uint8_t, s32>;
 using Channel = std::vector<Sample>;
 
 // ReferenceTable (nn::atk::detail::Util::SampleFormat)
@@ -54,18 +54,18 @@ enum class AssetType : std::uint8_t {
 
 struct SoundFileHeader {
   std::array<char, 4> signature;
-  std::uint16_t byte_order_mark;
-  std::uint16_t head_size;
-  std::uint32_t version;
-  std::uint32_t file_size;
-  std::uint16_t block_count;
-  std::uint16_t reserved;
+  u16 byte_order_mark;
+  u16 head_size;
+  u32 version;
+  u32 file_size;
+  u16 block_count;
+  u16 reserved;
   std::vector<SizedReference> block_refs;
 };
 
 struct BlockHeader {
   std::array<char, 4> signature;
-  uint32_t section_size;
+  u32 section_size;
 
   OEAD_DEFINE_FIELDS(BlockHeader, signature, section_size);
 };

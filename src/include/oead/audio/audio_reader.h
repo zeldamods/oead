@@ -2,6 +2,7 @@
 
 #include <optional>
 #include <span>
+#include <stdexcept>
 #include <type_traits>
 
 #include "oead/audio/types.h"
@@ -80,18 +81,18 @@ public:
     audio::SoundFileHeader header;
     header.signature = Read<std::array<char, 4>>();
 
-    header.byte_order_mark = Read<std::uint16_t>();
+    header.byte_order_mark = Read<u16>();
     if (util::ByteOrderMarkToEndianness(header.byte_order_mark) == util::Endianness::Little) {
       SwapEndianness();
       Seek(header_start);
       return ReadSoundFileHeader();
     }
 
-    header.head_size = Read<std::uint16_t>();
-    header.version = Read<std::uint32_t>();
-    header.file_size = Read<std::uint32_t>();
-    header.block_count = Read<std::uint16_t>();
-    header.reserved = Read<std::uint16_t>();
+    header.head_size = Read<u16>();
+    header.version = Read<u32>();
+    header.file_size = Read<u32>();
+    header.block_count = Read<u16>();
+    header.reserved = Read<u16>();
 
     header.block_refs.resize(header.block_count);
     for (auto& block_ref : header.block_refs)
@@ -103,7 +104,7 @@ public:
   template <typename T>
   audio::Table<T> ReadTable() {
     audio::Table<T> tbl;
-    tbl.count = Read<std::uint32_t>();
+    tbl.count = Read<u32>();
     tbl.items.resize(tbl.count);
     for (auto& item : tbl.items)
       item = Read<T>();
@@ -111,8 +112,8 @@ public:
     return tbl;
   }
 
-  audio::Channel ReadSamples(uint total_samples, audio::SampleFormat format, bool is_wave) {
-    uint sample_block_size{AlignUp(total_samples, 14) / 14 * 8};
+  audio::Channel ReadSamples(u32 total_samples, audio::SampleFormat format, bool is_wave) {
+    u32 sample_block_size{AlignUp(total_samples, 14) / 14 * 8};
     if (!is_wave)
       sample_block_size = AlignUp(sample_block_size, 0x20);
 
@@ -121,23 +122,23 @@ public:
     case audio::SampleFormat::PCMS8:
       channel.resize(sample_block_size);
       for (auto& sample : channel)
-        sample = Read<std::int8_t>();
+        sample = Read<s8>();
       break;
     case audio::SampleFormat::PCMS16:
-      channel.resize(sample_block_size / sizeof(std::int16_t));
+      channel.resize(sample_block_size / sizeof(s16));
       for (auto& sample : channel)
-        sample = Read<std::int16_t>();
+        sample = Read<s16>();
       break;
     case audio::SampleFormat::DSPADPCM: {
       channel.resize(sample_block_size);
       for (auto& sample : channel)
-        sample = Read<std::uint8_t>();
+        sample = Read<u8>();
       break;
     }
     case audio::SampleFormat::PCMS32:
-      channel.resize(sample_block_size / sizeof(std::int32_t));
+      channel.resize(sample_block_size / sizeof(s32));
       for (auto& sample : channel)
-        sample = Read<std::int32_t>();
+        sample = Read<s32>();
       break;
     }
 

@@ -6,6 +6,15 @@ namespace oead::bind {
 void BindFstp(py::module& parent) {
   py::module m = parent.def_submodule("audio");
 
+  py::class_<audio::fstp::PrefetchData>(m, "PrefetchData")
+    .def(py::init<>())
+    .def_readwrite("start_frame", &audio::fstp::PrefetchData::start_frame)
+    .def_readwrite("prefetch_samples", &audio::fstp::PrefetchData::prefetch_samples);
+
+  py::class_<audio::fstp::PrefetchDataBlock>(m, "PrefetchDataBlock")
+    .def(py::init<>())
+    .def_readwrite("prefetch_data", &audio::fstp::PrefetchDataBlock::prefetch_data);
+
   py::class_<audio::fstp::Fstp, std::shared_ptr<audio::fstp::Fstp>, audio::IAssetFile>(m, "Fstp")
     .def(py::init<>())
     .def(py::init<std::span<const u8>>())
@@ -31,14 +40,5 @@ void BindFstp(py::module& parent) {
       py::overload_cast<>(&audio::fstp::Fstp::Endianness, py::const_),
       py::overload_cast<util::Endianness>(&audio::fstp::Fstp::Endianness)
     );
-
-  py::class_<audio::fstp::PrefetchData>(m, "PrefetchData")
-    .def(py::init<>())
-    .def_readwrite("start_frame", &audio::fstp::PrefetchData::start_frame)
-    .def_readwrite("prefetch_samples", &audio::fstp::PrefetchData::prefetch_samples);
-
-  py::class_<audio::fstp::PrefetchDataBlock>(m, "PrefetchDataBlock")
-    .def(py::init<>())
-    .def_readwrite("prefetch_data", &audio::fstp::PrefetchDataBlock::prefetch_data);
 }
 } // namespace oead::bind

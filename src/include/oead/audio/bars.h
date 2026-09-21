@@ -9,17 +9,17 @@
 
 namespace oead::audio::bars {
 struct FileOffsetSet {
-  std::int32_t meta_offset;
-  std::int32_t asset_offset;
+  s32 meta_offset;
+  s32 asset_offset;
   OEAD_DEFINE_FIELDS(FileOffsetSet, meta_offset, asset_offset);
 };
 
 struct ResourceHeader {
   std::array<char, 4> signature{'B', 'A', 'R', 'S'};
-  std::uint32_t file_size{};
-  std::uint16_t bom{0xFEFF};
-  std::uint16_t version{};
-  std::uint32_t asset_count{};
+  u32 file_size{};
+  u16 bom{0xFEFF};
+  u16 version{};
+  u32 asset_count{};
 
   OEAD_DEFINE_FIELDS(ResourceHeader, signature, file_size, bom, version, asset_count);
 };
@@ -63,7 +63,7 @@ public:
   const auto& GetFile(int idx) const { return m_files[idx]; }
   /// Get a file by name
   const auto& GetFile(const std::string& name) const {
-    std::uint32_t hash{util::crc32(name)};
+    u32 hash{util::crc32(name)};
     auto iter{std::lower_bound(m_hashes.begin(), m_hashes.end(), hash)};
     if (iter == m_hashes.end())
       throw InvalidDataError("Name not found");
@@ -112,8 +112,8 @@ public:
   void SwapEndianness();
 
 private:
-  std::uint16_t m_version{};
-  std::vector<std::uint32_t> m_hashes;
+  u16 m_version{};
+  std::vector<u32> m_hashes;
   std::vector<FileWithMetadata> m_files;
   util::Endianness m_endian{util::Endianness::Little};
 };

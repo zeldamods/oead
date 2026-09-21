@@ -11,38 +11,38 @@
 
 namespace oead::audio::amta {
 struct MarkerInfo {
-  std::uint32_t id;
+  u32 id;
   std::string name;
-  std::uint32_t start_pos;
-  std::uint32_t length;
+  u32 start_pos;
+  u32 length;
 };
 
 struct MarkerInfoBin {
-  std::uint32_t id;
-  std::uint32_t asset_name_offset;
-  std::uint32_t start_pos;
-  std::uint32_t length;
+  u32 id;
+  u32 asset_name_offset;
+  u32 start_pos;
+  u32 length;
 };
 
 struct ExtEntry {
   std::string name;
-  std::uint32_t value;
+  u32 value;
 };
 
 struct ExtEntryBin {
-  std::uint32_t name_offset;
-  std::uint32_t value;
+  u32 name_offset;
+  u32 value;
 };
 
 struct AudioMetaHeader {
   std::array<char, 4> signature{'A', 'M', 'T', 'A'};
-  std::uint16_t bom;
-  std::uint16_t version;
-  std::uint32_t file_size;
-  std::uint32_t data_offset;
-  std::uint32_t mark_offset;
-  std::uint32_t ext_offset;
-  std::uint32_t strg_offset;
+  u16 bom;
+  u16 version;
+  u32 file_size;
+  u32 data_offset;
+  u32 mark_offset;
+  u32 ext_offset;
+  u32 strg_offset;
 
   OEAD_DEFINE_FIELDS(AudioMetaHeader, signature, bom, version, file_size, data_offset, mark_offset,
                      ext_offset, strg_offset);
@@ -50,20 +50,20 @@ struct AudioMetaHeader {
 
 struct AudioMetaDataBin {
   BlockHeader header{{'D', 'A', 'T', 'A'}, 0x64};
-  std::uint32_t asset_name_offset{0};
-  std::uint32_t sample_count{0};
+  u32 asset_name_offset{0};
+  u32 sample_count{0};
   AssetType type{AssetType::Wave};
-  std::uint8_t channel_count{0};
-  std::uint8_t used_stream_tracks{0};  // Up to 8
-  std::uint8_t flags{0};
+  u8 channel_count{0};
+  u8 used_stream_tracks{0};  // Up to 8
+  u8 flags{0};
   float unknown{0};
-  std::uint32_t sample_rate{48000};
-  std::uint32_t loop_start_frame{0};
-  std::uint32_t loop_end_frame{0};
+  u32 sample_rate{48000};
+  u32 loop_start_frame{0};
+  u32 loop_end_frame{0};
   float volume{1};
 
   struct StreamTrack {
-    uint32_t channel_count{0};
+    u32 channel_count{0};
     float volume{1};
     OEAD_DEFINE_FIELDS(StreamTrack, channel_count, volume);
   };
@@ -79,7 +79,7 @@ struct AudioMetaDataBin {
 class Amta {
 public:
   struct StreamTrack {
-    std::uint32_t channel_count{0};
+    u32 channel_count{0};
     float volume{1};
     OEAD_DEFINE_FIELDS(StreamTrack, channel_count, volume);
   };
@@ -219,16 +219,16 @@ private:
                             std::vector<std::size_t> ext_offsets) const;
 
   std::string m_asset_name{""};
-  std::uint16_t m_version{0x400};
-  std::uint32_t m_sample_count{0};
+  u16 m_version{0x400};
+  u32 m_sample_count{0};
   AssetType m_asset_type{AssetType::Wave};
-  std::uint8_t m_channel_count{1};
-  std::uint8_t m_used_stream_tracks{0};
-  std::uint8_t m_flags{0};
+  u8 m_channel_count{1};
+  u8 m_used_stream_tracks{0};
+  u8 m_flags{0};
   float m_unknown{0};
-  std::uint32_t m_sample_rate{48000};
-  std::uint32_t m_loop_start_frame{0};
-  std::uint32_t m_loop_end_frame{0};
+  u32 m_sample_rate{48000};
+  u32 m_loop_start_frame{0};
+  u32 m_loop_end_frame{0};
   float m_volume{0};
   std::array<StreamTrack, 8> m_stream_tracks;
   float m_amplitude_peak{0};

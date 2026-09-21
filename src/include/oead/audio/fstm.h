@@ -7,26 +7,26 @@ namespace oead::audio::fstm {
 struct StreamSoundInfo {
   SampleFormat encoding{SampleFormat::DSPADPCM};
   bool is_loop{0};
-  std::uint8_t channel_count{0};
-  std::uint8_t region_count{0};
-  std::uint32_t sample_rate{48000};
-  std::uint32_t loop_start{0};
-  std::uint32_t frame_count{0};
-  std::uint32_t block_count{0};
-  std::uint32_t block_size{0};
-  std::uint32_t block_sample_count{0};
-  std::uint32_t last_block_size{0};
-  std::uint32_t last_block_sample_count{0};
-  std::uint32_t last_block_padding_size{0};
-  std::uint32_t size_of_seek_info_atom{0};
-  std::uint32_t seek_info_interval_samples{0};
+  u8 channel_count{0};
+  u8 region_count{0};
+  u32 sample_rate{48000};
+  u32 loop_start{0};
+  u32 frame_count{0};
+  u32 block_count{0};
+  u32 block_size{0};
+  u32 block_sample_count{0};
+  u32 last_block_size{0};
+  u32 last_block_sample_count{0};
+  u32 last_block_padding_size{0};
+  u32 size_of_seek_info_atom{0};
+  u32 seek_info_interval_samples{0};
   Reference to_sample_data{ElementType::General_ByteStream,
                            0};  // relative to the start of the data section
-  std::uint16_t region_info_size{0};
+  u16 region_info_size{0};
   // padding[2];
   Reference to_region_block{ElementType::StreamSoundFile_RegionBlock, 0};
-  std::uint32_t original_loop_start{0};
-  std::uint32_t original_loop_end{0};
+  u32 original_loop_start{0};
+  u32 original_loop_end{0};
 
   OEAD_DEFINE_FIELDS(StreamSoundInfo, encoding, is_loop, channel_count, region_count, sample_rate,
                      loop_start, frame_count, block_count, block_size, block_sample_count,
@@ -36,28 +36,28 @@ struct StreamSoundInfo {
 };
 
 struct SeekInfo {
-  std::int16_t yn1{0};
-  std::int16_t yn2{0};
+  s16 yn1{0};
+  s16 yn2{0};
 
   OEAD_DEFINE_FIELDS(SeekInfo, yn1, yn2);
 };
 
 struct RegionInfo {
-  std::uint32_t start{0};
-  std::uint32_t end{0};
+  u32 start{0};
+  u32 end{0};
   std::array<DspAdpcmLoopParam, 16> adpcm_context;
   bool is_enabled{false};
-  std::uint8_t padding[87]{};
+  u8 padding[87]{};
   std::array<char, 64> region_name{};
 
   OEAD_DEFINE_FIELDS(RegionInfo, start, end, adpcm_context, is_enabled, padding, region_name);
 };
 
 struct TrackInfo {
-  std::uint8_t volume{0};
-  std::uint8_t pan{0};
-  std::uint8_t span{0};
-  std::uint8_t flags{0};
+  u8 volume{0};
+  u8 pan{0};
+  u8 span{0};
+  u8 flags{0};
 
   OEAD_DEFINE_FIELDS(TrackInfo, volume, pan, span, flags);
 };
