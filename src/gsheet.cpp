@@ -501,13 +501,6 @@ FieldMap Sheet::MakeFieldMap() const {
   return gsheet::MakeFieldMap(GetRootFields());
 }
 
-ResField::ResField() {
-  // Older versions of GCC appear not to initialize padding bits in this structure
-  // even when zero initialization is supposed to be done.
-  // So let's memset the structure manually to be sure.
-  std::memset(this, 0, sizeof(*this));
-}
-
 Field::Field(const ResField& raw) {
   name = raw.name;
   type_name = raw.type_name;

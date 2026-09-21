@@ -77,7 +77,7 @@ std::optional<std::string_view> NameTable::GetName(u32 hash, int index, u32 pare
           absl::ParsedFormat<'s', 'd'>{"%s%03d"}, absl::ParsedFormat<'s', 'd'>{"%s_%03d"},
       };
       for (int i : {index, index + 1}) {
-        for (const auto format : formats) {
+        for (const auto& format : formats) {
           auto candidate = absl::StrFormat(format, prefix, i);
           if (util::crc32(candidate) == hash)
             return AddName(hash, std::move(candidate));
