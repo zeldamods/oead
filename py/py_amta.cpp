@@ -5,16 +5,16 @@
 namespace oead::bind {
 void BindAmta(py::module& parent) {
   py::module m = parent.def_submodule("audio");
-  
+
   py::class_<audio::amta::Amta>(m, "Amta")
     .def(py::init<>())
-    .def(py::init<tcb::span<const u8>>())
+    .def(py::init<std::span<const u8>>())
     .def("to_binary", py::overload_cast<>(&audio::amta::Amta::ToBinary, py::const_))
     .def("to_binary", py::overload_cast<util::Endianness>(&audio::amta::Amta::ToBinary, py::const_), "endian"_a)
     .def_property(
-      "asset_name", 
+      "asset_name",
       py::overload_cast<>(&audio::amta::Amta::AssetName, py::const_),
-      py::overload_cast<std::string>(&audio::amta::Amta::AssetName) 
+      py::overload_cast<std::string>(&audio::amta::Amta::AssetName)
     )
     .def_property(
       "version",
@@ -29,7 +29,7 @@ void BindAmta(py::module& parent) {
     .def_property(
       "sample_count",
       py::overload_cast<>(&audio::amta::Amta::SampleCount, py::const_),
-      py::overload_cast<u32>(&audio::amta::Amta::SampleCount) 
+      py::overload_cast<u32>(&audio::amta::Amta::SampleCount)
     )
     .def_property(
       "type",

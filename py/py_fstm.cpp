@@ -8,11 +8,11 @@ void BindFstm(py::module& parent) {
 
   py::class_<audio::fstm::Fstm>(m, "Fstm")
     .def(py::init<>())
-    .def(py::init<tcb::span<const u8>>())
+    .def(py::init<std::span<const u8>>())
     .def("to_binary", py::overload_cast<>(&audio::fstm::Fstm::ToBinary, py::const_))
     .def("to_binary", py::overload_cast<util::Endianness>(&audio::fstm::Fstm::ToBinary, py::const_), "endian"_a)
     .def_property(
-      "info", 
+      "info",
       py::overload_cast<>(&audio::fstm::Fstm::Info, py::const_),
       py::overload_cast<audio::fstm::InfoBlock>(&audio::fstm::Fstm::Info)
     )
@@ -45,19 +45,19 @@ void BindFstm(py::module& parent) {
   py::class_<audio::fstm::InfoBlock>(m, "StreamInfoBlock")
     .def(py::init<>())
     .def_property(
-      "stream_info", 
+      "stream_info",
       py::overload_cast<>(&audio::fstm::InfoBlock::StreamInfo, py::const_),
       py::overload_cast<audio::fstm::StreamSoundInfo>(&audio::fstm::InfoBlock::StreamInfo)
     )
     .def_property(
-      "track_infos", 
+      "track_infos",
       py::overload_cast<>(&audio::fstm::InfoBlock::TrackInfos, py::const_),
       py::overload_cast<const std::vector<audio::fstm::TrackInfo>&>(&audio::fstm::InfoBlock::TrackInfos)
     )
     .def("get_track_info", &audio::fstm::InfoBlock::GetTrackInfo, "id"_a)
     .def("set_track_info", &audio::fstm::InfoBlock::SetTrackInfo, "info"_a, "id"_a)
     .def_property(
-      "channel_infos", 
+      "channel_infos",
       py::overload_cast<>(&audio::fstm::InfoBlock::DetailChannelInfos, py::const_),
       py::overload_cast<const std::vector<audio::DspAdpcmInfo>&>(&audio::fstm::InfoBlock::DetailChannelInfos)
     )

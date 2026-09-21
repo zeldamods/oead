@@ -4,19 +4,18 @@
 
 namespace oead::audio::fstp {
 struct PrefetchDataBin {
-  std::uint32_t start_frame {0};
-  std::uint32_t prefetch_size {0};
-  std::uint32_t reserved {0};
+  std::uint32_t start_frame{0};
+  std::uint32_t prefetch_size{0};
+  std::uint32_t reserved{0};
 
   // offset is relative to the start of the PrefetchData
-  Reference to_prefetch_samples {};
+  Reference to_prefetch_samples{};
 
-  OEAD_DEFINE_FIELDS(PrefetchDataBin, start_frame, prefetch_size, reserved,
-                     to_prefetch_samples);
+  OEAD_DEFINE_FIELDS(PrefetchDataBin, start_frame, prefetch_size, reserved, to_prefetch_samples);
 };
 
 struct PrefetchData {
-  std::uint32_t start_frame {0};
+  std::uint32_t start_frame{0};
   std::vector<std::uint8_t> prefetch_samples;
 };
 
@@ -30,8 +29,8 @@ struct PrefetchDataBlock {
 class Fstp : public IAssetFile {
 public:
   Fstp() = default;
-  Fstp(tcb::span<const u8> data);
-  
+  Fstp(std::span<const u8> data);
+
   void Deserialize(util::AudioReader& reader) override;
   void Serialize(util::AudioWriter& writer) const override;
 
@@ -61,7 +60,9 @@ public:
   void Endianness(util::Endianness endian) override { m_endian = endian; }
 
   /// Get the alignment of a StreamPrefetchFile based on endianness
-  static int GetAlignment(util::Endianness endian) { return endian == util::Endianness::Little ? 0x40 : 0x20; }
+  static int GetAlignment(util::Endianness endian) {
+    return endian == util::Endianness::Little ? 0x40 : 0x20;
+  }
 
 private:
   void SerializeDataBlock(util::AudioWriter& writer) const;
@@ -71,4 +72,4 @@ private:
   PrefetchDataBlock m_data;
   util::Endianness m_endian;
 };
-} // namespace oead::audio::fstp
+}  // namespace oead::audio::fstp

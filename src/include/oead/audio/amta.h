@@ -4,9 +4,9 @@
 #include <cstdint>
 #include <string>
 
-#include "oead/errors.h"
 #include "oead/audio/audio_reader.h"
 #include "oead/audio/audio_writer.h"
+#include "oead/errors.h"
 #include "oead/util/swap.h"
 
 namespace oead::audio::amta {
@@ -44,17 +44,17 @@ struct AudioMetaHeader {
   std::uint32_t ext_offset;
   std::uint32_t strg_offset;
 
-  OEAD_DEFINE_FIELDS(AudioMetaHeader, signature, bom, version, file_size, 
-                     data_offset, mark_offset, ext_offset, strg_offset);
+  OEAD_DEFINE_FIELDS(AudioMetaHeader, signature, bom, version, file_size, data_offset, mark_offset,
+                     ext_offset, strg_offset);
 };
 
 struct AudioMetaDataBin {
   BlockHeader header{{'D', 'A', 'T', 'A'}, 0x64};
   std::uint32_t asset_name_offset{0};
   std::uint32_t sample_count{0};
-  AssetType type {AssetType::Wave};
+  AssetType type{AssetType::Wave};
   std::uint8_t channel_count{0};
-  std::uint8_t used_stream_tracks{0}; // Up to 8
+  std::uint8_t used_stream_tracks{0};  // Up to 8
   std::uint8_t flags{0};
   float unknown{0};
   std::uint32_t sample_rate{48000};
@@ -74,7 +74,7 @@ struct AudioMetaDataBin {
 };
 
 // Audio Meta
-// File containing metadata for an audio asset 
+// File containing metadata for an audio asset
 // (either Wave or Stream)
 class Amta {
 public:
@@ -85,7 +85,7 @@ public:
   };
 
   Amta() = default;
-  Amta(tcb::span<const u8> data);
+  Amta(std::span<const u8> data);
 
   void Deserialize(util::AudioReader& reader);
   void Serialize(util::AudioWriter& writer) const;
@@ -152,7 +152,7 @@ public:
 
     m_loop_start_frame = loop_start_frame;
   }
-  
+
   /// Get the frame where the loop will end, if the asset is looped
   auto LoopEndFrame() const { return m_loop_end_frame; }
   /// Set the frame where the loop will end, if the asset is looped
@@ -207,7 +207,7 @@ public:
   auto Endianness() const { return m_endian; }
   /// Set the endianness the object will serialize to
   void Endianness(util::Endianness endianness) { m_endian = endianness; }
-  
+
 private:
   void DeserializeMarkerBlock(util::AudioReader& reader, u32 to_string_table);
   void DeserializeExtBlock(util::AudioReader& reader, u32 to_string_table);
@@ -215,26 +215,25 @@ private:
   void SerializeData(util::AudioWriter& writer) const;
   std::vector<std::size_t> SerializeMarker(util::AudioWriter& writer) const;
   std::vector<std::size_t> SerializeExt(util::AudioWriter& writer) const;
-  void SerializeStringTable(util::AudioWriter& writer, 
-                            std::vector<std::size_t> marker_offsets, 
+  void SerializeStringTable(util::AudioWriter& writer, std::vector<std::size_t> marker_offsets,
                             std::vector<std::size_t> ext_offsets) const;
 
-  std::string m_asset_name {""};
-  std::uint16_t m_version {0x400};
-  std::uint32_t m_sample_count {0};
-  AssetType m_asset_type {AssetType::Wave};
-  std::uint8_t m_channel_count {1};
-  std::uint8_t m_used_stream_tracks {0};
-  std::uint8_t m_flags {0};
-  float m_unknown {0};
-  std::uint32_t m_sample_rate {48000};
-  std::uint32_t m_loop_start_frame {0};
-  std::uint32_t m_loop_end_frame {0};
-  float m_volume {0};
+  std::string m_asset_name{""};
+  std::uint16_t m_version{0x400};
+  std::uint32_t m_sample_count{0};
+  AssetType m_asset_type{AssetType::Wave};
+  std::uint8_t m_channel_count{1};
+  std::uint8_t m_used_stream_tracks{0};
+  std::uint8_t m_flags{0};
+  float m_unknown{0};
+  std::uint32_t m_sample_rate{48000};
+  std::uint32_t m_loop_start_frame{0};
+  std::uint32_t m_loop_end_frame{0};
+  float m_volume{0};
   std::array<StreamTrack, 8> m_stream_tracks;
-  float m_amplitude_peak {0};
+  float m_amplitude_peak{0};
   std::vector<MarkerInfo> m_markers;
   std::vector<ExtEntry> m_ext_entries;
-  util::Endianness m_endian {util::Endianness::Little};
+  util::Endianness m_endian{util::Endianness::Little};
 };
-} // namespace oead::audio
+}  // namespace oead::audio::amta

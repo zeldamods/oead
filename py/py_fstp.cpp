@@ -8,7 +8,7 @@ void BindFstp(py::module& parent) {
 
   py::class_<audio::fstp::Fstp, std::shared_ptr<audio::fstp::Fstp>, audio::IAssetFile>(m, "Fstp")
     .def(py::init<>())
-    .def(py::init<tcb::span<const u8>>())
+    .def(py::init<std::span<const u8>>())
     .def("to_binary", py::overload_cast<>(&audio::fstp::Fstp::ToBinary, py::const_))
     .def("to_binary", py::overload_cast<util::Endianness>(&audio::fstp::Fstp::ToBinary, py::const_), "endian"_a)
     .def_property(

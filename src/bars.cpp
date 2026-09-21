@@ -11,13 +11,13 @@
 namespace oead::audio::bars {
 constexpr auto BarsMagic = util::MakeMagic("BARS");
 
-Bars::Bars(tcb::span<const u8> data) {
-  util::AudioReader reader {data, util::Endianness::Little};
+Bars::Bars(std::span<const u8> data) {
+  util::AudioReader reader{data, util::Endianness::Little};
   Deserialize(reader);
 }
 
 Bars::Bars(const std::string& file_path) {
-  std::ifstream ifs {file_path, std::ios_base::binary};
+  std::ifstream ifs{file_path, std::ios_base::binary};
   if (!ifs)
     throw std::runtime_error("Could not open file");
 
@@ -26,12 +26,12 @@ Bars::Bars(const std::string& file_path) {
 
   ifs.close();
 
-  util::AudioReader reader {data, util::Endianness::Little};
+  util::AudioReader reader{data, util::Endianness::Little};
   Deserialize(reader);
 }
 
 void Bars::Deserialize(util::AudioReader& reader) {
-  std::size_t file_start {reader.Tell()};
+  std::size_t file_start{reader.Tell()};
   auto header = reader.Read<ResourceHeader>();
 
   if (util::ByteOrderMarkToEndianness(header.bom) == util::Endianness::Little) {
@@ -42,10 +42,10 @@ void Bars::Deserialize(util::AudioReader& reader) {
 
   if (header.signature != BarsMagic)
     throw InvalidDataError("Invalid BARS magic");
-  
+
   // Version 1.1
-  if (header.version > 0x101)
-    throw InvalidDataError("Unsupported BARS version"); 
+  if (header.version != 0x101)
+    throw InvalidDataError("Unsupported BARS version");
 
   m_version = header.version;
   m_endian = reader.Endian();
@@ -61,16 +61,15 @@ void Bars::Deserialize(util::AudioReader& reader) {
   m_files.resize(header.asset_count);
   // TODO: describe what's happening next
   std::map<std::int32_t, std::shared_ptr<IAssetFile>> found_assets;
-  for (uint i {0}; i < header.asset_count; ++i) {
+  for (uint i{0}; i < header.asset_count; ++i) {
     reader.Seek(offset_sets[i].meta_offset);
     m_files[i].meta.Deserialize(reader);
 
-    auto found_asset {found_assets.find(offset_sets[i].asset_offset)};
+    auto found_asset{found_assets.find(offset_sets[i].asset_offset)};
 
     if (found_asset != found_assets.end()) {
       m_files[i].asset = found_asset->second;
-    }
-    else if (offset_sets[i].asset_offset != -1) {
+    } else if (offset_sets[i].asset_offset != -1) {
       reader.Seek(offset_sets[i].asset_offset);
 
       switch (m_files[i].meta.Type()) {
@@ -89,8 +88,7 @@ void Bars::Deserialize(util::AudioReader& reader) {
       case oead::audio::AssetType::Unknown:
         throw InvalidDataError("Invalid AssetType");
       }
-    }
-    else {
+    } else {
       m_files[i].asset = nullptr;
     }
 
@@ -99,17 +97,18 @@ void Bars::Deserialize(util::AudioReader& reader) {
 }
 
 void Bars::SwapEndianness() {
-  Endianness(m_endian == util::Endianness::Little ? util::Endianness::Big : util::Endianness::Little);
+  Endianness(m_endian == util::Endianness::Little ? util::Endianness::Big :
+                                                    util::Endianness::Little);
 }
 
 std::vector<u8> Bars::ToBinary() const {
-  util::AudioWriter writer {m_endian};
+  util::AudioWriter writer{m_endian};
   Serialize(writer);
   return writer.Finalize();
 }
 
 std::vector<u8> Bars::ToBinary(util::Endianness endian) const {
-  util::AudioWriter writer {endian};
+  util::AudioWriter writer{endian};
   Serialize(writer);
   return writer.Finalize();
 }
@@ -131,11 +130,11 @@ std::vector<u8> Bars::FileToBinary(const std::string& name) const {
 }
 
 void Bars::Serialize(util::AudioWriter& writer) const {
-  std::size_t file_start {writer.Tell()};
+  std::size_t file_start{writer.Tell()};
 
   writer.WriteString("BARS");
 
-  std::size_t file_size_pos {writer.WritePendingValue()};
+  std::size_t file_size_pos{writer.WritePendingValue()};
 
   writer.Write<std::uint16_t>(0xFEFF);
   writer.Write<std::uint16_t>(m_version);
@@ -145,7 +144,7 @@ void Bars::Serialize(util::AudioWriter& writer) const {
     writer.Write(hash);
 
   std::vector<FileOffsetSet> offset_sets_pos(m_files.size());
-  for (uint i {0}; i < m_files.size(); ++i) {
+  for (uint i{0}; i < m_files.size(); ++i) {
     offset_sets_pos[i].meta_offset = writer.WritePendingValue();
     if (m_files[i].asset == nullptr)
       writer.Write<std::int32_t>(-1);
@@ -162,14 +161,13 @@ void Bars::Serialize(util::AudioWriter& writer) const {
   std::map<std::shared_ptr<IAssetFile>, std::size_t> done_assets;
   for (uint i{0}; i < m_files.size(); ++i) {
     if (m_files[i].asset != nullptr) {
-      auto it {done_assets.find(m_files[i].asset)};
+      auto it{done_assets.find(m_files[i].asset)};
       if (it != done_assets.end()) {
-        std::size_t return_offset {writer.Tell()};
+        std::size_t return_offset{writer.Tell()};
         writer.Seek(offset_sets_pos[i].asset_offset);
         writer.Write<std::int32_t>(it->second - file_start);
         writer.Seek(return_offset);
-      }
-      else {
+      } else {
         writer.AlignUp(0x40);
         writer.WriteCurrentOffsetAt<std::int32_t>(offset_sets_pos[i].asset_offset, file_start);
         done_assets[m_files[i].asset] = writer.Tell();
@@ -195,4 +193,4 @@ void Bars::Serialize(util::AudioWriter& writer) const {
 
   writer.WriteCurrentOffsetAt<std::uint32_t>(file_size_pos, file_start);
 }
-} // namespace oead::bars
+}  // namespace oead::audio::bars

@@ -22,8 +22,8 @@ public:
     WriteNul();
   }
 
-  std::map<std::string, std::vector<std::size_t>> WriteSoundFileHeader(std::array<char, 4> signature, 
-                                                                       int version, 
+  std::map<std::string, std::vector<std::size_t>> WriteSoundFileHeader(std::array<char, 4> signature,
+                                                                       int version,
                                                                        std::vector<audio::ElementType> block_ids) {
     std::size_t header_start {Tell()};
     std::map<std::string, std::vector<std::size_t>> pending_values;
@@ -55,16 +55,16 @@ public:
     return pending_values;
   }
 
-  std::size_t WriteEmptyOffsetReference(audio::ElementType reference_type, 
+  std::size_t WriteEmptyOffsetReference(audio::ElementType reference_type,
                                         bool valid_ref,
                                         bool with_size = false) {
     if (valid_ref) {
       Write(static_cast<std::uint16_t>(reference_type));
       Write<std::uint16_t>(0);
-  
+
       std::size_t offset_pos = Tell();
       Write<std::uint32_t>(0);
-  
+
       if (with_size)
         Write<std::uint32_t>(0);
 
@@ -99,13 +99,6 @@ template <typename ValueType = std::int32_t>
     case audio::SampleFormat::DSPADPCM:
       for (auto& sample : channel)
         Write(std::get<std::uint8_t>(sample));
-      // for (uint i {0}; i < channel.size(); i += 2) {
-      //   std::uint8_t sample_byte_lo {std::get<std::uint8_t>(channel[i])};
-      //   std::uint8_t sample_byte_hi {std::get<std::uint8_t>(channel[i + 1])};
-          
-      //   std::uint8_t sample_byte = (sample_byte_hi << 4) | sample_byte_lo;
-      //   Write(sample_byte);
-      // }
       break;
     case audio::SampleFormat::PCMS32:
       for (auto& sample : channel)

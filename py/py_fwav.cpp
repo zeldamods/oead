@@ -9,54 +9,54 @@ void BindFwav(py::module& parent) {
 
   py::class_<audio::fwav::Fwav, std::shared_ptr<audio::fwav::Fwav>, audio::IAssetFile>(m, "Fwav")
     .def(py::init<>())
-    .def(py::init<tcb::span<const u8>>())
+    .def(py::init<std::span<const u8>>())
     .def("to_binary", py::overload_cast<>(&audio::fwav::Fwav::ToBinary, py::const_))
     .def("to_binary", py::overload_cast<util::Endianness>(&audio::fwav::Fwav::ToBinary, py::const_), "endian"_a)
     .def_property(
-      "encoding", 
-      py::overload_cast<>(&audio::fwav::Fwav::Encoding, py::const_), 
+      "encoding",
+      py::overload_cast<>(&audio::fwav::Fwav::Encoding, py::const_),
       py::overload_cast<audio::SampleFormat>(&audio::fwav::Fwav::Encoding)
     )
     .def_property(
-      "is_loop", 
-      py::overload_cast<>(&audio::fwav::Fwav::isLoop, py::const_), 
+      "is_loop",
+      py::overload_cast<>(&audio::fwav::Fwav::isLoop, py::const_),
       py::overload_cast<bool>(&audio::fwav::Fwav::isLoop)
     )
     .def_property(
-      "sample_rate", 
-      py::overload_cast<>(&audio::fwav::Fwav::SampleRate, py::const_), 
+      "sample_rate",
+      py::overload_cast<>(&audio::fwav::Fwav::SampleRate, py::const_),
       py::overload_cast<u32>(&audio::fwav::Fwav::SampleRate)
     )
     .def_property(
-      "loop_start_frame", 
-      py::overload_cast<>(&audio::fwav::Fwav::LoopStartFrame, py::const_), 
+      "loop_start_frame",
+      py::overload_cast<>(&audio::fwav::Fwav::LoopStartFrame, py::const_),
       py::overload_cast<u32>(&audio::fwav::Fwav::LoopStartFrame)
     )
     .def_property(
-      "loop_end_frame", 
-      py::overload_cast<>(&audio::fwav::Fwav::LoopEndFrame, py::const_), 
+      "loop_end_frame",
+      py::overload_cast<>(&audio::fwav::Fwav::LoopEndFrame, py::const_),
       py::overload_cast<u32>(&audio::fwav::Fwav::LoopEndFrame)
     )
     .def_property(
-      "original_loop_start_frame", 
-      py::overload_cast<>(&audio::fwav::Fwav::OriginalLoopStartFrame, py::const_), 
+      "original_loop_start_frame",
+      py::overload_cast<>(&audio::fwav::Fwav::OriginalLoopStartFrame, py::const_),
       py::overload_cast<u32>(&audio::fwav::Fwav::OriginalLoopStartFrame)
     )
     .def_property(
-      "channel_infos", 
-      py::overload_cast<>(&audio::fwav::Fwav::ChannelInfos, py::const_), 
+      "channel_infos",
+      py::overload_cast<>(&audio::fwav::Fwav::ChannelInfos, py::const_),
       py::overload_cast<const std::vector<audio::fwav::ChannelInfo>&>(&audio::fwav::Fwav::ChannelInfos)
     )
     .def("get_channel_info", &audio::fwav::Fwav::GetChannelInfo, "channel"_a)
     .def("set_channel_info", &audio::fwav::Fwav::SetChannelInfo, "info"_a, "channel"_a)
     .def_property(
-      "samples", 
-      py::overload_cast<>(&audio::fwav::Fwav::Samples, py::const_), 
+      "samples",
+      py::overload_cast<>(&audio::fwav::Fwav::Samples, py::const_),
       py::overload_cast<const std::vector<audio::Channel>&>(&audio::fwav::Fwav::Samples)
     )
     .def_property(
-      "endian", 
-      py::overload_cast<>(&audio::fwav::Fwav::Endianness, py::const_), 
+      "endian",
+      py::overload_cast<>(&audio::fwav::Fwav::Endianness, py::const_),
       py::overload_cast<util::Endianness>(&audio::fwav::Fwav::Endianness)
     );
 
