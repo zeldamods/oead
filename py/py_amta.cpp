@@ -6,6 +6,20 @@ namespace oead::bind {
 void BindAmta(py::module& parent) {
   py::module m = parent.def_submodule("audio");
 
+  py::class_<audio::amta::MarkerInfo>(m, "MarkerInfo")
+    .def_readwrite("id", &audio::amta::MarkerInfo::id)
+    .def_readwrite("name", &audio::amta::MarkerInfo::name)
+    .def_readwrite("start_pos", &audio::amta::MarkerInfo::start_pos)
+    .def_readwrite("length", &audio::amta::MarkerInfo::length);
+
+  py::class_<audio::amta::ExtEntry>(m, "ExtEntry")
+    .def_readwrite("name", &audio::amta::ExtEntry::name)
+    .def_readwrite("value", &audio::amta::ExtEntry::value);
+
+  py::class_<audio::amta::Amta::StreamTrack>(m, "StreamTrack")
+    .def_readwrite("channel_count", &audio::amta::Amta::StreamTrack::channel_count)
+    .def_readwrite("volume", &audio::amta::Amta::StreamTrack::volume);
+
   py::class_<audio::amta::Amta>(m, "Amta")
     .def(py::init<>())
     .def(py::init<std::span<const u8>>())
@@ -107,9 +121,5 @@ void BindAmta(py::module& parent) {
       py::overload_cast<>(&audio::amta::Amta::Endianness, py::const_),
       py::overload_cast<util::Endianness>(&audio::amta::Amta::Endianness)
     );
-
-  py::class_<audio::amta::Amta::StreamTrack>(m, "StreamTrack")
-    .def_readwrite("channel_count", &audio::amta::Amta::StreamTrack::channel_count)
-    .def_readwrite("volume", &audio::amta::Amta::StreamTrack::volume);
 }
 } // namespace oead::bind

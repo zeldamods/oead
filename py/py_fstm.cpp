@@ -6,64 +6,6 @@ namespace oead::bind {
 void BindFstm(py::module& parent) {
   py::module m = parent.def_submodule("audio");
 
-  py::class_<audio::fstm::Fstm>(m, "Fstm")
-    .def(py::init<>())
-    .def(py::init<std::span<const u8>>())
-    .def("to_binary", py::overload_cast<>(&audio::fstm::Fstm::ToBinary, py::const_))
-    .def("to_binary", py::overload_cast<util::Endianness>(&audio::fstm::Fstm::ToBinary, py::const_), "endian"_a)
-    .def_property(
-      "info",
-      py::overload_cast<>(&audio::fstm::Fstm::Info, py::const_),
-      py::overload_cast<audio::fstm::InfoBlock>(&audio::fstm::Fstm::Info)
-    )
-    .def_property(
-      "seek_infos",
-      py::overload_cast<>(&audio::fstm::Fstm::SeekInfos, py::const_),
-      py::overload_cast<const std::vector<std::vector<audio::fstm::SeekInfo>>&>(&audio::fstm::Fstm::SeekInfos)
-    )
-    .def("get_seek_info", &audio::fstm::Fstm::GetSeekInfo, "block"_a, "channel"_a)
-    .def("set_seek_info", &audio::fstm::Fstm::SetSeekInfo, "info"_a, "block"_a, "channel"_a)
-    .def_property(
-      "region_infos",
-      py::overload_cast<>(&audio::fstm::Fstm::RegionInfos, py::const_),
-      py::overload_cast<const std::vector<audio::fstm::RegionInfo>&>(&audio::fstm::Fstm::RegionInfos)
-    )
-    .def("get_region_info", &audio::fstm::Fstm::GetRegionInfo, "id"_a)
-    .def("set_region_info", &audio::fstm::Fstm::SetRegionInfo, "info"_a, "id"_a)
-    .def_property(
-      "samples",
-      py::overload_cast<>(&audio::fstm::Fstm::Samples, py::const_),
-      py::overload_cast<const std::vector<audio::Channel>&>(&audio::fstm::Fstm::Samples)
-    )
-    .def("has_region", &audio::fstm::Fstm::HasRegion)
-    .def_property(
-      "endian",
-      py::overload_cast<>(&audio::fstm::Fstm::Endianness, py::const_),
-      py::overload_cast<util::Endianness>(&audio::fstm::Fstm::Endianness)
-    );
-
-  py::class_<audio::fstm::InfoBlock>(m, "StreamInfoBlock")
-    .def(py::init<>())
-    .def_property(
-      "stream_info",
-      py::overload_cast<>(&audio::fstm::InfoBlock::StreamInfo, py::const_),
-      py::overload_cast<audio::fstm::StreamSoundInfo>(&audio::fstm::InfoBlock::StreamInfo)
-    )
-    .def_property(
-      "track_infos",
-      py::overload_cast<>(&audio::fstm::InfoBlock::TrackInfos, py::const_),
-      py::overload_cast<const std::vector<audio::fstm::TrackInfo>&>(&audio::fstm::InfoBlock::TrackInfos)
-    )
-    .def("get_track_info", &audio::fstm::InfoBlock::GetTrackInfo, "id"_a)
-    .def("set_track_info", &audio::fstm::InfoBlock::SetTrackInfo, "info"_a, "id"_a)
-    .def_property(
-      "channel_infos",
-      py::overload_cast<>(&audio::fstm::InfoBlock::DetailChannelInfos, py::const_),
-      py::overload_cast<const std::vector<audio::DspAdpcmInfo>&>(&audio::fstm::InfoBlock::DetailChannelInfos)
-    )
-    .def("get_channel_info", &audio::fstm::InfoBlock::GetDetailChannelInfo, "channel"_a)
-    .def("set_channel_info", &audio::fstm::InfoBlock::SetDetailChannelInfo, "info"_a, "channel"_a);
-
   py::class_<audio::fstm::StreamSoundInfo>(m, "StreamSoundInfo")
     .def(py::init<>())
     .def_readwrite("encoding", &audio::fstm::StreamSoundInfo::encoding)
@@ -104,5 +46,63 @@ void BindFstm(py::module& parent) {
     .def_readwrite("pan", &audio::fstm::TrackInfo::pan)
     .def_readwrite("span", &audio::fstm::TrackInfo::span)
     .def_readwrite("flags", &audio::fstm::TrackInfo::flags);
+
+  py::class_<audio::fstm::InfoBlock>(m, "StreamInfoBlock")
+    .def(py::init<>())
+    .def_property(
+      "stream_info",
+      py::overload_cast<>(&audio::fstm::InfoBlock::StreamInfo, py::const_),
+      py::overload_cast<audio::fstm::StreamSoundInfo>(&audio::fstm::InfoBlock::StreamInfo)
+    )
+    .def_property(
+      "track_infos",
+      py::overload_cast<>(&audio::fstm::InfoBlock::TrackInfos, py::const_),
+      py::overload_cast<const std::vector<audio::fstm::TrackInfo>&>(&audio::fstm::InfoBlock::TrackInfos)
+    )
+    .def("get_track_info", &audio::fstm::InfoBlock::GetTrackInfo, "id"_a)
+    .def("set_track_info", &audio::fstm::InfoBlock::SetTrackInfo, "info"_a, "id"_a)
+    .def_property(
+      "channel_infos",
+      py::overload_cast<>(&audio::fstm::InfoBlock::DetailChannelInfos, py::const_),
+      py::overload_cast<const std::vector<audio::DspAdpcmInfo>&>(&audio::fstm::InfoBlock::DetailChannelInfos)
+    )
+    .def("get_channel_info", &audio::fstm::InfoBlock::GetDetailChannelInfo, "channel"_a)
+    .def("set_channel_info", &audio::fstm::InfoBlock::SetDetailChannelInfo, "info"_a, "channel"_a);
+
+  py::class_<audio::fstm::Fstm>(m, "Fstm")
+    .def(py::init<>())
+    .def(py::init<std::span<const u8>>())
+    .def("to_binary", py::overload_cast<>(&audio::fstm::Fstm::ToBinary, py::const_))
+    .def("to_binary", py::overload_cast<util::Endianness>(&audio::fstm::Fstm::ToBinary, py::const_), "endian"_a)
+    .def_property(
+      "info",
+      py::overload_cast<>(&audio::fstm::Fstm::Info, py::const_),
+      py::overload_cast<audio::fstm::InfoBlock>(&audio::fstm::Fstm::Info)
+    )
+    .def_property(
+      "seek_infos",
+      py::overload_cast<>(&audio::fstm::Fstm::SeekInfos, py::const_),
+      py::overload_cast<const std::vector<std::vector<audio::fstm::SeekInfo>>&>(&audio::fstm::Fstm::SeekInfos)
+    )
+    .def("get_seek_info", &audio::fstm::Fstm::GetSeekInfo, "block"_a, "channel"_a)
+    .def("set_seek_info", &audio::fstm::Fstm::SetSeekInfo, "info"_a, "block"_a, "channel"_a)
+    .def_property(
+      "region_infos",
+      py::overload_cast<>(&audio::fstm::Fstm::RegionInfos, py::const_),
+      py::overload_cast<const std::vector<audio::fstm::RegionInfo>&>(&audio::fstm::Fstm::RegionInfos)
+    )
+    .def("get_region_info", &audio::fstm::Fstm::GetRegionInfo, "id"_a)
+    .def("set_region_info", &audio::fstm::Fstm::SetRegionInfo, "info"_a, "id"_a)
+    .def_property(
+      "samples",
+      py::overload_cast<>(&audio::fstm::Fstm::Samples, py::const_),
+      py::overload_cast<const std::vector<audio::Channel>&>(&audio::fstm::Fstm::Samples)
+    )
+    .def("has_region", &audio::fstm::Fstm::HasRegion)
+    .def_property(
+      "endian",
+      py::overload_cast<>(&audio::fstm::Fstm::Endianness, py::const_),
+      py::overload_cast<util::Endianness>(&audio::fstm::Fstm::Endianness)
+    );
 }
 } // namespace oead::bind

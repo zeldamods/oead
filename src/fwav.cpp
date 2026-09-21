@@ -60,14 +60,14 @@ void Fwav::DeserializeInfoBlock(util::AudioReader& reader) {
   Table<Reference> channel_info_ref_table = reader.ReadTable<Reference>();
   m_channel_infos.resize(channel_info_ref_table.count);
 
-  for (uint i{0}; i < channel_info_ref_table.count; ++i) {
+  for (u32 i{0}; i < channel_info_ref_table.count; ++i) {
     Reference channel_info_ref = channel_info_ref_table.items[i];
     reader.Seek(channel_info_table_start + channel_info_ref.offset);
 
     size_t channel_info_start = reader.Tell();
     reader.Read<Reference>();
     Reference to_adpcm_info{reader.Read<Reference>()};
-    reader.Read<std::uint32_t>();  // reserved
+    reader.Read<u32>();  // reserved
 
     reader.Seek(channel_info_start + to_adpcm_info.offset);
     m_channel_infos[i].adpcm_info = reader.Read<DspAdpcmInfo>();
@@ -80,7 +80,7 @@ void Fwav::DeserializeDataBlock(util::AudioReader& reader) {
   m_samples.resize(m_channel_infos.size());
   reader.Align(GetAlignment(m_endian));
 
-  for (uint i{0}; i < m_channel_infos.size(); ++i) {
+  for (u32 i{0}; i < m_channel_infos.size(); ++i) {
     m_samples[i] = reader.ReadSamples(m_loop_end_frame, m_encoding, true);
     reader.Align(GetAlignment(m_endian));
   }
@@ -109,20 +109,20 @@ void Fwav::Serialize(util::AudioWriter& writer) const {
                                   })};
 
   // INFO
-  writer.WriteCurrentOffsetAt<std::int32_t>(pending_header_values["blocks"][0], file_start);
+  writer.WriteCurrentOffsetAt<s32>(pending_header_values["blocks"][0], file_start);
   std::size_t info_section_start{writer.Tell()};
   std::vector<std::size_t> samples_offset_pos = SerializeInfoBlock(writer);
-  writer.WriteCurrentOffsetAt<std::uint32_t>(pending_header_values["blocks_size"][0],
+  writer.WriteCurrentOffsetAt<u32>(pending_header_values["blocks_size"][0],
                                              info_section_start);
 
   // DATA
-  writer.WriteCurrentOffsetAt<std::int32_t>(pending_header_values["blocks"][1], file_start);
+  writer.WriteCurrentOffsetAt<s32>(pending_header_values["blocks"][1], file_start);
   std::size_t data_section_start{writer.Tell()};
   SerializeDataBlock(writer, samples_offset_pos);
-  writer.WriteCurrentOffsetAt<std::uint32_t>(pending_header_values["blocks_size"][1],
+  writer.WriteCurrentOffsetAt<u32>(pending_header_values["blocks_size"][1],
                                              data_section_start);
 
-  writer.WriteCurrentOffsetAt<std::int32_t>(pending_header_values["file_size"][0], file_start);
+  writer.WriteCurrentOffsetAt<s32>(pending_header_values["file_size"][0], file_start);
 }
 
 std::vector<std::size_t> Fwav::SerializeInfoBlock(util::AudioWriter& writer) const {
@@ -140,10 +140,10 @@ std::vector<std::size_t> Fwav::SerializeInfoBlock(util::AudioWriter& writer) con
   writer.Write(m_original_loop_start_frame);
 
   std::size_t channel_info_ref_table_start{writer.Tell()};
-  writer.Write<std::uint32_t>(m_channel_infos.size());
+  writer.Write<u32>(m_channel_infos.size());
 
   std::vector<std::size_t> channel_infos_offset_pos(m_channel_infos.size());
-  for (uint i{0}; i < m_channel_infos.size(); ++i) {
+  for (u32 i{0}; i < m_channel_infos.size(); ++i) {
     channel_infos_offset_pos[i] =
         writer.WriteEmptyOffsetReference(ElementType::WaveFile_ChannelInfo, true);
   }
@@ -151,27 +151,27 @@ std::vector<std::size_t> Fwav::SerializeInfoBlock(util::AudioWriter& writer) con
   std::vector<std::size_t> samples_offset_pos(m_channel_infos.size());
   std::vector<std::size_t> dsp_adpcm_offset_pos(m_channel_infos.size());
   std::vector<std::size_t> channel_infos_start(m_channel_infos.size());
-  for (uint i{0}; i < m_channel_infos.size(); ++i) {
+  for (u32 i{0}; i < m_channel_infos.size(); ++i) {
     // Channel Info Bin
-    writer.WriteCurrentOffsetAt<std::int32_t>(channel_infos_offset_pos[i],
+    writer.WriteCurrentOffsetAt<s32>(channel_infos_offset_pos[i],
                                               channel_info_ref_table_start);
 
     channel_infos_start[i] = writer.Tell();
     samples_offset_pos[i] = writer.WriteEmptyOffsetReference(ElementType::General_ByteStream, true);
     dsp_adpcm_offset_pos[i] =
         writer.WriteEmptyOffsetReference(ElementType::Codec_DspAdpcmInfo, true);
-    writer.Write<std::uint32_t>(0);  // reserved
+    writer.Write<u32>(0);  // reserved
   }
 
-  for (uint i{0}; i < m_channel_infos.size(); ++i) {
-    writer.WriteCurrentOffsetAt<std::int32_t>(dsp_adpcm_offset_pos[i], channel_infos_start[i]);
+  for (u32 i{0}; i < m_channel_infos.size(); ++i) {
+    writer.WriteCurrentOffsetAt<s32>(dsp_adpcm_offset_pos[i], channel_infos_start[i]);
     writer.Write(m_channel_infos[i].adpcm_info);
-    writer.Write<std::uint16_t>(0);  // padding
+    writer.Write<u16>(0);  // padding
   }
 
   writer.AlignUp(GetAlignment(writer.Endian()));
 
-  writer.WriteCurrentOffsetAt<std::int32_t>(section_size_pos, section_start);
+  writer.WriteCurrentOffsetAt<s32>(section_size_pos, section_start);
 
   return samples_offset_pos;
 }
@@ -187,8 +187,8 @@ void Fwav::SerializeDataBlock(util::AudioWriter& writer,
 
   writer.AlignUp(GetAlignment(writer.Endian()));
 
-  for (uint i{0}; i < samples_offset_pos.size(); ++i) {
-    writer.WriteCurrentOffsetAt<std::int32_t>(samples_offset_pos[i], data_start);
+  for (u32 i{0}; i < samples_offset_pos.size(); ++i) {
+    writer.WriteCurrentOffsetAt<s32>(samples_offset_pos[i], data_start);
     writer.WriteSamples(m_samples[i], m_encoding);
 
     if (i != samples_offset_pos.size() - 1)
@@ -197,8 +197,8 @@ void Fwav::SerializeDataBlock(util::AudioWriter& writer,
 
   // Add padding so the file has the correct file size when reserializing
   while (writer.Tell() % 8 != 0)
-    writer.Write<std::uint8_t>(0);
+    writer.Write<u8>(0);
 
-  writer.WriteCurrentOffsetAt<std::int32_t>(section_size_pos, section_start);
+  writer.WriteCurrentOffsetAt<s32>(section_size_pos, section_start);
 }
 }  // namespace oead::audio::fwav

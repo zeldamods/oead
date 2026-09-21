@@ -52,16 +52,15 @@ void Bars::Deserialize(util::AudioReader& reader) {
 
   m_hashes.resize(header.asset_count);
   for (auto& hash : m_hashes)
-    hash = reader.Read<std::uint32_t>();
+    hash = reader.Read<u32>();
 
   std::vector<FileOffsetSet> offset_sets(header.asset_count);
   for (auto& offset_set : offset_sets)
     offset_set = reader.Read<FileOffsetSet>();
 
   m_files.resize(header.asset_count);
-  // TODO: describe what's happening next
-  std::map<std::int32_t, std::shared_ptr<IAssetFile>> found_assets;
-  for (uint i{0}; i < header.asset_count; ++i) {
+  std::map<s32, std::shared_ptr<IAssetFile>> found_assets;
+  for (u32 i{0}; i < header.asset_count; ++i) {
     reader.Seek(offset_sets[i].meta_offset);
     m_files[i].meta.Deserialize(reader);
 
@@ -136,40 +135,39 @@ void Bars::Serialize(util::AudioWriter& writer) const {
 
   std::size_t file_size_pos{writer.WritePendingValue()};
 
-  writer.Write<std::uint16_t>(0xFEFF);
-  writer.Write<std::uint16_t>(m_version);
-  writer.Write<std::uint32_t>(m_files.size());
+  writer.Write<u16>(0xFEFF);
+  writer.Write<u16>(m_version);
+  writer.Write<u32>(m_files.size());
 
   for (auto& hash : m_hashes)
     writer.Write(hash);
 
   std::vector<FileOffsetSet> offset_sets_pos(m_files.size());
-  for (uint i{0}; i < m_files.size(); ++i) {
+  for (u32 i{0}; i < m_files.size(); ++i) {
     offset_sets_pos[i].meta_offset = writer.WritePendingValue();
     if (m_files[i].asset == nullptr)
-      writer.Write<std::int32_t>(-1);
+      writer.Write<s32>(-1);
     else
       offset_sets_pos[i].asset_offset = writer.WritePendingValue();
   }
 
-  for (uint i{0}; i < m_files.size(); ++i) {
-    writer.WriteCurrentOffsetAt<std::uint32_t>(offset_sets_pos[i].meta_offset, file_start);
+  for (u32 i{0}; i < m_files.size(); ++i) {
+    writer.WriteCurrentOffsetAt<u32>(offset_sets_pos[i].meta_offset, file_start);
     m_files[i].meta.Serialize(writer);
   }
 
-  // TODO: describe what happens next
   std::map<std::shared_ptr<IAssetFile>, std::size_t> done_assets;
-  for (uint i{0}; i < m_files.size(); ++i) {
+  for (u32 i{0}; i < m_files.size(); ++i) {
     if (m_files[i].asset != nullptr) {
       auto it{done_assets.find(m_files[i].asset)};
       if (it != done_assets.end()) {
         std::size_t return_offset{writer.Tell()};
         writer.Seek(offset_sets_pos[i].asset_offset);
-        writer.Write<std::int32_t>(it->second - file_start);
+        writer.Write<s32>(it->second - file_start);
         writer.Seek(return_offset);
       } else {
         writer.AlignUp(0x40);
-        writer.WriteCurrentOffsetAt<std::int32_t>(offset_sets_pos[i].asset_offset, file_start);
+        writer.WriteCurrentOffsetAt<s32>(offset_sets_pos[i].asset_offset, file_start);
         done_assets[m_files[i].asset] = writer.Tell();
         switch (m_files[i].meta.Type()) {
         case AssetType::Wave: {
@@ -191,6 +189,6 @@ void Bars::Serialize(util::AudioWriter& writer) const {
     }
   }
 
-  writer.WriteCurrentOffsetAt<std::uint32_t>(file_size_pos, file_start);
+  writer.WriteCurrentOffsetAt<u32>(file_size_pos, file_start);
 }
 }  // namespace oead::audio::bars

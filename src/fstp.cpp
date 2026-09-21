@@ -41,15 +41,15 @@ void Fstp::Deserialize(util::AudioReader& reader) {
 
       m_data.prefetch_data.resize(prefetch_data_table.count);
 
-      for (uint i{0}; i < prefetch_data_table.count; ++i) {
+      for (u32 i{0}; i < prefetch_data_table.count; ++i) {
         m_data.prefetch_data[i].start_frame = prefetch_data_table.items[i].start_frame;
-        std::size_t offset{table_start + sizeof(std::uint32_t) +
+        std::size_t offset{table_start + sizeof(u32) +
                            prefetch_data_table.items[i].to_prefetch_samples.offset};
 
         reader.Seek(offset);
         m_data.prefetch_data[i].prefetch_samples.resize(prefetch_data_table.items[i].prefetch_size);
         for (auto& sample : m_data.prefetch_data[i].prefetch_samples)
-          sample = reader.Read<std::uint8_t>();
+          sample = reader.Read<u8>();
       }
     }
   }
@@ -78,20 +78,20 @@ void Fstp::Serialize(util::AudioWriter& writer) const {
                                   })};
 
   // INFO
-  writer.WriteCurrentOffsetAt<std::int32_t>(pending_header_values["blocks"][0], file_start);
+  writer.WriteCurrentOffsetAt<s32>(pending_header_values["blocks"][0], file_start);
   std::size_t info_section_start{writer.Tell()};
   m_info.Serialize(writer);
-  writer.WriteCurrentOffsetAt<std::uint32_t>(pending_header_values["blocks_size"][0],
+  writer.WriteCurrentOffsetAt<u32>(pending_header_values["blocks_size"][0],
                                              info_section_start);
 
   // PDAT
-  writer.WriteCurrentOffsetAt<std::int32_t>(pending_header_values["blocks"][1], file_start);
+  writer.WriteCurrentOffsetAt<s32>(pending_header_values["blocks"][1], file_start);
   std::size_t pdat_section_start{writer.Tell()};
   SerializeDataBlock(writer);
-  writer.WriteCurrentOffsetAt<std::uint32_t>(pending_header_values["blocks_size"][1],
+  writer.WriteCurrentOffsetAt<u32>(pending_header_values["blocks_size"][1],
                                              pdat_section_start);
 
-  writer.WriteCurrentOffsetAt<std::uint32_t>(pending_header_values["file_size"][0], file_start);
+  writer.WriteCurrentOffsetAt<u32>(pending_header_values["file_size"][0], file_start);
 }
 
 void Fstp::SerializeDataBlock(util::AudioWriter& writer) const {
@@ -104,11 +104,11 @@ void Fstp::SerializeDataBlock(util::AudioWriter& writer) const {
 
   std::vector<std::size_t> sample_data_offsets_pos(m_data.prefetch_data.size());
 
-  writer.Write<std::uint32_t>(m_data.prefetch_data.size());
+  writer.Write<u32>(m_data.prefetch_data.size());
   std::size_t pdat_table_start{writer.Tell()};
-  for (uint i{0}; i < m_data.prefetch_data.size(); ++i) {
-    writer.Write<std::uint32_t>(m_data.prefetch_data[i].start_frame);
-    writer.Write<std::uint32_t>(m_data.prefetch_data[i].prefetch_samples.size());
+  for (u32 i{0}; i < m_data.prefetch_data.size(); ++i) {
+    writer.Write<u32>(m_data.prefetch_data[i].start_frame);
+    writer.Write<u32>(m_data.prefetch_data[i].prefetch_samples.size());
     writer.Write(0);  // reserved
 
     sample_data_offsets_pos[i] = writer.WriteEmptyOffsetReference(ElementType::Blank, true);
@@ -116,13 +116,13 @@ void Fstp::SerializeDataBlock(util::AudioWriter& writer) const {
 
   writer.AlignUp(GetAlignment(writer.Endian()));
 
-  for (uint i{0}; i < m_data.prefetch_data.size(); ++i) {
-    writer.WriteCurrentOffsetAt<std::int32_t>(sample_data_offsets_pos[i], pdat_table_start);
+  for (u32 i{0}; i < m_data.prefetch_data.size(); ++i) {
+    writer.WriteCurrentOffsetAt<s32>(sample_data_offsets_pos[i], pdat_table_start);
 
     for (auto& data : m_data.prefetch_data[i].prefetch_samples)
       writer.Write(data);
   }
 
-  writer.WriteCurrentOffsetAt<std::uint32_t>(section_size_pos, section_start);
+  writer.WriteCurrentOffsetAt<u32>(section_size_pos, section_start);
 }
 }  // namespace oead::audio::fstp

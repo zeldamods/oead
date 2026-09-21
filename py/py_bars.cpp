@@ -6,9 +6,14 @@ namespace oead::bind {
 void BindBars(py::module& parent) {
   py::module m = parent.def_submodule("audio");
 
+  py::class_<audio::bars::Bars::FileWithMetadata>(m, "FileWithMetadata")
+    .def_readwrite("meta", &audio::bars::Bars::FileWithMetadata::meta)
+    .def_readwrite("asset", &audio::bars::Bars::FileWithMetadata::asset);
+
   py::class_<audio::bars::Bars>(m, "Bars")
     .def(py::init<>())
     .def(py::init<std::span<const u8>>())
+    .def(py::init<const std::string&>())
     .def("get_files", &audio::bars::Bars::GetFiles)
     .def("get_file", py::overload_cast<int>(&audio::bars::Bars::GetFile, py::const_), "idx"_a)
     .def("get_file", py::overload_cast<const std::string&>(&audio::bars::Bars::GetFile, py::const_), "name"_a)
@@ -29,9 +34,5 @@ void BindBars(py::module& parent) {
       py::overload_cast<>(&audio::bars::Bars::Endianness, py::const_),
       py::overload_cast<util::Endianness>(&audio::bars::Bars::Endianness)
     );
-
-  py::class_<audio::bars::Bars::FileWithMetadata>(m, "FileWithMetadata")
-    .def_readwrite("meta", &audio::bars::Bars::FileWithMetadata::meta)
-    .def_readwrite("asset", &audio::bars::Bars::FileWithMetadata::asset);
 }
 } // namespace oead::bind

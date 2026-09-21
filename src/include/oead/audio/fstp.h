@@ -4,9 +4,9 @@
 
 namespace oead::audio::fstp {
 struct PrefetchDataBin {
-  std::uint32_t start_frame{0};
-  std::uint32_t prefetch_size{0};
-  std::uint32_t reserved{0};
+  u32 start_frame{0};
+  u32 prefetch_size{0};
+  u32 reserved{0};
 
   // offset is relative to the start of the PrefetchData
   Reference to_prefetch_samples{};
@@ -15,8 +15,8 @@ struct PrefetchDataBin {
 };
 
 struct PrefetchData {
-  std::uint32_t start_frame{0};
-  std::vector<std::uint8_t> prefetch_samples;
+  u32 start_frame{0};
+  std::vector<u8> prefetch_samples;
 };
 
 struct PrefetchDataBlock {
@@ -67,7 +67,7 @@ public:
 private:
   void SerializeDataBlock(util::AudioWriter& writer) const;
 
-  std::uint32_t m_version;
+  u32 m_version;
   fstm::InfoBlock m_info;
   PrefetchDataBlock m_data;
   util::Endianness m_endian;

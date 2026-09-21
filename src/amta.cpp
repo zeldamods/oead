@@ -68,29 +68,29 @@ void Amta::Deserialize(util::AudioReader& reader) {
 
 void Amta::DeserializeMarkerBlock(util::AudioReader& reader, u32 to_string_table) {
   reader.Read<BlockHeader>();
-  auto marker_info_count{reader.Read<std::uint32_t>()};
+  auto marker_info_count{reader.Read<u32>()};
 
   m_markers.resize(marker_info_count);
   for (auto& marker : m_markers) {
-    marker.id = reader.Read<std::uint32_t>();
-    auto name_offset{reader.Read<std::uint32_t>()};
-    marker.start_pos = reader.Read<std::uint32_t>();
-    marker.length = reader.Read<std::uint32_t>();
+    marker.id = reader.Read<u32>();
+    auto name_offset{reader.Read<u32>()};
+    marker.start_pos = reader.Read<u32>();
+    marker.length = reader.Read<u32>();
 
     marker.name = reader.ReadString(reader.SectionStart() + to_string_table + sizeof(BlockHeader) +
                                     name_offset);
-    marker.name.resize(std::max(marker.name.size() + 1, 2UL));
+    marker.name.resize(std::max<std::size_t>(marker.name.size() + 1, 2));
   }
 }
 
 void Amta::DeserializeExtBlock(util::AudioReader& reader, u32 to_string_table) {
   reader.Read<BlockHeader>();
-  auto ext_count{reader.Read<std::uint32_t>()};
+  auto ext_count{reader.Read<u32>()};
 
   m_ext_entries.resize(ext_count);
   for (auto& entry : m_ext_entries) {
-    auto name_offset{reader.Read<std::uint32_t>()};
-    entry.value = reader.Read<std::uint32_t>();
+    auto name_offset{reader.Read<u32>()};
+    entry.value = reader.Read<u32>();
 
     entry.name = reader.ReadString(reader.SectionStart() + to_string_table + sizeof(BlockHeader) +
                                    name_offset);
@@ -113,38 +113,38 @@ void Amta::Serialize(util::AudioWriter& writer) const {
   std::size_t file_start{writer.Tell()};
 
   writer.WriteString("AMTA");
-  writer.Write<std::uint16_t>(0xFEFF);
+  writer.Write<u16>(0xFEFF);
   writer.Write(m_version);
 
-  std::size_t file_size_pos{writer.WritePendingValue<std::uint32_t>()};
-  std::size_t data_offset_pos{writer.WritePendingValue<std::uint32_t>()};
-  std::size_t mark_offset_pos{writer.WritePendingValue<std::uint32_t>()};
-  std::size_t ext_offset_pos{writer.WritePendingValue<std::uint32_t>()};
-  std::size_t strg_offset_pos{writer.WritePendingValue<std::uint32_t>()};
+  std::size_t file_size_pos{writer.WritePendingValue<u32>()};
+  std::size_t data_offset_pos{writer.WritePendingValue<u32>()};
+  std::size_t mark_offset_pos{writer.WritePendingValue<u32>()};
+  std::size_t ext_offset_pos{writer.WritePendingValue<u32>()};
+  std::size_t strg_offset_pos{writer.WritePendingValue<u32>()};
 
-  writer.WriteCurrentOffsetAt<std::int32_t>(data_offset_pos, file_start);
+  writer.WriteCurrentOffsetAt<s32>(data_offset_pos, file_start);
   SerializeData(writer);
 
-  writer.WriteCurrentOffsetAt<std::int32_t>(mark_offset_pos, file_start);
+  writer.WriteCurrentOffsetAt<s32>(mark_offset_pos, file_start);
   std::vector<std::size_t> marker_name_offsets{SerializeMarker(writer)};
 
-  writer.WriteCurrentOffsetAt<std::int32_t>(ext_offset_pos, file_start);
+  writer.WriteCurrentOffsetAt<s32>(ext_offset_pos, file_start);
   std::vector<std::size_t> ext_name_offsets{SerializeExt(writer)};
 
-  writer.WriteCurrentOffsetAt<std::int32_t>(strg_offset_pos, file_start);
+  writer.WriteCurrentOffsetAt<s32>(strg_offset_pos, file_start);
   SerializeStringTable(writer, marker_name_offsets, ext_name_offsets);
 
   while (writer.Tell() % 4 != 0)
-    writer.Write<std::uint8_t>(0);
+    writer.Write<u8>(0);
 
-  writer.WriteCurrentOffsetAt<std::int32_t>(file_size_pos, file_start);
+  writer.WriteCurrentOffsetAt<s32>(file_size_pos, file_start);
 }
 
 void Amta::SerializeData(util::AudioWriter& writer) const {
   writer.WriteString("DATA");
-  writer.Write<uint32_t>(sizeof(AudioMetaDataBin) - sizeof(BlockHeader));
+  writer.Write<u32>(sizeof(AudioMetaDataBin) - sizeof(BlockHeader));
 
-  writer.Write<std::uint32_t>(0);
+  writer.Write<u32>(0);
   writer.Write(m_sample_count);
   writer.Write(m_asset_type);
   writer.Write(m_channel_count);
@@ -167,21 +167,21 @@ std::vector<std::size_t> Amta::SerializeMarker(util::AudioWriter& writer) const 
   writer.WriteString("MARK");
 
   // Size of entry_count + size of all entries
-  std::size_t section_size{sizeof(std::uint32_t) + sizeof(MarkerInfoBin) * m_markers.size()};
-  writer.Write<std::uint32_t>(section_size);
+  std::size_t section_size{sizeof(u32) + sizeof(MarkerInfoBin) * m_markers.size()};
+  writer.Write<u32>(section_size);
 
-  writer.Write<std::uint32_t>(m_markers.size());
+  writer.Write<u32>(m_markers.size());
 
   std::vector<std::size_t> marker_name_offsets(m_markers.size());
 
-  for (uint i{0}; i < m_markers.size(); ++i) {
-    writer.Write<std::uint32_t>(m_markers[i].id);
+  for (u32 i{0}; i < m_markers.size(); ++i) {
+    writer.Write<u32>(m_markers[i].id);
 
     marker_name_offsets[i] = writer.Tell();
-    writer.Write<std::uint32_t>(0);
+    writer.Write<u32>(0);
 
-    writer.Write<std::uint32_t>(m_markers[i].start_pos);
-    writer.Write<std::uint32_t>(m_markers[i].length);
+    writer.Write<u32>(m_markers[i].start_pos);
+    writer.Write<u32>(m_markers[i].length);
   }
 
   return marker_name_offsets;
@@ -191,16 +191,16 @@ std::vector<std::size_t> Amta::SerializeExt(util::AudioWriter& writer) const {
   writer.WriteString("EXT_");
 
   // Size of entry_count + size of all entries
-  std::size_t section_size{sizeof(std::uint32_t) + sizeof(ExtEntryBin) * m_ext_entries.size()};
-  writer.Write<std::uint32_t>(section_size);
+  std::size_t section_size{sizeof(u32) + sizeof(ExtEntryBin) * m_ext_entries.size()};
+  writer.Write<u32>(section_size);
 
-  writer.Write<std::uint32_t>(m_ext_entries.size());
+  writer.Write<u32>(m_ext_entries.size());
 
   std::vector<std::size_t> ext_name_offsets(m_ext_entries.size());
 
-  for (uint i{0}; i < m_ext_entries.size(); ++i) {
+  for (u32 i{0}; i < m_ext_entries.size(); ++i) {
     ext_name_offsets[i] = writer.Tell();
-    writer.Write<std::uint32_t>(0);
+    writer.Write<u32>(0);
     writer.Write(m_ext_entries[i].value);
   }
 
@@ -217,16 +217,16 @@ void Amta::SerializeStringTable(util::AudioWriter& writer, std::vector<std::size
 
   writer.WriteCString(m_asset_name);
 
-  for (uint i{0}; i < m_markers.size(); ++i) {
-    writer.WriteCurrentOffsetAt<std::int32_t>(marker_offsets[i], string_entries_start);
+  for (u32 i{0}; i < m_markers.size(); ++i) {
+    writer.WriteCurrentOffsetAt<s32>(marker_offsets[i], string_entries_start);
     writer.WriteCString(m_markers[i].name);
   }
 
-  for (uint i{0}; i < m_ext_entries.size(); ++i) {
-    writer.WriteCurrentOffsetAt<std::int32_t>(ext_offsets[i], string_entries_start);
+  for (u32 i{0}; i < m_ext_entries.size(); ++i) {
+    writer.WriteCurrentOffsetAt<s32>(ext_offsets[i], string_entries_start);
     writer.WriteCString(m_ext_entries[i].name);
   }
 
-  writer.WriteCurrentOffsetAt<std::int32_t>(section_size_pos, string_entries_start);
+  writer.WriteCurrentOffsetAt<s32>(section_size_pos, string_entries_start);
 }
 }  // namespace oead::audio::amta

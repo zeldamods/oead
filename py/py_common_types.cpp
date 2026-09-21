@@ -212,9 +212,14 @@ void BindCommonTypes(py::module& m) {
       .value("Little", util::Endianness::Little);
 
   py::enum_<audio::SampleFormat>(audio_module, "SampleFormat")
-      .value("PCMS8", audio::SampleFormat::PCMS8)  
-      .value("PCMS16", audio::SampleFormat::PCMS16)  
-      .value("DSPADPCM", audio::SampleFormat::DSPADPCM)  
+      .value("PCMS8", audio::SampleFormat::PCMS8)
+      .value("PCMS16", audio::SampleFormat::PCMS16)
+      .value("DSPADPCM", audio::SampleFormat::DSPADPCM)
       .value("PCMS32", audio::SampleFormat::PCMS32);
+
+  py::enum_<audio::AssetType>(audio_module, "AssetType")
+      .value("Wave", audio::AssetType::Wave)
+      .value("Stream", audio::AssetType::Stream)
+      .value("Unknown", audio::AssetType::Unknown);
 }
 }  // namespace oead::bind
