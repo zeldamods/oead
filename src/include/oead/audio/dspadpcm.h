@@ -17,8 +17,7 @@ struct DspAdpcmLoopParam {
   s16 loop_yn1;
   s16 loop_yn2;
 
-  OEAD_DEFINE_FIELDS(DspAdpcmLoopParam, loop_predictor_scale, loop_yn1,
-                     loop_yn2);
+  OEAD_DEFINE_FIELDS(DspAdpcmLoopParam, loop_predictor_scale, loop_yn1, loop_yn2);
 };
 
 struct DspAdpcmInfo {
@@ -27,4 +26,4 @@ struct DspAdpcmInfo {
 
   OEAD_DEFINE_FIELDS(DspAdpcmInfo, param, loop_param);
 };
-} // namespace oead::audio
+}  // namespace oead::audio

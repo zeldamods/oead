@@ -22,12 +22,12 @@
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
 
-#include <oead/errors.h>
-#include <oead/types.h>
-#include <oead/audio/types.h>
-#include <oead/util/swap.h>
 #include <oead/audio/dspadpcm.h>
 #include <oead/audio/interface.h>
+#include <oead/audio/types.h>
+#include <oead/errors.h>
+#include <oead/types.h>
+#include <oead/util/swap.h>
 #include "main.h"
 
 namespace oead::bind {
@@ -177,23 +177,23 @@ void BindCommonTypes(py::module& m) {
   py::module audio_module = m.def_submodule("audio");
 
   py::class_<audio::SoundFileHeader>(audio_module, "SoundFileHeader")
-    .def_readwrite("signature", &audio::SoundFileHeader::signature)
-    .def_readwrite("version", &audio::SoundFileHeader::version);
+      .def_readwrite("signature", &audio::SoundFileHeader::signature)
+      .def_readwrite("version", &audio::SoundFileHeader::version);
 
   py::class_<audio::DspAdpcmParam>(audio_module, "DspAdpcmParam")
-    .def_readwrite("coefficients", &audio::DspAdpcmParam::coefficients)
-    .def_readwrite("predictor_scale", &audio::DspAdpcmParam::predictor_scale)
-    .def_readwrite("yn1", &audio::DspAdpcmParam::yn1)
-    .def_readwrite("yn2", &audio::DspAdpcmParam::yn2);
+      .def_readwrite("coefficients", &audio::DspAdpcmParam::coefficients)
+      .def_readwrite("predictor_scale", &audio::DspAdpcmParam::predictor_scale)
+      .def_readwrite("yn1", &audio::DspAdpcmParam::yn1)
+      .def_readwrite("yn2", &audio::DspAdpcmParam::yn2);
 
   py::class_<audio::DspAdpcmLoopParam>(audio_module, "DspAdpcmLoopParam")
-    .def_readwrite("loop_predictor_scale", &audio::DspAdpcmLoopParam::loop_predictor_scale)
-    .def_readwrite("loop_yn1", &audio::DspAdpcmLoopParam::loop_yn1)
-    .def_readwrite("loop_yn2", &audio::DspAdpcmLoopParam::loop_yn2);
+      .def_readwrite("loop_predictor_scale", &audio::DspAdpcmLoopParam::loop_predictor_scale)
+      .def_readwrite("loop_yn1", &audio::DspAdpcmLoopParam::loop_yn1)
+      .def_readwrite("loop_yn2", &audio::DspAdpcmLoopParam::loop_yn2);
 
   py::class_<audio::DspAdpcmInfo>(audio_module, "DspAdpcmInfo")
-    .def_readwrite("param", &audio::DspAdpcmInfo::param)
-    .def_readwrite("loop_param", &audio::DspAdpcmInfo::loop_param);
+      .def_readwrite("param", &audio::DspAdpcmInfo::param)
+      .def_readwrite("loop_param", &audio::DspAdpcmInfo::loop_param);
 
   py::class_<audio::IAssetFile, std::shared_ptr<audio::IAssetFile>>(audio_module, "IAssetFile");
 

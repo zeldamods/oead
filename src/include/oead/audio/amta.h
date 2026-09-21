@@ -96,9 +96,9 @@ public:
   std::vector<u8> ToBinary(util::Endianness endian) const;
 
   /// Get the asset name
-  auto AssetName() const { return m_asset_name; }
+  auto& AssetName() const { return m_asset_name; }
   /// Set the asset name
-  void AssetName(std::string asset_name) { m_asset_name = asset_name; }
+  void AssetName(const std::string& asset_name) { m_asset_name = asset_name; }
 
   /// Get the file version the object will serialize to
   auto Version() const { return m_version; }
@@ -171,12 +171,12 @@ public:
   /// Get all StreamTracks
   const auto& StreamTracks() const { return m_stream_tracks; }
   /// Set all StreamTracks
-  void StreamTracks(std::array<StreamTrack, 8> tracks) { m_stream_tracks = tracks; }
+  void StreamTracks(const std::array<StreamTrack, 8>& tracks) { m_stream_tracks = tracks; }
 
   /// Get a StreamTracks by index
-  auto GetStreamTrack(int idx) { return m_stream_tracks[idx]; }
+  auto GetStreamTrack(int idx) { return m_stream_tracks.at(idx); }
   /// Set a StreamTracks by index
-  void SetStreamTrack(StreamTrack track, int idx) { m_stream_tracks[idx] = track; }
+  void SetStreamTrack(StreamTrack track, int idx) { m_stream_tracks.at(idx) = track; }
 
   /// Get the amplitude peak
   auto AmplitudePeak() const { return m_amplitude_peak; }
@@ -189,9 +189,9 @@ public:
   void Markers(const std::vector<MarkerInfo>& markers) { m_markers = markers; }
 
   /// Get a MarkerInfo by index
-  auto GetMarker(int idx) const { return m_markers[idx]; }
+  auto GetMarker(int idx) const { return m_markers.at(idx); }
   /// Set a MarkerInfo by index
-  void SetMarker(MarkerInfo marker, int idx) { m_markers[idx] = marker; }
+  void SetMarker(MarkerInfo marker, int idx) { m_markers.at(idx) = marker; }
 
   /// Get all ExtEntries
   const auto& ExtEntries() const { return m_ext_entries; }
@@ -199,9 +199,9 @@ public:
   void ExtEntries(const std::vector<ExtEntry>& ext_entries) { m_ext_entries = ext_entries; }
 
   /// Get an ExtEntry by index
-  auto GetExtEntry(int idx) const { return m_ext_entries[idx]; }
+  auto GetExtEntry(int idx) const { return m_ext_entries.at(idx); }
   /// Set an ExtEntry by index
-  void SetExtEntry(ExtEntry entry, int idx) { m_ext_entries[idx] = entry; }
+  void SetExtEntry(ExtEntry entry, int idx) { m_ext_entries.at(idx) = entry; }
 
   /// Get the endianness the object will serialize to
   auto Endianness() const { return m_endian; }

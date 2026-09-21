@@ -57,10 +57,12 @@ public:
   std::vector<u8> FileToBinary(const std::string& name) const;
 
   /// Get an array of all files
-  const auto& GetFiles() const { return m_files; }
+  const auto& Files() const { return m_files; }
+  /// Set the array of files
+  void Files(const std::vector<FileWithMetadata>& files) { m_files = files; }
 
   /// Get a file by index
-  const auto& GetFile(int idx) const { return m_files[idx]; }
+  const auto& GetFile(int idx) const { return m_files.at(idx); }
   /// Get a file by name
   const auto& GetFile(const std::string& name) const {
     u32 hash{util::crc32(name)};

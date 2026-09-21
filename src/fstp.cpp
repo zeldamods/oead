@@ -9,6 +9,7 @@ constexpr auto PdatMagic = util::MakeMagic("PDAT");
 
 Fstp::Fstp(std::span<const u8> data) {
   util::AudioReader reader{data, util::Endianness::Little};
+  Deserialize(reader);
 }
 
 void Fstp::Deserialize(util::AudioReader& reader) {
@@ -81,15 +82,13 @@ void Fstp::Serialize(util::AudioWriter& writer) const {
   writer.WriteCurrentOffsetAt<s32>(pending_header_values["blocks"][0], file_start);
   std::size_t info_section_start{writer.Tell()};
   m_info.Serialize(writer);
-  writer.WriteCurrentOffsetAt<u32>(pending_header_values["blocks_size"][0],
-                                             info_section_start);
+  writer.WriteCurrentOffsetAt<u32>(pending_header_values["blocks_size"][0], info_section_start);
 
   // PDAT
   writer.WriteCurrentOffsetAt<s32>(pending_header_values["blocks"][1], file_start);
   std::size_t pdat_section_start{writer.Tell()};
   SerializeDataBlock(writer);
-  writer.WriteCurrentOffsetAt<u32>(pending_header_values["blocks_size"][1],
-                                             pdat_section_start);
+  writer.WriteCurrentOffsetAt<u32>(pending_header_values["blocks_size"][1], pdat_section_start);
 
   writer.WriteCurrentOffsetAt<u32>(pending_header_values["file_size"][0], file_start);
 }

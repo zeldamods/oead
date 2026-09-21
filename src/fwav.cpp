@@ -112,15 +112,13 @@ void Fwav::Serialize(util::AudioWriter& writer) const {
   writer.WriteCurrentOffsetAt<s32>(pending_header_values["blocks"][0], file_start);
   std::size_t info_section_start{writer.Tell()};
   std::vector<std::size_t> samples_offset_pos = SerializeInfoBlock(writer);
-  writer.WriteCurrentOffsetAt<u32>(pending_header_values["blocks_size"][0],
-                                             info_section_start);
+  writer.WriteCurrentOffsetAt<u32>(pending_header_values["blocks_size"][0], info_section_start);
 
   // DATA
   writer.WriteCurrentOffsetAt<s32>(pending_header_values["blocks"][1], file_start);
   std::size_t data_section_start{writer.Tell()};
   SerializeDataBlock(writer, samples_offset_pos);
-  writer.WriteCurrentOffsetAt<u32>(pending_header_values["blocks_size"][1],
-                                             data_section_start);
+  writer.WriteCurrentOffsetAt<u32>(pending_header_values["blocks_size"][1], data_section_start);
 
   writer.WriteCurrentOffsetAt<s32>(pending_header_values["file_size"][0], file_start);
 }
@@ -153,8 +151,7 @@ std::vector<std::size_t> Fwav::SerializeInfoBlock(util::AudioWriter& writer) con
   std::vector<std::size_t> channel_infos_start(m_channel_infos.size());
   for (u32 i{0}; i < m_channel_infos.size(); ++i) {
     // Channel Info Bin
-    writer.WriteCurrentOffsetAt<s32>(channel_infos_offset_pos[i],
-                                              channel_info_ref_table_start);
+    writer.WriteCurrentOffsetAt<s32>(channel_infos_offset_pos[i], channel_info_ref_table_start);
 
     channel_infos_start[i] = writer.Tell();
     samples_offset_pos[i] = writer.WriteEmptyOffsetReference(ElementType::General_ByteStream, true);

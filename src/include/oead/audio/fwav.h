@@ -87,9 +87,9 @@ public:
   }
 
   /// Get a channel info by the index of the channel
-  auto GetChannelInfo(int channel) const { return m_channel_infos[channel]; }
+  auto GetChannelInfo(int channel) const { return m_channel_infos.at(channel); }
   /// Set a channel info by the index of the channel
-  void SetChannelInfo(ChannelInfo info, int channel) { m_channel_infos[channel] = info; }
+  void SetChannelInfo(ChannelInfo info, int channel) { m_channel_infos.at(channel) = info; }
 
   /// Get all samples
   const auto& Samples() const { return m_samples; }

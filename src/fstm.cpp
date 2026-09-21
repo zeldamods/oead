@@ -153,31 +153,27 @@ void Fstm::Serialize(util::AudioWriter& writer) const {
   writer.WriteCurrentOffsetAt<s32>(pending_header_values["blocks"][0], file_start);
   std::size_t info_section_start{writer.Tell()};
   m_info.Serialize(writer);
-  writer.WriteCurrentOffsetAt<s32>(pending_header_values["blocks_size"][0],
-                                            info_section_start);
+  writer.WriteCurrentOffsetAt<s32>(pending_header_values["blocks_size"][0], info_section_start);
 
   // SEEK
   writer.WriteCurrentOffsetAt<s32>(pending_header_values["blocks"][1], file_start);
   std::size_t seek_section_start{writer.Tell()};
   SerializeSeekBlock(writer);
-  writer.WriteCurrentOffsetAt<s32>(pending_header_values["blocks_size"][1],
-                                            seek_section_start);
+  writer.WriteCurrentOffsetAt<s32>(pending_header_values["blocks_size"][1], seek_section_start);
 
   // REGN
   if (m_has_region) {
     writer.WriteCurrentOffsetAt<s32>(pending_header_values["blocks"][2], file_start);
     std::size_t region_section_start{writer.Tell()};
     SerializeRegionBlock(writer);
-    writer.WriteCurrentOffsetAt<s32>(pending_header_values["blocks_size"][2],
-                                              region_section_start);
+    writer.WriteCurrentOffsetAt<s32>(pending_header_values["blocks_size"][2], region_section_start);
   }
 
   // DATA
   writer.WriteCurrentOffsetAt<s32>(pending_header_values["blocks"][3], file_start);
   std::size_t data_section_start{writer.Tell()};
   SerializeDataBlock(writer);
-  writer.WriteCurrentOffsetAt<s32>(pending_header_values["blocks_size"][3],
-                                            data_section_start);
+  writer.WriteCurrentOffsetAt<s32>(pending_header_values["blocks_size"][3], data_section_start);
 
   writer.WriteCurrentOffsetAt<s32>(pending_header_values["file_size"][0], file_start);
 }
@@ -254,8 +250,7 @@ void InfoBlock::Serialize(util::AudioWriter& writer) const {
   // TODO: Verify if Track Info serialization works
   std::vector<std::size_t> track_infos_offset_pos(m_track_infos.size());
   if (!m_track_infos.empty()) {
-    writer.WriteCurrentOffsetAt<s32>(track_info_ref_table_offset_pos,
-                                              reference_array_start);
+    writer.WriteCurrentOffsetAt<s32>(track_info_ref_table_offset_pos, reference_array_start);
     std::size_t track_info_table_start{writer.Tell()};
     writer.Write<u32>(m_track_infos.size());
     for (u32 i{0}; i < m_track_infos.size(); ++i) {
@@ -271,8 +266,7 @@ void InfoBlock::Serialize(util::AudioWriter& writer) const {
 
   std::vector<std::size_t> channel_infos_offset_pos(m_detail_channel_infos.size());
   if (!m_detail_channel_infos.empty()) {
-    writer.WriteCurrentOffsetAt<s32>(channel_info_ref_table_offset_pos,
-                                              reference_array_start);
+    writer.WriteCurrentOffsetAt<s32>(channel_info_ref_table_offset_pos, reference_array_start);
     std::size_t channel_info_table_start{writer.Tell()};
     writer.Write<u32>(m_detail_channel_infos.size());
     for (u32 i{0}; i < m_detail_channel_infos.size(); ++i) {
@@ -282,16 +276,14 @@ void InfoBlock::Serialize(util::AudioWriter& writer) const {
 
     std::vector<std::size_t> detail_channel_infos_offset_pos(m_detail_channel_infos.size());
     for (u32 i{0}; i < channel_infos_offset_pos.size(); ++i) {
-      writer.WriteCurrentOffsetAt<s32>(channel_infos_offset_pos[i],
-                                                channel_info_table_start);
+      writer.WriteCurrentOffsetAt<s32>(channel_infos_offset_pos[i], channel_info_table_start);
       detail_channel_infos_offset_pos[i] =
           writer.WriteEmptyOffsetReference(ElementType::Codec_DspAdpcmInfo, true);
     }
 
     for (u32 i{0}; i < m_detail_channel_infos.size(); ++i) {
       writer.WriteCurrentOffsetAt<s32>(detail_channel_infos_offset_pos[i],
-                                                detail_channel_infos_offset_pos[i] -
-                                                    sizeof(u32));
+                                       detail_channel_infos_offset_pos[i] - sizeof(u32));
       writer.Write(m_detail_channel_infos[i]);
       writer.Write<u16>(0);  // padding?
     }

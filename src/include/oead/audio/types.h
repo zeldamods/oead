@@ -9,8 +9,8 @@
 namespace oead::audio {
 // Reference (nn::atk::detail::Util::Reference)
 struct Reference {
-  ElementType type_id {ElementType::Blank};
-  s32 offset {0};
+  ElementType type_id{ElementType::Blank};
+  s32 offset{0};
 
   OEAD_DEFINE_FIELDS(Reference, type_id, offset);
 };
@@ -46,11 +46,7 @@ enum class SampleFormat : std::uint8_t {
 };
 
 // AssetType (aal::AssetType)
-enum class AssetType : std::uint8_t {
-  Wave,
-  Stream,
-  Unknown
-};
+enum class AssetType : std::uint8_t { Wave, Stream, Unknown };
 
 struct SoundFileHeader {
   std::array<char, 4> signature;
@@ -69,4 +65,4 @@ struct BlockHeader {
 
   OEAD_DEFINE_FIELDS(BlockHeader, signature, section_size);
 };
-} // namespace oead::audio
+}  // namespace oead::audio

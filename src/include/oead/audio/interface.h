@@ -16,4 +16,4 @@ public:
   virtual util::Endianness Endianness() const = 0;
   virtual void Endianness(util::Endianness endian) = 0;
 };
-} // namespace oead::audio
+}  // namespace oead::audio

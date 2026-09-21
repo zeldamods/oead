@@ -8,5 +8,5 @@ cases, cases_data = make_test_cases("bars/files/*.bars")
 @pytest.mark.parametrize("file", cases)
 def test_bars_get_file(file):
     res = oead.audio.Bars(cases_data[file])
-    for asset in res.get_files():
+    for asset in res.files:
         assert res.get_file(asset.meta.asset_name) is not None

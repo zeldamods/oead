@@ -39,21 +39,6 @@ public:
     return value;
   }
 
-  template <bool Safe = true>
-  std::optional<u32> ReadU24(std::optional<size_t> read_offset = std::nullopt) {
-    if (read_offset)
-      Seek(*read_offset);
-    if constexpr (Safe) {
-      if (m_offset + 3 > m_data.size())
-        return std::nullopt;
-    }
-    const size_t offset = m_offset;
-    m_offset += 3;
-    if (m_endian == Endianness::Big)
-      return m_data[offset] << 16 | m_data[offset + 1] << 8 | m_data[offset + 2];
-    return m_data[offset + 2] << 16 | m_data[offset + 1] << 8 | m_data[offset];
-  }
-
   template <typename StringType = std::string>
   StringType ReadString(size_t offset, std::optional<size_t> max_len = std::nullopt) const {
     if (offset > m_data.size())
@@ -68,8 +53,8 @@ public:
   }
 
   void SwapEndianness() {
-    m_endian =
-        m_endian == util::Endianness::Little ? util::Endianness::Big : util::Endianness::Little;
+    SetEndian(Endian() == util::Endianness::Little ? util::Endianness::Big :
+                                                     util::Endianness::Little);
   }
 
   void MarkSectionStart() { m_section_offset = Tell(); }

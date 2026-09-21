@@ -81,7 +81,8 @@ enum class ElementType {
   SoundArchiveFile_InfoBlock,
   SoundArchiveFile_FileBlock,
 
-  SoundArchiveFile_SoundInfoSection = static_cast<int>(ElementTypeCategory::SoundArchiveFile::InfoSections),
+  SoundArchiveFile_SoundInfoSection =
+      static_cast<int>(ElementTypeCategory::SoundArchiveFile::InfoSections),
   SoundArchiveFile_BankInfoSection,
   SoundArchiveFile_PlayerInfoSection,
   SoundArchiveFile_WaveArchiveInfoSection,
@@ -116,7 +117,8 @@ enum class ElementType {
   StreamSoundFile_RegionBlock,
   StreamSoundFile_PrefetchDataBlock,
 
-  StreamSoundFile_StreamSoundInfo = static_cast<int>(ElementTypeCategory::StreamSoundFile::ItemInfos),
+  StreamSoundFile_StreamSoundInfo =
+      static_cast<int>(ElementTypeCategory::StreamSoundFile::ItemInfos),
   StreamSoundFile_TrackInfo,
   StreamSoundFile_ChannelInfo,
 
@@ -160,4 +162,4 @@ enum class ElementType {
 
   AnimSoundFile_EventInfo = static_cast<int>(ElementTypeCategory::AnimSoundFile::Items),
 };
-} // oead::audio
+}  // namespace oead::audio

@@ -75,17 +75,17 @@ public:
   const auto& TrackInfos() const { return m_track_infos; }
   void TrackInfos(const std::vector<TrackInfo>& track_infos) { m_track_infos = track_infos; }
 
-  auto GetTrackInfo(int id) const { return m_track_infos[id]; }
-  void SetTrackInfo(TrackInfo info, int id) { m_track_infos[id] = info; }
+  auto GetTrackInfo(int id) const { return m_track_infos.at(id); }
+  void SetTrackInfo(TrackInfo info, int id) { m_track_infos.at(id) = info; }
 
   const auto& DetailChannelInfos() const { return m_detail_channel_infos; }
   void DetailChannelInfos(const std::vector<DspAdpcmInfo>& channel_infos) {
     m_detail_channel_infos = channel_infos;
   }
 
-  auto GetDetailChannelInfo(int channel) const { return m_detail_channel_infos[channel]; }
+  auto GetDetailChannelInfo(int channel) const { return m_detail_channel_infos.at(channel); }
   void SetDetailChannelInfo(DspAdpcmInfo info, int channel) {
-    m_detail_channel_infos[channel] = info;
+    m_detail_channel_infos.at(channel) = info;
   }
 
 private:
@@ -125,11 +125,11 @@ public:
     m_seek_infos = seek_infos;
   }
 
-  /// Get a single SeekInfos
-  auto GetSeekInfo(int block, int channel) const { return m_seek_infos[block][channel]; }
-  /// Set a single SeekInfos
+  /// Get a single SeekInfo
+  auto GetSeekInfo(int block, int channel) const { return m_seek_infos.at(block).at(channel); }
+  /// Set a single SeekInfo
   void SetSeekInfo(SeekInfo seek_info, int block, int channel) {
-    m_seek_infos[block][channel] = seek_info;
+    m_seek_infos.at(block).at(channel) = seek_info;
   }
 
   /// Get all RegionInfos
@@ -144,9 +144,9 @@ public:
   }
 
   /// Get a single RegionInfo by index
-  auto GetRegionInfo(int id) const { return m_region_infos[id]; }
+  auto GetRegionInfo(int id) const { return m_region_infos.at(id); }
   /// Set a single RegionInfo by index
-  void SetRegionInfo(RegionInfo info, int id) { m_region_infos[id] = info; }
+  void SetRegionInfo(RegionInfo info, int id) { m_region_infos.at(id) = info; }
 
   /// Get all samples
   const auto& Samples() const { return m_samples; }
