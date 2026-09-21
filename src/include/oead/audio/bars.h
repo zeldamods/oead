@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include <nonstd/span.h>
+#include <span>
 
 #include "oead/audio/amta.h"
 #include "oead/audio/interface.h"
@@ -15,7 +15,7 @@ struct FileOffsetSet {
 };
 
 struct ResourceHeader {
-  std::array<char, 4> signature {'B', 'A', 'R', 'S'};
+  std::array<char, 4> signature{'B', 'A', 'R', 'S'};
   std::uint32_t file_size{};
   std::uint16_t bom{0xFEFF};
   std::uint16_t version{};
@@ -35,7 +35,7 @@ public:
   };
 
   Bars() = default;
-  Bars(tcb::span<const u8> data);
+  Bars(std::span<const u8> data);
   Bars(const std::string& file_path);
 
   void Deserialize(util::AudioReader& reader);
@@ -50,7 +50,7 @@ public:
   std::vector<u8> MetaToBinary(int idx) const;
   /// Get a file's meta by name and serialize only that file's meta
   std::vector<u8> MetaToBinary(const std::string& name) const;
-  
+
   /// Get a file by index and serialize only that file's data
   std::vector<u8> FileToBinary(int idx) const;
   /// Get a file by name and serialize only that file's data
@@ -63,27 +63,27 @@ public:
   const auto& GetFile(int idx) const { return m_files[idx]; }
   /// Get a file by name
   const auto& GetFile(const std::string& name) const {
-    std::uint32_t hash {util::crc32(name)};
-    auto iter {std::lower_bound(m_hashes.begin(), m_hashes.end(), hash)};
+    std::uint32_t hash{util::crc32(name)};
+    auto iter{std::lower_bound(m_hashes.begin(), m_hashes.end(), hash)};
     if (iter == m_hashes.end())
       throw InvalidDataError("Name not found");
-    
+
     return GetFile(std::distance(m_hashes.begin(), iter));
   }
 
   /// Add a file alongside its metadata
   void AddFile(const amta::Amta& meta, const std::shared_ptr<IAssetFile> file) {
-    FileWithMetadata new_file {};
+    FileWithMetadata new_file{};
     new_file.meta = meta;
     if (file != nullptr)
       new_file.asset = file;
 
-    u32 name_hash {util::crc32(new_file.meta.AssetName())};
+    u32 name_hash{util::crc32(new_file.meta.AssetName())};
 
     m_hashes.push_back(name_hash);
     std::sort(m_hashes.begin(), m_hashes.end());
 
-    auto iter {std::lower_bound(m_hashes.begin(), m_hashes.end(), name_hash)};
+    auto iter{std::lower_bound(m_hashes.begin(), m_hashes.end(), name_hash)};
 
     m_files.insert(m_files.begin() + std::distance(m_hashes.begin(), iter), new_file);
   }
@@ -95,9 +95,9 @@ public:
 
   /// Get the endianness the object will serialize to
   auto Endianness() const { return m_endian; }
-  /// Set the endianness of the object, and the 
+  /// Set the endianness of the object, and the
   /// endianness of all sub files
-  void Endianness(util::Endianness endianness) { 
+  void Endianness(util::Endianness endianness) {
     m_endian = endianness;
 
     for (auto& file : m_files) {
@@ -112,9 +112,9 @@ public:
   void SwapEndianness();
 
 private:
-  std::uint16_t m_version {};
+  std::uint16_t m_version{};
   std::vector<std::uint32_t> m_hashes;
   std::vector<FileWithMetadata> m_files;
-  util::Endianness m_endian {util::Endianness::Little};
+  util::Endianness m_endian{util::Endianness::Little};
 };
-} // namespace oead::bars
+}  // namespace oead::audio::bars

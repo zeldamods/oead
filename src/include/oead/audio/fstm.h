@@ -6,60 +6,58 @@
 namespace oead::audio::fstm {
 struct StreamSoundInfo {
   SampleFormat encoding{SampleFormat::DSPADPCM};
-  bool is_loop {0};
-  std::uint8_t channel_count {0};
-  std::uint8_t region_count {0};
-  std::uint32_t sample_rate {48000};
-  std::uint32_t loop_start {0};
-  std::uint32_t frame_count {0};
-  std::uint32_t block_count {0};
-  std::uint32_t block_size {0};
-  std::uint32_t block_sample_count {0};
-  std::uint32_t last_block_size {0};
-  std::uint32_t last_block_sample_count {0};
-  std::uint32_t last_block_padding_size {0};
-  std::uint32_t size_of_seek_info_atom {0};
-  std::uint32_t seek_info_interval_samples {0};
-  Reference to_sample_data {ElementType::General_ByteStream, 0}; // relative to the start of the data section
-  std::uint16_t region_info_size {0};
+  bool is_loop{0};
+  std::uint8_t channel_count{0};
+  std::uint8_t region_count{0};
+  std::uint32_t sample_rate{48000};
+  std::uint32_t loop_start{0};
+  std::uint32_t frame_count{0};
+  std::uint32_t block_count{0};
+  std::uint32_t block_size{0};
+  std::uint32_t block_sample_count{0};
+  std::uint32_t last_block_size{0};
+  std::uint32_t last_block_sample_count{0};
+  std::uint32_t last_block_padding_size{0};
+  std::uint32_t size_of_seek_info_atom{0};
+  std::uint32_t seek_info_interval_samples{0};
+  Reference to_sample_data{ElementType::General_ByteStream,
+                           0};  // relative to the start of the data section
+  std::uint16_t region_info_size{0};
   // padding[2];
-  Reference to_region_block {ElementType::StreamSoundFile_RegionBlock, 0};
-  std::uint32_t original_loop_start {0};
-  std::uint32_t original_loop_end {0};
+  Reference to_region_block{ElementType::StreamSoundFile_RegionBlock, 0};
+  std::uint32_t original_loop_start{0};
+  std::uint32_t original_loop_end{0};
 
-  OEAD_DEFINE_FIELDS(StreamSoundInfo, encoding, is_loop, channel_count,
-                     region_count, sample_rate, loop_start, frame_count,
-                     block_count, block_size, block_sample_count,
-                     last_block_size, last_block_sample_count,
-                     last_block_padding_size, size_of_seek_info_atom, seek_info_interval_samples,
-                     to_sample_data, region_info_size, to_region_block, 
-                     original_loop_start, original_loop_end);
+  OEAD_DEFINE_FIELDS(StreamSoundInfo, encoding, is_loop, channel_count, region_count, sample_rate,
+                     loop_start, frame_count, block_count, block_size, block_sample_count,
+                     last_block_size, last_block_sample_count, last_block_padding_size,
+                     size_of_seek_info_atom, seek_info_interval_samples, to_sample_data,
+                     region_info_size, to_region_block, original_loop_start, original_loop_end);
 };
 
 struct SeekInfo {
-  std::int16_t yn1 {0};
-  std::int16_t yn2 {0};
+  std::int16_t yn1{0};
+  std::int16_t yn2{0};
 
   OEAD_DEFINE_FIELDS(SeekInfo, yn1, yn2);
 };
 
 struct RegionInfo {
-  std::uint32_t start {0};
-  std::uint32_t end {0};
+  std::uint32_t start{0};
+  std::uint32_t end{0};
   std::array<DspAdpcmLoopParam, 16> adpcm_context;
-  bool is_enabled {false};
-  std::uint8_t padding[87] {};
-  std::array<char, 64> region_name {};
+  bool is_enabled{false};
+  std::uint8_t padding[87]{};
+  std::array<char, 64> region_name{};
 
-  OEAD_DEFINE_FIELDS(RegionInfo, start, end, adpcm_context, 
-                     is_enabled, padding, region_name);
+  OEAD_DEFINE_FIELDS(RegionInfo, start, end, adpcm_context, is_enabled, padding, region_name);
 };
 
 struct TrackInfo {
-  std::uint8_t volume {0};
-  std::uint8_t pan {0};
-  std::uint8_t span {0};
-  std::uint8_t flags {0};
+  std::uint8_t volume{0};
+  std::uint8_t pan{0};
+  std::uint8_t span{0};
+  std::uint8_t flags{0};
 
   OEAD_DEFINE_FIELDS(TrackInfo, volume, pan, span, flags);
 };
@@ -81,10 +79,14 @@ public:
   void SetTrackInfo(TrackInfo info, int id) { m_track_infos[id] = info; }
 
   const auto& DetailChannelInfos() const { return m_detail_channel_infos; }
-  void DetailChannelInfos(const std::vector<DspAdpcmInfo>& channel_infos) { m_detail_channel_infos = channel_infos; }
+  void DetailChannelInfos(const std::vector<DspAdpcmInfo>& channel_infos) {
+    m_detail_channel_infos = channel_infos;
+  }
 
   auto GetDetailChannelInfo(int channel) const { return m_detail_channel_infos[channel]; }
-  void SetDetailChannelInfo(DspAdpcmInfo info, int channel) { m_detail_channel_infos[channel] = info; }
+  void SetDetailChannelInfo(DspAdpcmInfo info, int channel) {
+    m_detail_channel_infos[channel] = info;
+  }
 
 private:
   StreamSoundInfo m_stream_info;
@@ -96,11 +98,11 @@ private:
 class Fstm : public IAssetFile {
 public:
   Fstm() = default;
-  Fstm(tcb::span<const u8> data);
+  Fstm(std::span<const u8> data);
 
   void Deserialize(util::AudioReader& reader) override;
   void Serialize(util::AudioWriter& writer) const override;
-  
+
   /// Serialize to a .bfstm file of the original endianness
   std::vector<u8> ToBinary() const override;
   /// Serialize to a .bfstm file of a specific endianness
@@ -119,12 +121,16 @@ public:
   /// Get all SeekInfos
   const auto& SeekInfos() const { return m_seek_infos; }
   /// Set all SeekInfos
-  void SeekInfos(const std::vector<std::vector<SeekInfo>>& seek_infos) { m_seek_infos = seek_infos; }
+  void SeekInfos(const std::vector<std::vector<SeekInfo>>& seek_infos) {
+    m_seek_infos = seek_infos;
+  }
 
   /// Get a single SeekInfos
   auto GetSeekInfo(int block, int channel) const { return m_seek_infos[block][channel]; }
   /// Set a single SeekInfos
-  void SetSeekInfo(SeekInfo seek_info, int block, int channel) { m_seek_infos[block][channel] = seek_info; }
+  void SetSeekInfo(SeekInfo seek_info, int block, int channel) {
+    m_seek_infos[block][channel] = seek_info;
+  }
 
   /// Get all RegionInfos
   const auto& RegionInfos() const { return m_region_infos; }
@@ -134,7 +140,7 @@ public:
       m_has_region = true;
     else
       m_has_region = false;
-    m_region_infos = region_infos; 
+    m_region_infos = region_infos;
   }
 
   /// Get a single RegionInfo by index
@@ -162,11 +168,11 @@ private:
 
   u32 m_version;
   InfoBlock m_info;
-  bool m_has_region {false};
+  bool m_has_region{false};
   // Unsure if channels per block, or blocks per channel
   std::vector<std::vector<SeekInfo>> m_seek_infos;
   std::vector<RegionInfo> m_region_infos;
   std::vector<Channel> m_samples;
   util::Endianness m_endian;
 };
-} // namespace oead::audio::fstm
+}  // namespace oead::audio::fstm

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <nonstd/span.h>
 #include <optional>
+#include <span>
 #include <type_traits>
 
 #include "oead/audio/types.h"
@@ -13,9 +13,9 @@ namespace oead::util {
 class AudioReader {
 public:
   AudioReader() = default;
-  AudioReader(tcb::span<const u8> data, Endianness endian) : m_data{data}, m_endian{endian} {}
+  AudioReader(std::span<const u8> data, Endianness endian) : m_data{data}, m_endian{endian} {}
 
-  const auto& Span() const { return m_data; }
+  const std::span<const u8>& Span() const { return m_data; }
   size_t Tell() const { return m_offset; }
   void Seek(size_t offset) { m_offset = offset; }
   void SectionSeek(size_t offset) { m_offset = offset + m_section_offset; }
@@ -24,7 +24,7 @@ public:
   Endianness Endian() const { return m_endian; }
   void SetEndian(Endianness endian) { m_endian = endian; }
 
-  template <typename T, bool Safe = true, 
+  template <typename T, bool Safe = true,
             typename = std::enable_if_t<std::is_standard_layout<T>::value>>
   T Read() {
     if constexpr (Safe) {
@@ -67,18 +67,19 @@ public:
   }
 
   void SwapEndianness() {
-    m_endian = m_endian == util::Endianness::Little ? util::Endianness::Big : util::Endianness::Little;
+    m_endian =
+        m_endian == util::Endianness::Little ? util::Endianness::Big : util::Endianness::Little;
   }
 
   void MarkSectionStart() { m_section_offset = Tell(); }
   size_t SectionStart() const { return m_section_offset; }
 
   audio::SoundFileHeader ReadSoundFileHeader() {
-    std::size_t header_start {Tell()};
+    std::size_t header_start{Tell()};
 
     audio::SoundFileHeader header;
     header.signature = Read<std::array<char, 4>>();
-    
+
     header.byte_order_mark = Read<std::uint16_t>();
     if (util::ByteOrderMarkToEndianness(header.byte_order_mark) == util::Endianness::Little) {
       SwapEndianness();
@@ -111,7 +112,7 @@ public:
   }
 
   audio::Channel ReadSamples(uint total_samples, audio::SampleFormat format, bool is_wave) {
-    uint sample_block_size {AlignUp(total_samples, 14) / 14 * 8};
+    uint sample_block_size{AlignUp(total_samples, 14) / 14 * 8};
     if (!is_wave)
       sample_block_size = AlignUp(sample_block_size, 0x20);
 
@@ -131,11 +132,6 @@ public:
       channel.resize(sample_block_size);
       for (auto& sample : channel)
         sample = Read<std::uint8_t>();
-      // for (uint i {0}; i < channel.size(); i += 2) {
-      //   auto sample_bytes = Read<std::uint8_t>();
-      //   channel[i] = static_cast<std::uint8_t>(sample_bytes & 0b1111);
-      //   channel[i + 1] = static_cast<std::uint8_t>(sample_bytes >> 4);
-      // }
       break;
     }
     case audio::SampleFormat::PCMS32:
@@ -144,14 +140,14 @@ public:
         sample = Read<std::int32_t>();
       break;
     }
-    
+
     return channel;
   }
 
 private:
-  tcb::span<const u8> m_data{};
-  size_t m_offset {0};
-  size_t m_section_offset {0};
+  std::span<const u8> m_data{};
+  size_t m_offset{0};
+  size_t m_section_offset{0};
   Endianness m_endian = Endianness::Big;
 };
-} // namespace oead::util
+}  // namespace oead::util
