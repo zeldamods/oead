@@ -18,6 +18,11 @@ classifiers = [
     "Programming Language :: Python :: 3 :: Only",
 ]
 
+[dependency-groups]
+test = ["pytest"]
+stubs = ["pybind11-stubgen==2.5.5"]
+dev = [{include-group = "test"}, {include-group = "stubs"}]
+
 [project.urls]
 Homepage = "https://github.com/zeldamods/oead"
 Documentation = "https://oead.readthedocs.io/"
@@ -28,6 +33,7 @@ minimum-version = "build-system.requires"
 cmake.version = ">=3.15"
 cmake.source-dir = "py"
 install.components = ["python"]
+wheel.packages = ["py/oead-stubs"]
 metadata.version.provider = "scikit_build_core.metadata.setuptools_scm"
 sdist.include = ["/lib/"]
 sdist.exclude = [".github/", "/docs/", "/test/", ".git_archival.txt"]

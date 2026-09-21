@@ -1,0 +1,39 @@
+from __future__ import annotations
+import collections.abc
+import oead
+import typing
+import typing_extensions
+__all__: list[str] = ['Header', 'compress', 'decompress', 'decompress_unsafe', 'get_header']
+class Header:
+    @property
+    def data_alignment(self) -> int:
+        ...
+    @data_alignment.setter
+    def data_alignment(self, arg0: typing.SupportsInt | typing.SupportsIndex) -> None:
+        ...
+    @property
+    def magic(self) -> typing.Annotated[list[str], "FixedSize(4)"]:
+        ...
+    @magic.setter
+    def magic(self, arg0: typing.Annotated[collections.abc.Sequence[str], "FixedSize(4)"]) -> None:
+        ...
+    @property
+    def reserved(self) -> typing.Annotated[list[int], "FixedSize(4)"]:
+        ...
+    @reserved.setter
+    def reserved(self, arg0: typing.Annotated[collections.abc.Sequence[typing.SupportsInt | typing.SupportsIndex], "FixedSize(4)"]) -> None:
+        ...
+    @property
+    def uncompressed_size(self) -> int:
+        ...
+    @uncompressed_size.setter
+    def uncompressed_size(self, arg0: typing.SupportsInt | typing.SupportsIndex) -> None:
+        ...
+def compress(data: typing_extensions.Buffer, data_alignment: typing.SupportsInt | typing.SupportsIndex = 0, level: typing.SupportsInt | typing.SupportsIndex = 7) -> oead.Bytes:
+    ...
+def decompress(data: typing_extensions.Buffer) -> bytes:
+    ...
+def decompress_unsafe(data: typing_extensions.Buffer) -> bytes:
+    ...
+def get_header(data: typing_extensions.Buffer) -> oead.yaz0.Header | None:
+    ...
