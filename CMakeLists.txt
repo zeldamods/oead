@@ -1,18 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 project(oead CXX)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  add_compile_options(-fdiagnostics-color=always)
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-  add_compile_options(-fcolor-diagnostics)
-endif()
-
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
 include(CMakeRC.cmake)
 cmrc_add_resource_library(oead_res ALIAS oead::res NAMESPACE oead::res
   data/aglenv_file_info.json
@@ -51,6 +39,8 @@ add_library(oead
   src/yaz0.cpp
 )
 
+target_compile_features(oead PUBLIC cxx_std_20)
+set_target_properties(oead PROPERTIES CXX_EXTENSIONS OFF)
 target_include_directories(oead PUBLIC src/include)
 target_include_directories(oead PRIVATE src/)
 if (MSVC)
@@ -61,13 +51,19 @@ endif()
 
 target_include_directories(oead SYSTEM PUBLIC lib/nonstd)
 
-set(BUILD_TESTING OFF)
-add_subdirectory(lib/abseil)
-add_subdirectory(lib/libyaml)
-add_subdirectory(lib/ordered-map)
-add_subdirectory(lib/rapidyaml)
-option(WITH_GZFILEOP "" OFF)
-add_subdirectory(lib/zlib-ng)
+function(oead_add_vendored_libraries)
+  # libyaml requires CMake 3.10, so option() would otherwise ignore the variables below.
+  set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+  set(BUILD_TESTING OFF)
+  set(WITH_GZFILEOP OFF)
+  add_subdirectory(lib/abseil)
+  add_subdirectory(lib/libyaml)
+  add_subdirectory(lib/ordered-map)
+  add_subdirectory(lib/rapidyaml)
+  add_subdirectory(lib/zlib-ng)
+endfunction()
+oead_add_vendored_libraries()
+
 target_link_libraries(oead
   PUBLIC
     absl::btree
