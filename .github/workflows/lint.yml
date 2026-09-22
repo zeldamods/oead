@@ -1,0 +1,19 @@
+name: lint
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  clang-format:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+    - name: Check formatting
+      run: |
+        git ls-files -z 'src/*.cpp' 'src/*.h' 'py/*.cpp' 'py/*.h' \
+          | xargs -0 pipx run clang-format==22.1.8 --dry-run --Werror
