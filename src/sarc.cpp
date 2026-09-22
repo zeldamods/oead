@@ -223,8 +223,8 @@ static const auto& GetAglEnvAlignmentRequirements() {
     const auto info_tsv_file = fs.open("data/aglenv_file_info.json");
 
     yml::InitRymlIfNeeded();
-    const auto tree =
-        ryml::parse_in_arena(yml::StrViewToRymlSubstr({info_tsv_file.begin(), info_tsv_file.size()}));
+    const auto tree = ryml::parse_in_arena(
+        yml::StrViewToRymlSubstr({info_tsv_file.begin(), info_tsv_file.size()}));
 
     for (ryml::ConstNodeRef entry : tree.rootref()) {
       int alignment = 1;

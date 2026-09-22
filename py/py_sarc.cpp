@@ -82,7 +82,8 @@ void BindSarc(py::module& m) {
   BindMap<SarcWriter::FileMap>(writer_cl, "FileMap");
 
   writer_cl
-      .def(py::init<util::Endianness, SarcWriter::Mode>(), py::arg_v("endian", util::Endianness::Little, "oead.Endianness.Little"),
+      .def(py::init<util::Endianness, SarcWriter::Mode>(),
+           py::arg_v("endian", util::Endianness::Little, "oead.Endianness.Little"),
            py::arg_v("mode", SarcWriter::Mode::New, "oead.SarcWriter.Mode.New"))
       .def("write", &SarcWriter::Write, py::return_value_policy::move)
       .def("set_endianness", &SarcWriter::SetEndianness, "endian"_a)

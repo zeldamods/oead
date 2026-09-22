@@ -19,8 +19,8 @@
 
 #pragma once
 
-#include <span>
 #include <optional>
+#include <span>
 #include <stdexcept>
 #include <string>
 #include <string_view>

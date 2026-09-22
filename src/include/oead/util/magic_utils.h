@@ -31,4 +31,4 @@ constexpr auto MakeMagic(const char (&magic)[N]) {
   return data;
 }
 
-}
+}  // namespace oead::util

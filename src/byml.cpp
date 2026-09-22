@@ -60,7 +60,7 @@ enum class NodeType : u8 {
   Array = 0xc0,
   Hash = 0xc1,
   StringTable = 0xc2,
-  PathTable = 0xc3, // Unsupported
+  PathTable = 0xc3,  // Unsupported
   Bool = 0xd0,
   Int = 0xd1,
   Float = 0xd2,
@@ -155,12 +155,11 @@ public:
         m_reader, *m_reader.Read<u32>(offsetof(ResHeader, hash_key_table_offset)));
     m_string_table =
         StringTableParser(m_reader, *m_reader.Read<u32>(offsetof(ResHeader, string_table_offset)));
-        
+
     // In MK8 byamls, there is an extra offset to a path table here
     u32 root_node_offset = *m_reader.Read<u32>(offsetof(ResHeader, root_node_offset));
     size_t header_end = m_reader.Tell();
-    if (root_node_offset != 0)
-    {
+    if (root_node_offset != 0) {
       const auto type = m_reader.Read<NodeType>(root_node_offset);
       if (type == NodeType::PathTable)
         throw UnsupportedError("Path nodes unsupported");

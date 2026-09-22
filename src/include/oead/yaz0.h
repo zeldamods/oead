@@ -20,8 +20,8 @@
 #pragma once
 
 #include <array>
-#include <span>
 #include <optional>
+#include <span>
 #include <vector>
 
 #include <oead/types.h>

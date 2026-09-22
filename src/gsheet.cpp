@@ -38,9 +38,7 @@ FieldMap MakeFieldMap(std::span<ResField> fields) {
 
 namespace {
 struct OpaqueArray {
-  auto Items(size_t item_size) const {
-    return MakeOpaqueRange(data, size, item_size);
-  }
+  auto Items(size_t item_size) const { return MakeOpaqueRange(data, size, item_size); }
 
   void* data = nullptr;
   u32 size = 0;
