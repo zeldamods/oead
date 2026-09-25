@@ -3,12 +3,13 @@ import collections.abc
 import typing
 import typing_extensions
 from . import aamp
+from . import audio
 from . import byml
 from . import gsheet
 from . import yaz0
 _T = typing.TypeVar("_T")
 _ParameterValue: typing.TypeAlias = float
-__all__: list[str] = ['BufferBool', 'BufferF32', 'BufferInt', 'BufferString', 'BufferU32', 'Bytes', 'Color4f', 'Curve', 'Endianness', 'F32', 'F64', 'File', 'FixedSafeString128', 'FixedSafeString16', 'FixedSafeString256', 'FixedSafeString32', 'FixedSafeString48', 'FixedSafeString64', 'InvalidDataError', 'Quatf', 'S16', 'S32', 'S64', 'S8', 'Sarc', 'SarcWriter', 'TypeError', 'U16', 'U32', 'U64', 'U8', 'Vector2f', 'Vector3f', 'Vector4f', 'aamp', 'byml', 'gsheet', 'yaz0']
+__all__: list[str] = ['BufferBool', 'BufferF32', 'BufferInt', 'BufferString', 'BufferU32', 'Bytes', 'Color4f', 'Curve', 'Endianness', 'F32', 'F64', 'File', 'FixedSafeString128', 'FixedSafeString16', 'FixedSafeString256', 'FixedSafeString32', 'FixedSafeString48', 'FixedSafeString64', 'InvalidDataError', 'Quatf', 'S16', 'S32', 'S64', 'S8', 'Sarc', 'SarcWriter', 'TypeError', 'U16', 'U32', 'U64', 'U8', 'Vector2f', 'Vector3f', 'Vector4f', 'aamp', 'audio', 'byml', 'gsheet', 'yaz0']
 class BufferBool:
     """
     Mutable list-like object that stores booleans.

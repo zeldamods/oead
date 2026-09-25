@@ -21,6 +21,14 @@ add_library(oead
   src/include/oead/util/swap.h
   src/include/oead/util/type_utils.h
   src/include/oead/util/variant_utils.h
+  src/include/oead/audio/interface.h
+  src/include/oead/audio/audio_reader.h
+  src/include/oead/audio/audio_writer.h
+  src/include/oead/audio/amta.h
+  src/include/oead/audio/bars.h
+  src/include/oead/audio/fstm.h
+  src/include/oead/audio/fstp.h
+  src/include/oead/audio/fwav.h
   src/include/oead/aamp.h
   src/include/oead/byml.h
   src/include/oead/errors.h
@@ -29,9 +37,14 @@ add_library(oead
   src/include/oead/types.h
   src/include/oead/yaz0.h
   src/aamp.cpp
+  src/amta.cpp
   src/aamp_text.cpp
+  src/bars.cpp
   src/byml.cpp
   src/byml_text.cpp
+  src/fstm.cpp
+  src/fstp.cpp
+  src/fwav.cpp
   src/gsheet.cpp
   src/sarc.cpp
   src/yaml.cpp
