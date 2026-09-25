@@ -32,12 +32,12 @@ Bars::Bars(const std::string& file_path) {
 
 void Bars::Deserialize(util::AudioReader& reader) {
   std::size_t file_start{reader.Tell()};
-  auto header = reader.Read<ResourceHeader>();
+  auto header = *reader.Read<ResourceHeader>();
 
   if (util::ByteOrderMarkToEndianness(header.bom) == util::Endianness::Little) {
     reader.SwapEndianness();
     reader.Seek(file_start);
-    header = reader.Read<ResourceHeader>();
+    header = *reader.Read<ResourceHeader>();
   }
 
   if (header.signature != BarsMagic)
@@ -52,11 +52,11 @@ void Bars::Deserialize(util::AudioReader& reader) {
 
   m_hashes.resize(header.asset_count);
   for (auto& hash : m_hashes)
-    hash = reader.Read<u32>();
+    hash = *reader.Read<u32>();
 
   std::vector<FileOffsetSet> offset_sets(header.asset_count);
   for (auto& offset_set : offset_sets)
-    offset_set = reader.Read<FileOffsetSet>();
+    offset_set = *reader.Read<FileOffsetSet>();
 
   m_files.resize(header.asset_count);
   std::map<s32, std::shared_ptr<IAssetFile>> found_assets;

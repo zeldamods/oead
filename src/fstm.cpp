@@ -46,7 +46,7 @@ void Fstm::Deserialize(util::AudioReader& reader) {
       for (u32 block{0}; block < m_info.StreamInfo().block_count; ++block) {
         m_seek_infos[block].resize(m_info.StreamInfo().channel_count);
         for (auto& seek_info : m_seek_infos[block])
-          seek_info = reader.Read<SeekInfo>();
+          seek_info = *reader.Read<SeekInfo>();
       }
       break;
     case ElementType::StreamSoundFile_RegionBlock:
@@ -55,7 +55,7 @@ void Fstm::Deserialize(util::AudioReader& reader) {
 
       m_region_infos.resize(m_info.StreamInfo().region_count);
       for (auto& info : m_region_infos)
-        info = reader.Read<RegionInfo>();
+        info = *reader.Read<RegionInfo>();
       break;
     case ElementType::StreamSoundFile_DataBlock:
       reader.Read<BlockHeader>();
@@ -80,13 +80,13 @@ InfoBlock::InfoBlock(util::AudioReader& reader) {
 
   size_t ref_array_start = reader.Tell();
 
-  auto stminfo_ref = reader.Read<Reference>();
-  auto track_info_table_ref = reader.Read<Reference>();
-  auto channel_info_table_ref = reader.Read<Reference>();
+  auto stminfo_ref = *reader.Read<Reference>();
+  auto track_info_table_ref = *reader.Read<Reference>();
+  auto channel_info_table_ref = *reader.Read<Reference>();
 
   if (stminfo_ref.offset != -1) {
     reader.Seek(ref_array_start + stminfo_ref.offset);
-    m_stream_info = reader.Read<StreamSoundInfo>();
+    m_stream_info = *reader.Read<StreamSoundInfo>();
   }
 
   // TODO: Verify if Track Info deserialization works
@@ -100,7 +100,7 @@ InfoBlock::InfoBlock(util::AudioReader& reader) {
       Reference track_info_ref{track_info_table.items[i]};
       reader.Seek(track_info_table_start + track_info_ref.offset);
 
-      m_track_infos[i] = reader.Read<TrackInfo>();
+      m_track_infos[i] = *reader.Read<TrackInfo>();
     }
   }
 
@@ -116,11 +116,11 @@ InfoBlock::InfoBlock(util::AudioReader& reader) {
       reader.Seek(channel_info_table_start + channel_info.offset);
 
       size_t current_offset = reader.Tell();
-      auto dsp_adpcm_ref = reader.Read<Reference>();
+      auto dsp_adpcm_ref = *reader.Read<Reference>();
 
       reader.Seek(current_offset + dsp_adpcm_ref.offset);
 
-      m_detail_channel_infos[i] = reader.Read<DspAdpcmInfo>();
+      m_detail_channel_infos[i] = *reader.Read<DspAdpcmInfo>();
     }
   }
 }

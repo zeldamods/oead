@@ -47,7 +47,7 @@ void Fwav::Deserialize(util::AudioReader& reader) {
 
 void Fwav::DeserializeInfoBlock(util::AudioReader& reader) {
   reader.Read<BlockHeader>();
-  auto info = reader.Read<InfoBlock>();
+  auto info = *reader.Read<InfoBlock>();
 
   m_encoding = info.encoding;
   m_is_loop = info.is_loop;
@@ -66,11 +66,11 @@ void Fwav::DeserializeInfoBlock(util::AudioReader& reader) {
 
     size_t channel_info_start = reader.Tell();
     reader.Read<Reference>();
-    Reference to_adpcm_info{reader.Read<Reference>()};
+    Reference to_adpcm_info{*reader.Read<Reference>()};
     reader.Read<u32>();  // reserved
 
     reader.Seek(channel_info_start + to_adpcm_info.offset);
-    m_channel_infos[i].adpcm_info = reader.Read<DspAdpcmInfo>();
+    m_channel_infos[i].adpcm_info = *reader.Read<DspAdpcmInfo>();
   }
 }
 

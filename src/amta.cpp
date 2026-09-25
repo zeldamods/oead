@@ -15,12 +15,12 @@ Amta::Amta(std::span<const u8> data) {
 void Amta::Deserialize(util::AudioReader& reader) {
   reader.MarkSectionStart();
 
-  auto header{reader.Read<AudioMetaHeader>()};
+  auto header{*reader.Read<AudioMetaHeader>()};
 
   if (util::ByteOrderMarkToEndianness(header.bom) == util::Endianness::Little) {
     reader.SwapEndianness();
     reader.SectionSeek(0);
-    header = reader.Read<AudioMetaHeader>();
+    header = *reader.Read<AudioMetaHeader>();
   }
 
   if (header.signature != AmtaMagic)
@@ -36,23 +36,23 @@ void Amta::Deserialize(util::AudioReader& reader) {
   // DATA
   reader.SectionSeek(header.data_offset);
   reader.Read<BlockHeader>();
-  auto asset_name_offset = reader.Read<u32>();
-  m_sample_count = reader.Read<u32>();
-  m_asset_type = reader.Read<AssetType>();
-  m_channel_count = reader.Read<u8>();
-  m_used_stream_tracks = reader.Read<u8>();
-  m_flags = reader.Read<u8>();
-  m_unknown = reader.Read<float>();
-  m_sample_rate = reader.Read<u32>();
-  m_loop_start_frame = reader.Read<u32>();
-  m_loop_end_frame = reader.Read<u32>();
-  m_volume = reader.Read<float>();
+  auto asset_name_offset = *reader.Read<u32>();
+  m_sample_count = *reader.Read<u32>();
+  m_asset_type = *reader.Read<AssetType>();
+  m_channel_count = *reader.Read<u8>();
+  m_used_stream_tracks = *reader.Read<u8>();
+  m_flags = *reader.Read<u8>();
+  m_unknown = *reader.Read<float>();
+  m_sample_rate = *reader.Read<u32>();
+  m_loop_start_frame = *reader.Read<u32>();
+  m_loop_end_frame = *reader.Read<u32>();
+  m_volume = *reader.Read<float>();
 
   for (auto& track : m_stream_tracks)
-    track = reader.Read<StreamTrack>();
+    track = *reader.Read<StreamTrack>();
 
   if (m_version >= 0x400)
-    m_amplitude_peak = reader.Read<float>();
+    m_amplitude_peak = *reader.Read<float>();
 
   // MARK
   reader.SectionSeek(header.mark_offset);
@@ -68,14 +68,14 @@ void Amta::Deserialize(util::AudioReader& reader) {
 
 void Amta::DeserializeMarkerBlock(util::AudioReader& reader, u32 to_string_table) {
   reader.Read<BlockHeader>();
-  auto marker_info_count{reader.Read<u32>()};
+  auto marker_info_count{*reader.Read<u32>()};
 
   m_markers.resize(marker_info_count);
   for (auto& marker : m_markers) {
-    marker.id = reader.Read<u32>();
-    auto name_offset{reader.Read<u32>()};
-    marker.start_pos = reader.Read<u32>();
-    marker.length = reader.Read<u32>();
+    marker.id = *reader.Read<u32>();
+    auto name_offset{*reader.Read<u32>()};
+    marker.start_pos = *reader.Read<u32>();
+    marker.length = *reader.Read<u32>();
 
     marker.name = reader.ReadString(reader.SectionStart() + to_string_table + sizeof(BlockHeader) +
                                     name_offset);
@@ -85,12 +85,12 @@ void Amta::DeserializeMarkerBlock(util::AudioReader& reader, u32 to_string_table
 
 void Amta::DeserializeExtBlock(util::AudioReader& reader, u32 to_string_table) {
   reader.Read<BlockHeader>();
-  auto ext_count{reader.Read<u32>()};
+  auto ext_count{*reader.Read<u32>()};
 
   m_ext_entries.resize(ext_count);
   for (auto& entry : m_ext_entries) {
-    auto name_offset{reader.Read<u32>()};
-    entry.value = reader.Read<u32>();
+    auto name_offset{*reader.Read<u32>()};
+    entry.value = *reader.Read<u32>();
 
     entry.name = reader.ReadString(reader.SectionStart() + to_string_table + sizeof(BlockHeader) +
                                    name_offset);

@@ -1,56 +1,15 @@
 #pragma once
 
-#include <optional>
-#include <span>
-#include <stdexcept>
-#include <type_traits>
-
 #include "oead/audio/types.h"
-#include "oead/util/align.h"
-#include "oead/util/bit_utils.h"
-#include "oead/util/swap.h"
+#include "oead/util/binary_reader.h"
 
 namespace oead::util {
-class AudioReader {
+class AudioReader : public BinaryReader {
 public:
-  AudioReader() = default;
-  AudioReader(std::span<const u8> data, Endianness endian) : m_data{data}, m_endian{endian} {}
+  using BinaryReader::BinaryReader;
 
-  const std::span<const u8>& Span() const { return m_data; }
-  size_t Tell() const { return m_offset; }
-  void Seek(size_t offset) { m_offset = offset; }
-  void SectionSeek(size_t offset) { m_offset = offset + m_section_offset; }
+  void SectionSeek(size_t offset) { Seek(offset + m_section_offset); }
   void Align(std::size_t n) { Seek(AlignUp(Tell(), n)); }
-
-  Endianness Endian() const { return m_endian; }
-  void SetEndian(Endianness endian) { m_endian = endian; }
-
-  template <typename T, bool Safe = true,
-            typename = std::enable_if_t<std::is_standard_layout<T>::value>>
-  T Read() {
-    if constexpr (Safe) {
-      if (m_offset + sizeof(T) > m_data.size())
-        throw std::out_of_range("Out of bounds read");
-    }
-
-    T value = BitCastPtr<T>(&m_data[m_offset]);
-    SwapIfNeededInPlace(value, m_endian);
-    m_offset += sizeof(T);
-    return value;
-  }
-
-  template <typename StringType = std::string>
-  StringType ReadString(size_t offset, std::optional<size_t> max_len = std::nullopt) const {
-    if (offset > m_data.size())
-      throw std::out_of_range("Out of bounds string read");
-
-    // Ensure strnlen doesn't go out of bounds.
-    if (!max_len || *max_len > m_data.size() - offset)
-      max_len = m_data.size() - offset;
-
-    const char* ptr = reinterpret_cast<const char*>(&m_data[offset]);
-    return {ptr, strnlen(ptr, *max_len)};
-  }
 
   void SwapEndianness() {
     SetEndian(Endian() == util::Endianness::Little ? util::Endianness::Big :
@@ -64,24 +23,24 @@ public:
     std::size_t header_start{Tell()};
 
     audio::SoundFileHeader header;
-    header.signature = Read<std::array<char, 4>>();
+    header.signature = *Read<std::array<char, 4>>();
 
-    header.byte_order_mark = Read<u16>();
+    header.byte_order_mark = *Read<u16>();
     if (util::ByteOrderMarkToEndianness(header.byte_order_mark) == util::Endianness::Little) {
       SwapEndianness();
       Seek(header_start);
       return ReadSoundFileHeader();
     }
 
-    header.head_size = Read<u16>();
-    header.version = Read<u32>();
-    header.file_size = Read<u32>();
-    header.block_count = Read<u16>();
-    header.reserved = Read<u16>();
+    header.head_size = *Read<u16>();
+    header.version = *Read<u32>();
+    header.file_size = *Read<u32>();
+    header.block_count = *Read<u16>();
+    header.reserved = *Read<u16>();
 
     header.block_refs.resize(header.block_count);
     for (auto& block_ref : header.block_refs)
-      block_ref = Read<audio::SizedReference>();
+      block_ref = *Read<audio::SizedReference>();
 
     return header;
   }
@@ -89,10 +48,10 @@ public:
   template <typename T>
   audio::Table<T> ReadTable() {
     audio::Table<T> tbl;
-    tbl.count = Read<u32>();
+    tbl.count = *Read<u32>();
     tbl.items.resize(tbl.count);
     for (auto& item : tbl.items)
-      item = Read<T>();
+      item = *Read<T>();
 
     return tbl;
   }
@@ -107,23 +66,23 @@ public:
     case audio::SampleFormat::PCMS8:
       channel.resize(sample_block_size);
       for (auto& sample : channel)
-        sample = Read<s8>();
+        sample = *Read<s8>();
       break;
     case audio::SampleFormat::PCMS16:
       channel.resize(sample_block_size / sizeof(s16));
       for (auto& sample : channel)
-        sample = Read<s16>();
+        sample = *Read<s16>();
       break;
     case audio::SampleFormat::DSPADPCM: {
       channel.resize(sample_block_size);
       for (auto& sample : channel)
-        sample = Read<u8>();
+        sample = *Read<u8>();
       break;
     }
     case audio::SampleFormat::PCMS32:
       channel.resize(sample_block_size / sizeof(s32));
       for (auto& sample : channel)
-        sample = Read<s32>();
+        sample = *Read<s32>();
       break;
     }
 
@@ -131,9 +90,6 @@ public:
   }
 
 private:
-  std::span<const u8> m_data{};
-  size_t m_offset{0};
   size_t m_section_offset{0};
-  Endianness m_endian = Endianness::Big;
 };
 }  // namespace oead::util

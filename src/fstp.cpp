@@ -50,7 +50,7 @@ void Fstp::Deserialize(util::AudioReader& reader) {
         reader.Seek(offset);
         m_data.prefetch_data[i].prefetch_samples.resize(prefetch_data_table.items[i].prefetch_size);
         for (auto& sample : m_data.prefetch_data[i].prefetch_samples)
-          sample = reader.Read<u8>();
+          sample = *reader.Read<u8>();
       }
     }
   }
