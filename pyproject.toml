@@ -10,7 +10,7 @@ readme = "readme.rst"
 license = "GPL-2.0-or-later"
 license-files = ["LICENSE.md"]
 authors = [{ name = "leoetlino", email = "leo@leolam.fr" }]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 classifiers = [
     "Topic :: Software Development :: Libraries",
     "Operating System :: OS Independent",
