@@ -17,8 +17,6 @@
  * along with oead.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <absl/algorithm/container.h>
-#include <absl/strings/match.h>
 #include <absl/strings/str_format.h>
 #include <array>
 #include <tuple>
@@ -95,7 +93,7 @@ std::optional<std::string_view> NameTable::GetName(u32 hash, int index, u32 pare
     if (const auto match = test_names("Child"sv))
       return *match;
     for (std::string_view suffix : {"s"sv, "es"sv, "List"sv}) {
-      if (!absl::EndsWith(parent_name, suffix))
+      if (!parent_name.ends_with(suffix))
         continue;
       if (const auto match = test_names(parent_name.substr(0, parent_name.size() - suffix.size())))
         return *match;

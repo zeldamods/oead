@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <concepts>
 #include <optional>
 #include <span>
 #include <stdexcept>
@@ -163,11 +164,11 @@ public:
                                          sequence_tag.empty(), YAML_FLOW_SEQUENCE_STYLE);
     Emit(event);
     for (const T& v : sequence) {
-      if constexpr (std::is_same_v<T, bool>)
+      if constexpr (std::same_as<T, bool>)
         EmitBool(v);
-      else if constexpr (std::is_same_v<typename NumberType<T>::type, double>)
+      else if constexpr (std::same_as<typename NumberType<T>::type, double>)
         EmitDouble(v);
-      else if constexpr (std::is_same_v<typename NumberType<T>::type, float>)
+      else if constexpr (std::same_as<typename NumberType<T>::type, float>)
         EmitFloat(v);
       else if constexpr (std::is_integral_v<typename NumberType<T>::type>)
         EmitInt(v);

@@ -144,8 +144,8 @@ public:
     m_offset += bytes.size();
   }
 
-  template <typename T, typename std::enable_if_t<!std::is_pointer_v<T> &&
-                                                  std::is_trivially_copyable_v<T>>* = nullptr>
+  template <typename T>
+    requires(!std::is_pointer_v<T> && std::is_trivially_copyable_v<T>)
   void Write(T value) {
     SwapIfNeededInPlace(value, m_endian);
     WriteBytes({reinterpret_cast<const u8*>(&value), sizeof(value)});

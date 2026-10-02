@@ -26,7 +26,6 @@
 #include <limits>
 #include <queue>
 #include <stdexcept>
-#include "absl/container/flat_hash_set.h"
 
 #include <oead/errors.h>
 #include <oead/util/binary_reader.h>

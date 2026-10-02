@@ -6,6 +6,7 @@
 
 #include <array>
 #include <climits>
+#include <concepts>
 #include <cstddef>
 #include <cstring>
 #include <initializer_list>
@@ -203,9 +204,9 @@ public:
   explicit BitCastPtrType(PtrType* ptr) : m_ptr(ptr) {}
 
   // Enable operator= only for pointers to non-const data
-  template <typename S>
-  inline typename std::enable_if<std::is_same<S, T>() && !std::is_const<PtrType>()>::type
-  operator=(const S& source) {
+  template <std::same_as<T> S>
+    requires(!std::is_const_v<PtrType>)
+  inline void operator=(const S& source) {
     std::memcpy(m_ptr, &source, sizeof(source));
   }
 

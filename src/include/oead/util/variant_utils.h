@@ -54,6 +54,10 @@ constexpr auto Match(Variant&& variant, Ts&&... lambdas) {
   return Visit(Overloaded{std::forward<Ts>(lambdas)...}, std::forward<Variant>(variant));
 }
 
+template <typename T, typename... Types>
+concept VariantValue = SameAsAnyOf<std::decay_t<T>, Types...> ||
+                       SameAsAnyOf<std::unique_ptr<std::decay_t<T>>, Types...>;
+
 /// A std::variant wrapper that transparently dereferences unique_ptrs. This is intended for be
 /// used for variants that can contain possibly large values.
 template <typename EnumType, typename... Types>
@@ -64,21 +68,17 @@ struct Variant {
   Variant(const Variant& other) { *this = other; }
   Variant(Variant&& other) noexcept { *this = std::move(other); }
 
-  template <typename T,
-            std::enable_if_t<IsAnyOfType<std::decay_t<T>, Types...>() ||
-                             IsAnyOfType<std::unique_ptr<std::decay_t<T>>, Types...>()>* = nullptr>
+  template <VariantValue<Types...> T>
   Variant(const T& value) {
-    if constexpr (IsAnyOfType<std::unique_ptr<std::decay_t<T>>, Types...>())
+    if constexpr (SameAsAnyOf<std::unique_ptr<std::decay_t<T>>, Types...>)
       v = std::make_unique<T>(value);
     else
       v = value;
   }
 
-  template <typename T,
-            std::enable_if_t<IsAnyOfType<std::decay_t<T>, Types...>() ||
-                             IsAnyOfType<std::unique_ptr<std::decay_t<T>>, Types...>()>* = nullptr>
+  template <VariantValue<Types...> T>
   Variant(T&& value) noexcept {
-    if constexpr (IsAnyOfType<std::unique_ptr<std::decay_t<T>>, Types...>())
+    if constexpr (SameAsAnyOf<std::unique_ptr<std::decay_t<T>>, Types...>)
       v = std::make_unique<T>(std::move(value));
     else
       v = std::move(value);

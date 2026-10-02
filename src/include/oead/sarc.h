@@ -19,9 +19,9 @@
 
 #pragma once
 
-#include <absl/algorithm/container.h>
 #include <absl/container/btree_map.h>
 #include <absl/container/flat_hash_map.h>
+#include <algorithm>
 #include <iterator>
 #include <optional>
 #include <ranges>
@@ -45,7 +45,7 @@ public:
     std::span<const u8> data;
 
     bool operator==(const File& other) const {
-      return name == other.name && absl::c_equal(data, other.data);
+      return name == other.name && std::ranges::equal(data, other.data);
     }
 
     bool operator!=(const File& other) const { return !(*this == other); }

@@ -20,6 +20,7 @@
 #pragma once
 
 #include <absl/container/flat_hash_map.h>
+#include <concepts>
 #include <memory>
 #include <ranges>
 #include <span>
@@ -228,7 +229,8 @@ struct Data {
   Data(const void* raw, const Field& field, bool ignore_array_flag = false,
        bool ignore_nullable_flag = false);
 
-  template <typename T, std::enable_if_t<std::is_constructible_v<Variant, T>>* = nullptr>
+  template <typename T>
+    requires std::constructible_from<Variant, T>
   Data(T value) : v{std::move(value)} {}
 
   Data(const Data& other) { *this = other; }
