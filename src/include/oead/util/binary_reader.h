@@ -35,7 +35,7 @@
 namespace oead::util {
 
 /// A simple binary data reader that automatically byteswaps and avoids undefined behaviour.
-class BinaryReader final {
+class BinaryReader {
 public:
   BinaryReader() = default;
   BinaryReader(std::span<const u8> data, Endianness endian) : m_data{data}, m_endian{endian} {}
