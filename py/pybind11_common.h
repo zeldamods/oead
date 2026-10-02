@@ -21,6 +21,7 @@
 
 #pragma once
 
+#include <concepts>
 #include <optional>
 #include <span>
 #include <vector>
@@ -102,14 +103,12 @@ bool RequestSpan(py::handle src, py::buffer_info& info, std::span<T>& span) {
 }  // namespace oead::bind
 
 namespace pybind11::detail {
-template <typename T, typename std::enable_if_t<std::is_same_v<std::decay_t<T>, u8>, bool> = true>
+template <typename T>
 constexpr auto OeadGetSpanCasterName() {
-  return io_name("collections.abc.Buffer", "memoryview");
-}
-
-template <typename T, typename std::enable_if_t<!std::is_same_v<std::decay_t<T>, u8>, bool> = true>
-constexpr auto OeadGetSpanCasterName() {
-  return _("Span[") + detail::concat(make_caster<T>::name) + _("]");
+  if constexpr (std::same_as<std::remove_cv_t<T>, u8>)
+    return io_name("collections.abc.Buffer", "memoryview");
+  else
+    return _("Span[") + detail::concat(make_caster<T>::name) + _("]");
 }
 
 template <typename T>
@@ -148,7 +147,7 @@ py::class_<Vector, holder_type> BindVector(py::handle scope, const std::string& 
   if (cl.attr("__dict__").contains("__repr__"))
     py::delattr(cl, "__repr__");
   cl.def("__repr__", [name](const Vector& v) {
-    if constexpr (std::is_same_v<Value, u8>) {
+    if constexpr (std::same_as<Value, u8>) {
       return "{}({!r})"_s.format(name,
                                  py::bytes(reinterpret_cast<const char*>(v.data()), v.size()));
     } else {
@@ -211,22 +210,19 @@ static Value MapCastValue(py::handle handle) {
   return handle.cast<Value>();
 }
 
-template <class T, class = void>
-struct iterator_has_value_member_fn : std::false_type {};
 template <class T>
-struct iterator_has_value_member_fn<T, std::void_t<decltype(std::declval<T>().value())>>
-    : std::true_type {};
+concept IteratorHasValueMemberFn = requires(T it) { it.value(); };
 
 // If we detect a tsl::ordered_map, use a custom
 // assignment algorithm, else just use the one
 // provided by pybind
 template <typename Map, typename Class_>
-void MapAssignment(
-    std::enable_if_t<std::is_copy_assignable<typename Map::mapped_type>::value, Class_>& cl) {
+  requires std::is_copy_assignable_v<typename Map::mapped_type>
+void MapAssignment(Class_& cl) {
   using KeyType = typename Map::key_type;
   using MappedType = typename Map::mapped_type;
 
-  if constexpr (iterator_has_value_member_fn<typename Map::iterator>())
+  if constexpr (IteratorHasValueMemberFn<typename Map::iterator>)
     cl.def("__setitem__",
            [](Map& m, const KeyType& k, const MappedType& v) { m.insert_or_assign(k, v); });
   else
@@ -276,9 +272,8 @@ void DefineCustomMap(Class_& cl) {
   py::implicitly_convertible<py::dict, Map>();
 }
 
-template <typename Map, typename holder_type = std::unique_ptr<Map>, typename... Args,
-          typename std::enable_if_t<!iterator_has_value_member_fn<typename Map::iterator>::value,
-                                    bool> = true>
+template <typename Map, typename holder_type = std::unique_ptr<Map>, typename... Args>
+  requires(!IteratorHasValueMemberFn<typename Map::iterator>)
 py::class_<Map, holder_type> BindMap(py::handle scope, const std::string& name, Args&&... args) {
   auto cl = py::bind_map<Map, holder_type>(scope, name, std::forward<Args>(args)...);
   DefineCustomMap<Map>(cl);
@@ -287,9 +282,8 @@ py::class_<Map, holder_type> BindMap(py::handle scope, const std::string& name, 
 
 // Reimplementation of pybind11::bind_map
 // to support tsl::ordered_map
-template <typename Map, typename holder_type = std::unique_ptr<Map>, typename... Args,
-          typename std::enable_if_t<iterator_has_value_member_fn<typename Map::iterator>::value,
-                                    bool> = false>
+template <typename Map, typename holder_type = std::unique_ptr<Map>, typename... Args>
+  requires IteratorHasValueMemberFn<typename Map::iterator>
 py::class_<Map, holder_type> BindMap(py::handle scope, const std::string& name, Args&&... args) {
   using KeyType = typename Map::key_type;
   using MappedType = typename Map::mapped_type;

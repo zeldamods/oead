@@ -251,7 +251,7 @@ private:
           RegisterObject(data);
           data.VisitArray([&](const auto& v) {
             using T = typename std::decay_t<decltype(v)>::value_type;
-            if constexpr (util::IsAnyOfType<T, bool, int, float>()) {
+            if constexpr (util::SameAsAnyOf<T, bool, int, float>) {
               for (const T item : v) {
                 writer.Write(item);
                 writer.AlignUp(4);

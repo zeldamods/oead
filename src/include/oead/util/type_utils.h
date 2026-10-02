@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <concepts>
 #include <memory>
 #include <type_traits>
 
@@ -33,11 +34,8 @@ struct IsUniquePtr : std::false_type {};
 template <class T, class D>
 struct IsUniquePtr<std::unique_ptr<T, D>> : std::true_type {};
 
-template <class T, class...>
-struct IsAnyOfType : std::false_type {};
-template <class T, class Head, class... Tail>
-struct IsAnyOfType<T, Head, Tail...>
-    : std::conditional_t<std::is_same_v<T, Head>, std::true_type, IsAnyOfType<T, Tail...>> {};
+template <typename T, typename... Ts>
+concept SameAsAnyOf = (std::same_as<T, Ts> || ...);
 
 template <typename T>
 constexpr T& AsMutable(T const& value) noexcept {

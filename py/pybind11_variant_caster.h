@@ -71,8 +71,8 @@ template <template <typename...> class V, typename... Ts>
 struct oead_variant_caster<V<Ts...>> {
   template <typename T, bool ptr>
   bool do_load(handle src, bool convert) {
-    if constexpr (oead::util::IsAnyOfType<T, bool, u32, s32, f32, oead::U32, oead::S32,
-                                          oead::F32>()) {
+    if constexpr (oead::util::SameAsAnyOf<T, bool, u32, s32, f32, oead::U32, oead::S32,
+                                          oead::F32>) {
       convert = false;
     }
     auto caster = make_caster<T>();
@@ -101,7 +101,7 @@ struct oead_variant_caster<V<Ts...>> {
 
   template <typename T>
   bool load_with_no_conversion(handle src) {
-    if constexpr (oead::util::IsAnyOfType<T, Ts...>())
+    if constexpr (oead::util::SameAsAnyOf<T, Ts...>)
       return load_alternative<T>(src, false, {});
     else
       return false;

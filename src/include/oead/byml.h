@@ -21,6 +21,7 @@
 
 #include <absl/container/btree_map.h>
 #include <absl/container/flat_hash_map.h>
+#include <concepts>
 #include <functional>
 #include <memory>
 #include <span>
@@ -67,7 +68,8 @@ public:
   Byml() = default;
   Byml(const Byml& other) { *this = other; }
   Byml(Byml&& other) noexcept { *this = std::move(other); }
-  template <typename T, std::enable_if_t<std::is_constructible_v<Value, T>>* = nullptr>
+  template <typename T>
+    requires std::constructible_from<Value, T>
   Byml(T value) : m_value{std::move(value)} {}
   Byml& operator=(const Byml& other) = default;
   Byml& operator=(Byml&& other) noexcept = default;
