@@ -57,6 +57,9 @@ struct type_caster<oead::Byml> {
 }  // namespace pybind11::detail
 
 namespace oead::bind {
+template <typename T, Byml::Type type>
+struct Borrowable {};
+
 /// Wraps a callable to avoid expensive conversions to Byml; instead, we detect
 /// whether the first parameter is a Byml::Array or a Byml::Hash and if so we
 /// borrow the value and move-construct a temporary Byml in order to avoid copies.
@@ -64,21 +67,27 @@ template <typename... Ts, typename Callable>
 static auto BorrowByml(Callable&& callable) {
   return [&, callable](py::handle handle, Ts&&... args) {
     Byml obj;
-    const auto invoke = [&, callable](auto&& value) {
-      obj = std::move(value);
-      return std::invoke(callable, obj, std::forward<Ts>(args)...);
+    const auto invoke = [&] { return std::invoke(callable, obj, std::forward<Ts>(args)...); };
+
+    const auto borrow_and_invoke = [&]<typename T, Byml::Type type, typename... Rest>(
+                                       const auto& self, Borrowable<T, type>, Rest... rest) {
+      if (!py::isinstance<T>(handle)) {
+        if constexpr (sizeof...(Rest) == 0) {
+          obj = handle.cast<Byml>();
+          return invoke();
+        } else {
+          return self(self, rest...);
+        }
+      }
+
+      auto& ref = handle.cast<T&>();
+      obj = std::move(ref);
+      util::ScopeGuard guard{[&] { ref = std::move(obj.Get<type>()); }};
+      return invoke();
     };
-    if (py::isinstance<Byml::Array>(handle)) {
-      auto& ref = handle.cast<Byml::Array&>();
-      util::ScopeGuard guard{[&] { ref = std::move(obj.Get<Byml::Type::Array>()); }};
-      return invoke(std::move(ref));
-    }
-    if (py::isinstance<Byml::Hash>(handle)) {
-      auto& ref = handle.cast<Byml::Hash&>();
-      util::ScopeGuard guard{[&] { ref = std::move(obj.Get<Byml::Type::Hash>()); }};
-      return invoke(std::move(ref));
-    }
-    return invoke(handle.cast<Byml>());
+
+    return borrow_and_invoke(borrow_and_invoke, Borrowable<Byml::Array, Byml::Type::Array>{},
+                             Borrowable<Byml::Hash, Byml::Type::Hash>{});
   };
 }
 
