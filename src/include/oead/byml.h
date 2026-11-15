@@ -109,15 +109,15 @@ public:
 
   template <Type Type, typename T>
   Reference<const T> Get(std::string_view key, T default_) const {
-    auto it = GetHash().find(key);
-    if (it == GetHash().end())
+    auto it = Get<Byml::Type::Hash>().find(key);
+    if (it == Get<Byml::Type::Hash>().end())
       return default_;
     return std::cref(it->second.Get<Type>());
   }
   template <Type Type, typename T>
   Reference<T> Get(std::string_view key, T default_) {
-    auto it = GetHash().find(key);
-    if (it == GetHash().end())
+    auto it = Get<Byml::Type::Hash>().find(key);
+    if (it == Get<Byml::Type::Hash>().end())
       return default_;
     return std::ref(it->second.Get<Type>());
   }
@@ -138,14 +138,10 @@ public:
   // Some of them will perform type conversions automatically.
   // If value types are incorrect, an exception is thrown.
 
-  Hash& GetHash();
-  Array& GetArray();
-  String& GetString();
-  std::vector<u8>& GetBinary();
-  const Hash& GetHash() const;
-  const Array& GetArray() const;
-  const String& GetString() const;
-  const std::vector<u8>& GetBinary() const;
+  auto& GetHash(this auto&& self) { return self.template Get<Type::Hash>(); }
+  auto& GetArray(this auto&& self) { return self.template Get<Type::Array>(); }
+  auto& GetString(this auto&& self) { return self.template Get<Type::String>(); }
+  auto& GetBinary(this auto&& self) { return self.template Get<Type::Binary>(); }
   bool GetBool() const;
   s32 GetInt() const;
   u32 GetUInt() const;
