@@ -21,6 +21,7 @@
 
 #include <nonstd/visit.h>
 #include <type_traits>
+#include <utility>
 
 #include <oead/util/type_utils.h>
 
@@ -102,22 +103,13 @@ struct Variant {
 
   constexpr EnumType GetType() const { return EnumType(v.index()); }
 
-  template <EnumType type>
-  const auto& Get() const {
+  template <EnumType type, typename Self>
+  auto& Get(this Self&& self) {
     using T = std::variant_alternative_t<static_cast<size_t>(type), Storage>;
     if constexpr (util::IsUniquePtr<T>())
-      return *std::get<T>(v);
+      return std::forward_like<Self&>(*std::get<T>(self.v));
     else
-      return std::get<T>(v);
-  }
-
-  template <EnumType type>
-  auto& Get() {
-    using T = std::variant_alternative_t<static_cast<size_t>(type), Storage>;
-    if constexpr (util::IsUniquePtr<T>())
-      return *std::get<T>(v);
-    else
-      return std::get<T>(v);
+      return std::get<T>(self.v);
   }
 
   Storage v;
