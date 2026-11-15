@@ -11,6 +11,7 @@
 #include <cstring>
 #include <initializer_list>
 #include <type_traits>
+#include <utility>
 
 namespace oead::util {
 ///
@@ -255,14 +256,12 @@ template <typename T>
 class FlagBit {
 public:
   FlagBit(std::underlying_type_t<T>& bits, T bit) : m_bits(bits), m_bit(bit) {}
-  explicit operator bool() const {
-    return (m_bits & static_cast<std::underlying_type_t<T>>(m_bit)) != 0;
-  }
+  explicit operator bool() const { return (m_bits & std::to_underlying(m_bit)) != 0; }
   FlagBit& operator=(const bool rhs) {
     if (rhs)
-      m_bits |= static_cast<std::underlying_type_t<T>>(m_bit);
+      m_bits |= std::to_underlying(m_bit);
     else
-      m_bits &= ~static_cast<std::underlying_type_t<T>>(m_bit);
+      m_bits &= ~std::to_underlying(m_bit);
     return *this;
   }
 
@@ -277,13 +276,11 @@ public:
   constexpr Flags() = default;
   constexpr Flags(std::initializer_list<T> bits) {
     for (auto bit : bits) {
-      m_hex |= static_cast<std::underlying_type_t<T>>(bit);
+      m_hex |= std::to_underlying(bit);
     }
   }
   FlagBit<T> operator[](T bit) { return FlagBit(m_hex, bit); }
-  constexpr bool operator[](T bit) const {
-    return (m_hex & static_cast<std::underlying_type_t<T>>(bit)) != 0;
-  }
+  constexpr bool operator[](T bit) const { return (m_hex & std::to_underlying(bit)) != 0; }
   constexpr friend bool operator==(Flags a, Flags b) { return a.m_hex == b.m_hex; }
 
   std::underlying_type_t<T> m_hex = 0;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 namespace oead::audio {
 struct ElementTypeCategory {
   enum {
@@ -77,12 +79,12 @@ enum class ElementType {
   General_ByteStream = ElementTypeCategory::General,
   General_String,
 
-  SoundArchiveFile_StringBlock = static_cast<int>(ElementTypeCategory::SoundArchiveFile::Blocks),
+  SoundArchiveFile_StringBlock = std::to_underlying(ElementTypeCategory::SoundArchiveFile::Blocks),
   SoundArchiveFile_InfoBlock,
   SoundArchiveFile_FileBlock,
 
   SoundArchiveFile_SoundInfoSection =
-      static_cast<int>(ElementTypeCategory::SoundArchiveFile::InfoSections),
+      std::to_underlying(ElementTypeCategory::SoundArchiveFile::InfoSections),
   SoundArchiveFile_BankInfoSection,
   SoundArchiveFile_PlayerInfoSection,
   SoundArchiveFile_WaveArchiveInfoSection,
@@ -90,7 +92,7 @@ enum class ElementType {
   SoundArchiveFile_GroupInfoSection,
   SoundArchiveFile_FileInfoSection,
 
-  SoundArchiveFile_SoundInfo = static_cast<int>(ElementTypeCategory::SoundArchiveFile::ItemInfos),
+  SoundArchiveFile_SoundInfo = std::to_underlying(ElementTypeCategory::SoundArchiveFile::ItemInfos),
   SoundArchiveFile_StreamSoundInfo,
   SoundArchiveFile_WaveSoundInfo,
   SoundArchiveFile_SequenceSoundInfo,
@@ -108,58 +110,60 @@ enum class ElementType {
   SoundArchiveFile_SendInfo,
   SoundArchiveFile_StreamSoundExtensionInfo,
 
-  SoundArchiveFile_StringTable = static_cast<int>(ElementTypeCategory::SoundArchiveFile::General),
+  SoundArchiveFile_StringTable = std::to_underlying(ElementTypeCategory::SoundArchiveFile::General),
   SoundArchiveFile_PatriciaTree,
 
-  StreamSoundFile_InfoBlock = static_cast<int>(ElementTypeCategory::StreamSoundFile::Blocks),
+  StreamSoundFile_InfoBlock = std::to_underlying(ElementTypeCategory::StreamSoundFile::Blocks),
   StreamSoundFile_SeekBlock,
   StreamSoundFile_DataBlock,
   StreamSoundFile_RegionBlock,
   StreamSoundFile_PrefetchDataBlock,
 
   StreamSoundFile_StreamSoundInfo =
-      static_cast<int>(ElementTypeCategory::StreamSoundFile::ItemInfos),
+      std::to_underlying(ElementTypeCategory::StreamSoundFile::ItemInfos),
   StreamSoundFile_TrackInfo,
   StreamSoundFile_ChannelInfo,
 
-  WaveSoundFile_WaveSoundMetaData = static_cast<int>(ElementTypeCategory::WaveSoundFile::ItemInfos),
+  WaveSoundFile_WaveSoundMetaData =
+      std::to_underlying(ElementTypeCategory::WaveSoundFile::ItemInfos),
   WaveSoundFile_WaveSoundInfo,
   WaveSoundFile_NoteInfo,
   WaveSoundFile_TrackInfo,
   WaveSoundFile_NoteEvent,
 
-  SequenceSoundFile_DataBlock = static_cast<int>(ElementTypeCategory::SequenceSoundFile::Blocks),
+  SequenceSoundFile_DataBlock = std::to_underlying(ElementTypeCategory::SequenceSoundFile::Blocks),
   SequenceSoundFile_LabelBlock,
 
-  SequenceSoundFile_LabelInfo = static_cast<int>(ElementTypeCategory::SequenceSoundFile::ItemInfos),
+  SequenceSoundFile_LabelInfo =
+      std::to_underlying(ElementTypeCategory::SequenceSoundFile::ItemInfos),
 
-  BankFile_InfoBlock = static_cast<int>(ElementTypeCategory::BankFile::Blocks),
+  BankFile_InfoBlock = std::to_underlying(ElementTypeCategory::BankFile::Blocks),
 
-  BankFile_InstrumentInfo = static_cast<int>(ElementTypeCategory::BankFile::Items),
+  BankFile_InstrumentInfo = std::to_underlying(ElementTypeCategory::BankFile::Items),
   BankFile_KeyRegionInfo,
   BankFile_VelocityRegionInfo,
   BankFile_NullInfo,
 
-  BankFile_DirectReferenceTable = static_cast<int>(ElementTypeCategory::BankFile::ItemTables),
+  BankFile_DirectReferenceTable = std::to_underlying(ElementTypeCategory::BankFile::ItemTables),
   BankFile_RangeReferenceTable,
   BankFile_IndexReferenceTable,
 
-  WaveArchiveFile_InfoBlock = static_cast<int>(ElementTypeCategory::WaveArchiveFile::Blocks),
+  WaveArchiveFile_InfoBlock = std::to_underlying(ElementTypeCategory::WaveArchiveFile::Blocks),
 
-  WaveFile_InfoBlock = static_cast<int>(ElementTypeCategory::WaveFile::Blocks),
+  WaveFile_InfoBlock = std::to_underlying(ElementTypeCategory::WaveFile::Blocks),
   WaveFile_DataBlock,
 
-  WaveFile_ChannelInfo = static_cast<int>(ElementTypeCategory::WaveFile::ItemInfos),
+  WaveFile_ChannelInfo = std::to_underlying(ElementTypeCategory::WaveFile::ItemInfos),
 
-  GroupFile_InfoBlock = static_cast<int>(ElementTypeCategory::GroupFile::Blocks),
+  GroupFile_InfoBlock = std::to_underlying(ElementTypeCategory::GroupFile::Blocks),
   GroupFile_FileBlock,
   GroupFile_InfoExBlock,
 
-  GroupFile_GroupItemInfo = static_cast<int>(ElementTypeCategory::GroupFile::ItemInfos),
+  GroupFile_GroupItemInfo = std::to_underlying(ElementTypeCategory::GroupFile::ItemInfos),
   GroupFile_GroupItemInfoEx,
 
-  AnimSoundFile_DataBlock = static_cast<int>(ElementTypeCategory::AnimSoundFile::Blocks),
+  AnimSoundFile_DataBlock = std::to_underlying(ElementTypeCategory::AnimSoundFile::Blocks),
 
-  AnimSoundFile_EventInfo = static_cast<int>(ElementTypeCategory::AnimSoundFile::Items),
+  AnimSoundFile_EventInfo = std::to_underlying(ElementTypeCategory::AnimSoundFile::Items),
 };
 }  // namespace oead::audio
