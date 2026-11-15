@@ -190,7 +190,7 @@ namespace rollbear
         return f(get<Is>(std::forward<Vs>(vs))...);
       } else {
         if (std::tuple(detail::index(vs)...) == std::tuple(Is...)) {
-          return f(forward_like<Vs>(*get_if<Is>(&vs))...);
+          return f(detail::forward_like<Vs>(*get_if<Is>(&vs))...);
         }
         return visit(n, m, std::forward<F>(f), std::forward<Vs>(vs)...);
       }

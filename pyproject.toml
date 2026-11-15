@@ -30,7 +30,7 @@ Issues = "https://github.com/zeldamods/oead/issues"
 
 [tool.scikit-build]
 minimum-version = "build-system.requires"
-cmake.version = ">=3.15"
+cmake.version = ">=3.20"
 cmake.source-dir = "py"
 install.components = ["python"]
 wheel.packages = ["py/oead-stubs"]
