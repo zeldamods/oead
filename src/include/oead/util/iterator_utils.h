@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include <algorithm>
+#include <iterator>
 #include <tuple>
 
 namespace oead::util {
@@ -49,16 +49,6 @@ constexpr auto Enumerate(T&& iterable) {
 template <typename First, typename... T>
 constexpr inline bool IsAnyOf(const First& first, const T&... t) {
   return ((first == t) || ...);
-}
-
-template <typename T, typename Iterator>
-constexpr bool Contains(const Iterator& begin, const Iterator& end, const T& value) {
-  return std::find(begin, end, value) != end;
-}
-
-template <typename T, typename Container>
-constexpr bool Contains(const Container& container, const T& value) {
-  return std::find(std::begin(container), std::end(container), value) != std::end(container);
 }
 
 }  // namespace oead::util
