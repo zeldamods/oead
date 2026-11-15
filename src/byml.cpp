@@ -21,6 +21,7 @@
 #include <absl/hash/hash.h>
 #include <algorithm>
 #include <array>
+#include <bit>
 #include <cstring>
 #include <map>
 #include <stdexcept>
@@ -202,7 +203,7 @@ private:
     case NodeType::Int:
       return S32(*raw);
     case NodeType::Float:
-      return F32(util::BitCast<f32>(*raw));
+      return F32(std::bit_cast<f32>(*raw));
     case NodeType::UInt:
       return U32(*raw);
     case NodeType::Int64:
@@ -210,7 +211,7 @@ private:
     case NodeType::UInt64:
       return U64(read_long_value());
     case NodeType::Double:
-      return F64(util::BitCast<f64>(read_long_value()));
+      return F64(std::bit_cast<f64>(read_long_value()));
     case NodeType::Null:
       return Byml::Null();
     default:
