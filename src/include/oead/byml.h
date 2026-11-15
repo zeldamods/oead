@@ -78,15 +78,10 @@ public:
 
   Type GetType() const { return m_value.GetType(); }
   template <Type type>
-  const auto& Get() const {
-    return m_value.Get<type>();
+  auto& Get(this auto&& self) {
+    return self.m_value.template Get<type>();
   }
-  template <Type type>
-  auto& Get() {
-    return m_value.Get<type>();
-  }
-  auto& GetVariant() { return m_value; }
-  const auto& GetVariant() const { return m_value; }
+  auto& GetVariant(this auto&& self) { return self.m_value; }
 
   /// Get an item from a map/hash.
   template <typename T>
