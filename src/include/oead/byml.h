@@ -102,19 +102,15 @@ public:
     Storage m_storage;
   };
 
-  template <Type Type, typename T>
-  Reference<const T> Get(std::string_view key, T default_) const {
-    auto it = Get<Byml::Type::Hash>().find(key);
-    if (it == Get<Byml::Type::Hash>().end())
-      return default_;
-    return std::cref(it->second.Get<Type>());
-  }
-  template <Type Type, typename T>
-  Reference<T> Get(std::string_view key, T default_) {
-    auto it = Get<Byml::Type::Hash>().find(key);
-    if (it == Get<Byml::Type::Hash>().end())
-      return default_;
-    return std::ref(it->second.Get<Type>());
+  template <Type type, typename T>
+  auto Get(this auto&& self, std::string_view key, T default_) {
+    using Value = std::remove_reference_t<decltype(self.template Get<type>())>;
+
+    auto& hash = self.GetHash();
+    const auto it = hash.find(key);
+    if (it == hash.end())
+      return Reference<Value>(std::move(default_));
+    return Reference<Value>(std::ref(it->second.template Get<type>()));
   }
 
   /// Load a document from binary data.
