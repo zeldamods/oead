@@ -33,7 +33,7 @@ Reference
 
     Lightweight list-like object. Can be cast to a list.
 
-.. class:: oead.byml.Dictionary
+.. class:: oead.byml.Hash
 
     Lightweight dict-like object with string keys. Can be cast to a dict.
 

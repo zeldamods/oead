@@ -53,8 +53,8 @@ public:
     AlignedBinary,
     Array,
     MonoTypedArray,
-    Dictionary,
-    OrderedDictionary,
+    Hash,
+    OrderedHash,
     Bool,
     Int,
     Float,
@@ -75,16 +75,15 @@ public:
                        std::allocator<std::pair<u64, Byml>>, std::vector<std::pair<u64, Byml>>>;
   using String = std::string;
   using Array = std::vector<Byml>;
-  using Dictionary = absl::btree_map<std::string, Byml>;
-  using OrderedDictionary =
-      tsl::ordered_map<std::string, Byml, absl::Hash<std::string>, util::StrEqual,
-                       std::allocator<std::pair<std::string, Byml>>,
-                       std::vector<std::pair<std::string, Byml>>>;
+  using Hash = absl::btree_map<std::string, Byml>;
+  using OrderedHash = tsl::ordered_map<std::string, Byml, absl::Hash<std::string>, util::StrEqual,
+                                       std::allocator<std::pair<std::string, Byml>>,
+                                       std::vector<std::pair<std::string, Byml>>>;
 
   struct MonoTypedArray {
-    MonoTypedArray() : elements(), type(Type::Null) {}
+    MonoTypedArray() = default;
 
-    explicit MonoTypedArray(Type type_) : elements(), type(type_) {}
+    explicit MonoTypedArray(Type type_) : type(type_) {}
 
     MonoTypedArray(const MonoTypedArray& other) { *this = other; }
     MonoTypedArray(MonoTypedArray&& other) { *this = std::move(other); }
@@ -95,7 +94,7 @@ public:
     MonoTypedArray(const Array& elements_, Type type_);
 
     std::vector<Byml> elements;
-    Type type;
+    Type type = Type::Null;
 
     OEAD_DEFINE_FIELDS(MonoTypedArray, elements, type);
   };
@@ -107,13 +106,11 @@ public:
     OEAD_DEFINE_FIELDS(AlignedBinary, data, align);
   };
 
-  using Value =
-      util::Variant<Type, Null, std::unique_ptr<Hash32>, std::unique_ptr<Hash64>,
-                    std::unique_ptr<OrderedHash32>, std::unique_ptr<OrderedHash64>,
-                    std::unique_ptr<String>, std::unique_ptr<std::vector<u8>>,
-                    std::unique_ptr<AlignedBinary>, std::unique_ptr<Array>,
-                    std::unique_ptr<MonoTypedArray>, std::unique_ptr<Dictionary>,
-                    std::unique_ptr<OrderedDictionary>, bool, S32, F32, U32, S64, U64, F64>;
+  using Value = util::Variant<
+      Type, Null, std::unique_ptr<Hash32>, std::unique_ptr<Hash64>, std::unique_ptr<OrderedHash32>,
+      std::unique_ptr<OrderedHash64>, std::unique_ptr<String>, std::unique_ptr<std::vector<u8>>,
+      std::unique_ptr<AlignedBinary>, std::unique_ptr<Array>, std::unique_ptr<MonoTypedArray>,
+      std::unique_ptr<Hash>, std::unique_ptr<OrderedHash>, bool, S32, F32, U32, S64, U64, F64>;
 
   Byml() = default;
   Byml(const Byml& other) { *this = other; }
@@ -159,28 +156,28 @@ public:
 
   template <Type Type, typename T>
   Reference<const T> Get(std::string_view key, T default_) const {
-    if (GetType() == Byml::Type::Dictionary) {
-      auto it = GetDictionary().find(key);
-      if (it == GetDictionary().end())
+    if (GetType() == Byml::Type::Hash) {
+      auto it = GetHash().find(key);
+      if (it == GetHash().end())
         return default_;
       return std::cref(it->second.Get<Type>());
     } else {
-      auto it = GetOrderedDictionary().find(key);
-      if (it == GetOrderedDictionary().end())
+      auto it = GetOrderedHash().find(key);
+      if (it == GetOrderedHash().end())
         return default_;
       return std::cref(it->second.Get<Type>());
     }
   }
   template <Type Type, typename T>
   Reference<T> Get(std::string_view key, T default_) {
-    if (GetType() == Byml::Type::Dictionary) {
-      auto it = GetDictionary().find(key);
-      if (it == GetDictionary().end())
+    if (GetType() == Byml::Type::Hash) {
+      auto it = GetHash().find(key);
+      if (it == GetHash().end())
         return default_;
       return std::ref(it->second.Get<Type>());
     } else {
-      auto it = GetOrderedDictionary().find(key);
-      if (it == GetOrderedDictionary().end())
+      auto it = GetOrderedHash().find(key);
+      if (it == GetOrderedHash().end())
         return default_;
       return std::ref(it->second.Get<Type>());
     }
@@ -248,10 +245,10 @@ public:
   static Byml FromText(std::string_view yml_text);
 
   /// Serialize the document to BYML with the specified endianness and version number.
-  /// This can only be done for Null, Array or Dictionary nodes.
+  /// This can only be done for Null, Array or Hash nodes.
   std::vector<u8> ToBinary(bool big_endian, int version = 2) const;
   /// Serialize the document to YAML.
-  /// This can only be done for Null, Array or Dictionary nodes.
+  /// This can only be done for Null, Array or Hash nodes.
   std::string ToText() const;
 
   // These getters mirror the behaviour of Nintendo's BYML library.
@@ -262,8 +259,8 @@ public:
   Hash64& GetHash64();
   OrderedHash32& GetOrderedHash32();
   OrderedHash64& GetOrderedHash64();
-  Dictionary& GetDictionary();
-  OrderedDictionary& GetOrderedDictionary();
+  Hash& GetHash();
+  OrderedHash& GetOrderedHash();
   Array& GetArray();
   MonoTypedArray& GetMonoTypedArray();
   String& GetString();
@@ -273,8 +270,8 @@ public:
   const Hash64& GetHash64() const;
   const OrderedHash32& GetOrderedHash32() const;
   const OrderedHash64& GetOrderedHash64() const;
-  const Dictionary& GetDictionary() const;
-  const OrderedDictionary& GetOrderedDictionary() const;
+  const Hash& GetHash() const;
+  const OrderedHash& GetOrderedHash() const;
   const Array& GetArray() const;
   const MonoTypedArray& GetMonoTypedArray() const;
   const String& GetString() const;

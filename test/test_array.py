@@ -18,7 +18,7 @@ def test_mismatching_element_raises_type_error():
         oead.byml.to_text(array)
     with pytest.raises(oead.TypeError):
         array = oead.byml.MonoTypedArray(oead.byml.Type.Hash64)
-        array.elements.append(oead.byml.Dictionary())
+        array.elements.append(oead.byml.Hash())
         oead.byml.to_binary(array, False, 10)
     with pytest.raises(oead.TypeError):
         oead.byml.from_text("!typed_array { Type: Int, Elements: [1.0] }")

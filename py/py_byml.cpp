@@ -32,8 +32,8 @@
 #include "main.h"
 
 OEAD_MAKE_OPAQUE("oead.byml.Array", oead::Byml::Array);
-OEAD_MAKE_OPAQUE("oead.byml.Dictionary", oead::Byml::Dictionary);
-OEAD_MAKE_OPAQUE("oead.byml.OrderedDictionary", oead::Byml::OrderedDictionary);
+OEAD_MAKE_OPAQUE("oead.byml.Hash", oead::Byml::Hash);
+OEAD_MAKE_OPAQUE("oead.byml.OrderedHash", oead::Byml::OrderedHash);
 OEAD_MAKE_OPAQUE("oead.byml.Hash32", oead::Byml::Hash32);
 OEAD_MAKE_OPAQUE("oead.byml.Hash64", oead::Byml::Hash64);
 OEAD_MAKE_OPAQUE("oead.byml.OrderedHash32", oead::Byml::OrderedHash32);
@@ -64,57 +64,42 @@ struct type_caster<oead::Byml> {
 
 namespace oead::bind {
 /// Wraps a callable to avoid expensive conversions to Byml; instead, we detect
-/// whether the first parameter is a Byml::Array, Byml::Dictionary, Byml::Hash32, or Byml::Hash64
+/// whether the first parameter is a Byml::Array, Byml::Hash, Byml::Hash32, or Byml::Hash64
 /// and if so we borrow the value and move-construct a temporary Byml in order to avoid copies.
+template <typename T, Byml::Type type>
+struct Borrowable {};
+
 template <typename... Ts, typename Callable>
 static auto BorrowByml(Callable&& callable) {
   return [&, callable](py::handle handle, Ts&&... args) {
     Byml obj;
-    const auto invoke = [&, callable](auto&& value) {
-      obj = std::move(value);
-      return std::invoke(callable, obj, std::forward<Ts>(args)...);
+    const auto invoke = [&] { return std::invoke(callable, obj, std::forward<Ts>(args)...); };
+
+    const auto borrow_and_invoke = [&]<typename T, Byml::Type type, typename... Rest>(
+                                       const auto& self, Borrowable<T, type>, Rest... rest) {
+      if (!py::isinstance<T>(handle)) {
+        if constexpr (sizeof...(Rest) == 0) {
+          obj = handle.cast<Byml>();
+          return invoke();
+        } else {
+          return self(self, rest...);
+        }
+      }
+
+      auto& ref = handle.cast<T&>();
+      obj = std::move(ref);
+      util::ScopeGuard guard{[&] { ref = std::move(obj.Get<type>()); }};
+      return invoke();
     };
-    if (py::isinstance<Byml::Array>(handle)) {
-      auto& ref = handle.cast<Byml::Array&>();
-      util::ScopeGuard guard{[&] { ref = std::move(obj.Get<Byml::Type::Array>()); }};
-      return invoke(std::move(ref));
-    }
-    if (py::isinstance<Byml::MonoTypedArray>(handle)) {
-      auto& ref = handle.cast<Byml::MonoTypedArray&>();
-      util::ScopeGuard guard{[&] { ref = std::move(obj.Get<Byml::Type::MonoTypedArray>()); }};
-      return invoke(std::move(ref));
-    }
-    if (py::isinstance<Byml::Dictionary>(handle)) {
-      auto& ref = handle.cast<Byml::Dictionary&>();
-      util::ScopeGuard guard{[&] { ref = std::move(obj.Get<Byml::Type::Dictionary>()); }};
-      return invoke(std::move(ref));
-    }
-    if (py::isinstance<Byml::OrderedDictionary>(handle)) {
-      auto& ref = handle.cast<Byml::OrderedDictionary&>();
-      util::ScopeGuard guard{[&] { ref = std::move(obj.Get<Byml::Type::OrderedDictionary>()); }};
-      return invoke(std::move(ref));
-    }
-    if (py::isinstance<Byml::Hash32>(handle)) {
-      auto& ref = handle.cast<Byml::Hash32&>();
-      util::ScopeGuard guard{[&] { ref = std::move(obj.Get<Byml::Type::Hash32>()); }};
-      return invoke(std::move(ref));
-    }
-    if (py::isinstance<Byml::Hash64>(handle)) {
-      auto& ref = handle.cast<Byml::Hash64&>();
-      util::ScopeGuard guard{[&] { ref = std::move(obj.Get<Byml::Type::Hash64>()); }};
-      return invoke(std::move(ref));
-    }
-    if (py::isinstance<Byml::OrderedHash32>(handle)) {
-      auto& ref = handle.cast<Byml::OrderedHash32&>();
-      util::ScopeGuard guard{[&] { ref = std::move(obj.Get<Byml::Type::OrderedHash32>()); }};
-      return invoke(std::move(ref));
-    }
-    if (py::isinstance<Byml::OrderedHash64>(handle)) {
-      auto& ref = handle.cast<Byml::OrderedHash64&>();
-      util::ScopeGuard guard{[&] { ref = std::move(obj.Get<Byml::Type::OrderedHash64>()); }};
-      return invoke(std::move(ref));
-    }
-    return invoke(handle.cast<Byml>());
+
+    return borrow_and_invoke(borrow_and_invoke, Borrowable<Byml::Array, Byml::Type::Array>{},
+                             Borrowable<Byml::MonoTypedArray, Byml::Type::MonoTypedArray>{},
+                             Borrowable<Byml::Hash, Byml::Type::Hash>{},
+                             Borrowable<Byml::OrderedHash, Byml::Type::OrderedHash>{},
+                             Borrowable<Byml::Hash32, Byml::Type::Hash32>{},
+                             Borrowable<Byml::Hash64, Byml::Type::Hash64>{},
+                             Borrowable<Byml::OrderedHash32, Byml::Type::OrderedHash32>{},
+                             Borrowable<Byml::OrderedHash64, Byml::Type::OrderedHash64>{});
   };
 }
 
@@ -132,8 +117,8 @@ void BindByml(py::module& parent) {
       .value("AlignedBinary", Byml::Type::AlignedBinary)
       .value("Array", Byml::Type::Array)
       .value("MonoTypedArray", Byml::Type::MonoTypedArray)
-      .value("Dictionary", Byml::Type::Dictionary)
-      .value("OrderedDictionary", Byml::Type::OrderedDictionary)
+      .value("Hash", Byml::Type::Hash)
+      .value("OrderedHash", Byml::Type::OrderedHash)
       .value("Bool", Byml::Type::Bool)
       .value("Int", Byml::Type::Int)
       .value("Float", Byml::Type::Float)
@@ -165,9 +150,9 @@ void BindByml(py::module& parent) {
            [](const Byml::MonoTypedArray& f, py::dict) { return Byml::MonoTypedArray(f); });
 
   m.def("from_binary", &Byml::FromBinary, "buffer"_a, py::return_value_policy::move,
-        ":return: An Array, Dictionary, or Hash (value type is possible on versions >= 8).");
+        ":return: An Array or Hash (value type is possible on versions >= 8).");
   m.def("from_text", &Byml::FromText, "yml_text"_a, py::return_value_policy::move,
-        ":return: An Array, Dictionary, or Hash (value type is possible on versions >= 8).");
+        ":return: An Array or Hash (value type is possible on versions >= 8).");
   m.def("to_binary", BorrowByml<bool, int>(&Byml::ToBinary), "data"_a, "big_endian"_a,
         "version"_a = 2);
   m.def("to_text", BorrowByml(&Byml::ToText), "data"_a);
@@ -182,8 +167,8 @@ void BindByml(py::module& parent) {
   m.def("get_uint64", BorrowByml(&Byml::GetUInt64), "data"_a);
 
   BindVector<Byml::Array>(m, "Array");
-  BindMap<Byml::Dictionary>(m, "Dictionary");
-  BindMap<Byml::OrderedDictionary>(m, "OrderedDictionary");
+  BindMap<Byml::Hash>(m, "Hash");
+  BindMap<Byml::OrderedHash>(m, "OrderedHash");
   BindMap<Byml::Hash32>(m, "Hash32");
   BindMap<Byml::Hash64>(m, "Hash64");
   BindMap<Byml::OrderedHash32>(m, "OrderedHash32");

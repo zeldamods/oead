@@ -80,7 +80,7 @@ static Byml ScalarToValue(std::string_view tag, yml::Scalar&& scalar) {
 static bool ShouldUseInlineYamlStyle(const Byml& container) {
   const auto is_simple = [](const Byml& item) {
     return !util::IsAnyOf(item.GetType(), Byml::Type::Array, Byml::Type::MonoTypedArray,
-                          Byml::Type::Dictionary, Byml::Type::OrderedDictionary, Byml::Type::Hash32,
+                          Byml::Type::Hash, Byml::Type::OrderedHash, Byml::Type::Hash32,
                           Byml::Type::Hash64, Byml::Type::OrderedHash32, Byml::Type::OrderedHash64);
   };
   switch (container.GetType()) {
@@ -89,13 +89,12 @@ static bool ShouldUseInlineYamlStyle(const Byml& container) {
   case Byml::Type::MonoTypedArray:
     return container.GetMonoTypedArray().elements.size() <= 10 &&
            absl::c_all_of(container.GetMonoTypedArray().elements, is_simple);
-  case Byml::Type::Dictionary:
-    return container.GetDictionary().size() <= 10 &&
-           absl::c_all_of(container.GetDictionary(),
-                          [&](const auto& p) { return is_simple(p.second); });
-  case Byml::Type::OrderedDictionary:
-    return container.GetOrderedDictionary().size() <= 10 &&
-           absl::c_all_of(container.GetOrderedDictionary(),
+  case Byml::Type::Hash:
+    return container.GetHash().size() <= 10 &&
+           absl::c_all_of(container.GetHash(), [&](const auto& p) { return is_simple(p.second); });
+  case Byml::Type::OrderedHash:
+    return container.GetOrderedHash().size() <= 10 &&
+           absl::c_all_of(container.GetOrderedHash(),
                           [&](const auto& p) { return is_simple(p.second); });
   case Byml::Type::Hash32:
     return container.GetHash32().size() <= 10 &&
@@ -139,10 +138,10 @@ static Byml::Type ParseBymlType(std::string_view type) {
     return Byml::Type::Array;
   if (type == "MonoTypedArray")
     return Byml::Type::MonoTypedArray;
-  if (type == "Dictionary")
-    return Byml::Type::Dictionary;
-  if (type == "OrderedDictionary")
-    return Byml::Type::OrderedDictionary;
+  if (type == "Hash")
+    return Byml::Type::Hash;
+  if (type == "OrderedHash")
+    return Byml::Type::OrderedHash;
   if (type == "Bool")
     return Byml::Type::Bool;
   if (type == "Int")
@@ -182,10 +181,10 @@ static std::string_view ConvertBymlTypeToString(Byml::Type type) {
     return "Array";
   case Byml::Type::MonoTypedArray:
     return "MonoTypedArray";
-  case Byml::Type::Dictionary:
-    return "Dictionary";
-  case Byml::Type::OrderedDictionary:
-    return "OrderedDictionary";
+  case Byml::Type::Hash:
+    return "Hash";
+  case Byml::Type::OrderedHash:
+    return "OrderedHash";
   case Byml::Type::Bool:
     return "Bool";
   case Byml::Type::Int:
@@ -220,21 +219,21 @@ Byml ParseYamlNode(ryml::ConstNodeRef node) {
 
   if (node.is_map()) {
     if (!node.has_val_tag()) {
-      auto dict = Byml::Dictionary{};
+      auto hash = Byml::Hash{};
       for (const auto& child : node) {
         std::string key{yml::RymlSubstrToStrView(child.key())};
         Byml value = ParseYamlNode(child);
-        dict.emplace(std::move(key), std::move(value));
+        hash.emplace(std::move(key), std::move(value));
       }
-      return Byml{std::move(dict)};
-    } else if (yml::RymlGetValTag(node) == "!ordered_dict") {
-      auto dict = Byml::OrderedDictionary{};
+      return Byml{std::move(hash)};
+    } else if (yml::RymlGetValTag(node) == "!ordered_hash") {
+      auto hash = Byml::OrderedHash{};
       for (const auto& child : node) {
         std::string key{yml::RymlSubstrToStrView(child.key())};
         Byml value = ParseYamlNode(child);
-        dict.emplace(std::move(key), std::move(value));
+        hash.emplace(std::move(key), std::move(value));
       }
-      return Byml{std::move(dict)};
+      return Byml{std::move(hash)};
     } else if (yml::RymlGetValTag(node) == "!h32") {
       auto hash = Byml::Hash32{};
       for (const auto& child : node) {
@@ -397,7 +396,7 @@ std::string Byml::ToText() const {
           yaml_sequence_end_event_initialize(&event);
           emitter.Emit(event);
         },
-        [&](const Dictionary& v) {
+        [&](const Hash& v) {
           const auto style = byml::ShouldUseInlineYamlStyle(v) ? YAML_FLOW_MAPPING_STYLE :
                                                                  YAML_BLOCK_MAPPING_STYLE;
           yml::LibyamlEmitter::MappingScope scope{emitter, {}, style};
@@ -407,10 +406,10 @@ std::string Byml::ToText() const {
             self(self, v);
           }
         },
-        [&](const OrderedDictionary& v) {
+        [&](const OrderedHash& v) {
           const auto style = byml::ShouldUseInlineYamlStyle(v) ? YAML_FLOW_MAPPING_STYLE :
                                                                  YAML_BLOCK_MAPPING_STYLE;
-          yml::LibyamlEmitter::MappingScope scope{emitter, "!ordered_dict", style};
+          yml::LibyamlEmitter::MappingScope scope{emitter, "!ordered_hash", style};
 
           for (const auto& [k, v] : v) {
             emitter.EmitString(k);
