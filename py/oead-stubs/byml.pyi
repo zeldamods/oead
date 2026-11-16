@@ -479,11 +479,11 @@ class Type(enum.Enum):
     UInt64: typing.ClassVar[Type]  # value = <Type.UInt64: 17>
 def from_binary(buffer: typing_extensions.Buffer) -> None | Hash32 | Hash64 | OrderedHash32 | OrderedHash64 | str | oead.Bytes | AlignedBinary | Array | MonoTypedArray | Hash | OrderedHash | bool | oead.S32 | oead.F32 | oead.U32 | oead.S64 | oead.U64 | oead.F64:
     """
-    :return: An Array, Hash, or Hash (value type is possible on versions >= 8).
+    :return: An Array or Hash (value type is possible on versions >= 8).
     """
 def from_text(yml_text: str) -> None | Hash32 | Hash64 | OrderedHash32 | OrderedHash64 | str | oead.Bytes | AlignedBinary | Array | MonoTypedArray | Hash | OrderedHash | bool | oead.S32 | oead.F32 | oead.U32 | oead.S64 | oead.U64 | oead.F64:
     """
-    :return: An Array, Hash, or Hash (value type is possible on versions >= 8).
+    :return: An Array or Hash (value type is possible on versions >= 8).
     """
 def get_bool(data: typing.Any) -> bool:
     ...
