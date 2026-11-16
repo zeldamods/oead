@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.20)
 project(oead CXX)
 
 include(CMakeRC.cmake)
@@ -52,7 +52,7 @@ add_library(oead
   src/yaz0.cpp
 )
 
-target_compile_features(oead PUBLIC cxx_std_20)
+target_compile_features(oead PUBLIC cxx_std_23)
 set_target_properties(oead PROPERTIES CXX_EXTENSIONS OFF)
 target_include_directories(oead PUBLIC src/include)
 target_include_directories(oead PRIVATE src/)

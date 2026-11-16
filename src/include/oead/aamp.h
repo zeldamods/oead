@@ -142,17 +142,12 @@ public:
 
   Type GetType() const { return m_value.GetType(); }
   template <Type type>
-  const auto& Get() const {
-    return m_value.Get<type>();
-  }
-  template <Type type>
-  auto& Get() {
-    return m_value.Get<type>();
+  auto& Get(this auto&& self) {
+    return self.m_value.template Get<type>();
   }
   /// Get the value as a string view. Throws a TypeError if the parameter is not a string.
   std::string_view GetStringView() const;
-  auto& GetVariant() { return m_value; }
-  const auto& GetVariant() const { return m_value; }
+  auto& GetVariant(this auto&& self) { return self.m_value; }
 
 private:
   Value m_value;

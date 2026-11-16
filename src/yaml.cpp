@@ -19,7 +19,6 @@
 
 #include "yaml.h"
 
-#include <absl/strings/match.h>
 #include <absl/strings/numbers.h>
 #include <absl/strings/str_format.h>
 #include <mutex>
@@ -37,14 +36,14 @@ using namespace std::string_view_literals;
 
 std::string FormatFloat(float value) {
   std::string repr = absl::StrFormat("%.9g", value);
-  if (!absl::StrContains(repr, ".") && !absl::StrContains(repr, "e"))
+  if (!repr.contains('.') && !repr.contains('e'))
     repr += ".0"sv;
   return repr;
 }
 
 std::string FormatDouble(double value) {
   std::string repr = absl::StrFormat("%.17g", value);
-  if (!absl::StrContains(repr, ".") && !absl::StrContains(repr, "e"))
+  if (!repr.contains('.') && !repr.contains('e'))
     repr += ".0"sv;
   return repr;
 }
@@ -91,7 +90,7 @@ Scalar ParseScalar(const std::string_view tag, const std::string_view value, boo
     return value[0] == 't';
 
   // Floating-point conversions.
-  const bool is_possible_double = absl::StrContains(value, ".");
+  const bool is_possible_double = value.contains('.');
   if (tag_type == TagBasedType::Float || (!tag_type && is_possible_double && !is_quoted)) {
     if (IsInfinity(value))
       return std::numeric_limits<double>::infinity();
@@ -127,7 +126,7 @@ bool StringNeedsQuotes(const std::string_view value) {
   if (util::IsAnyOf(value, "true", "false"))
     return true;
 
-  const bool is_possible_double = absl::StrContains(value, ".");
+  const bool is_possible_double = value.contains('.');
   if (is_possible_double) {
     if (IsInfinity(value) || IsNegativeInfinity(value) || IsNaN(value))
       return true;

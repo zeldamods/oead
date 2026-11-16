@@ -21,6 +21,7 @@
 #include <absl/hash/hash.h>
 #include <algorithm>
 #include <array>
+#include <bit>
 #include <cstring>
 #include <map>
 #include <stdexcept>
@@ -202,7 +203,7 @@ private:
     case NodeType::Int:
       return S32(*raw);
     case NodeType::Float:
-      return F32(util::BitCast<f32>(*raw));
+      return F32(std::bit_cast<f32>(*raw));
     case NodeType::UInt:
       return U32(*raw);
     case NodeType::Int64:
@@ -210,7 +211,7 @@ private:
     case NodeType::UInt64:
       return U64(read_long_value());
     case NodeType::Double:
-      return F64(util::BitCast<f64>(read_long_value()));
+      return F64(std::bit_cast<f64>(read_long_value()));
     case NodeType::Null:
       return Byml::Null();
     default:
@@ -482,38 +483,6 @@ std::vector<u8> Byml::ToBinary(bool big_endian, int version) const {
   ctx.WriteContainerNode(*this);
   ctx.writer.AlignUp(4);
   return ctx.writer.Finalize();
-}
-
-Byml::Hash& Byml::GetHash() {
-  return Get<Type::Hash>();
-}
-
-Byml::Array& Byml::GetArray() {
-  return Get<Type::Array>();
-}
-
-Byml::String& Byml::GetString() {
-  return Get<Type::String>();
-}
-
-std::vector<u8>& Byml::GetBinary() {
-  return Get<Type::Binary>();
-}
-
-const Byml::Hash& Byml::GetHash() const {
-  return Get<Type::Hash>();
-}
-
-const Byml::Array& Byml::GetArray() const {
-  return Get<Type::Array>();
-}
-
-const Byml::String& Byml::GetString() const {
-  return Get<Type::String>();
-}
-
-const std::vector<u8>& Byml::GetBinary() const {
-  return Get<Type::Binary>();
 }
 
 bool Byml::GetBool() const {

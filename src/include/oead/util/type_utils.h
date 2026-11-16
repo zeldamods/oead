@@ -37,21 +37,6 @@ struct IsUniquePtr<std::unique_ptr<T, D>> : std::true_type {};
 template <typename T, typename... Ts>
 concept SameAsAnyOf = (std::same_as<T, Ts> || ...);
 
-template <typename T>
-constexpr T& AsMutable(T const& value) noexcept {
-  return const_cast<T&>(value);
-}
-template <typename T>
-constexpr T* AsMutable(T const* value) noexcept {
-  return const_cast<T*>(value);
-}
-template <typename T>
-constexpr T* AsMutable(T* value) noexcept {
-  return value;
-}
-template <typename T>
-void AsMutable(T const&&) = delete;
-
 template <typename, template <typename> class, typename = std::void_t<>>
 struct Detect : std::false_type {};
 template <typename T, template <typename> class Op>

@@ -78,15 +78,10 @@ public:
 
   Type GetType() const { return m_value.GetType(); }
   template <Type type>
-  const auto& Get() const {
-    return m_value.Get<type>();
+  auto& Get(this auto&& self) {
+    return self.m_value.template Get<type>();
   }
-  template <Type type>
-  auto& Get() {
-    return m_value.Get<type>();
-  }
-  auto& GetVariant() { return m_value; }
-  const auto& GetVariant() const { return m_value; }
+  auto& GetVariant(this auto&& self) { return self.m_value; }
 
   /// Get an item from a map/hash.
   template <typename T>
@@ -107,19 +102,15 @@ public:
     Storage m_storage;
   };
 
-  template <Type Type, typename T>
-  Reference<const T> Get(std::string_view key, T default_) const {
-    auto it = GetHash().find(key);
-    if (it == GetHash().end())
-      return default_;
-    return std::cref(it->second.Get<Type>());
-  }
-  template <Type Type, typename T>
-  Reference<T> Get(std::string_view key, T default_) {
-    auto it = GetHash().find(key);
-    if (it == GetHash().end())
-      return default_;
-    return std::ref(it->second.Get<Type>());
+  template <Type type, typename T>
+  auto Get(this auto&& self, std::string_view key, T default_) {
+    using Value = std::remove_reference_t<decltype(self.template Get<type>())>;
+
+    auto& hash = self.GetHash();
+    const auto it = hash.find(key);
+    if (it == hash.end())
+      return Reference<Value>(std::move(default_));
+    return Reference<Value>(std::ref(it->second.template Get<type>()));
   }
 
   /// Load a document from binary data.
@@ -138,14 +129,10 @@ public:
   // Some of them will perform type conversions automatically.
   // If value types are incorrect, an exception is thrown.
 
-  Hash& GetHash();
-  Array& GetArray();
-  String& GetString();
-  std::vector<u8>& GetBinary();
-  const Hash& GetHash() const;
-  const Array& GetArray() const;
-  const String& GetString() const;
-  const std::vector<u8>& GetBinary() const;
+  auto& GetHash(this auto&& self) { return self.template Get<Type::Hash>(); }
+  auto& GetArray(this auto&& self) { return self.template Get<Type::Array>(); }
+  auto& GetString(this auto&& self) { return self.template Get<Type::String>(); }
+  auto& GetBinary(this auto&& self) { return self.template Get<Type::Binary>(); }
   bool GetBool() const;
   s32 GetInt() const;
   u32 GetUInt() const;
