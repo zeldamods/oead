@@ -19,6 +19,9 @@
 
 #pragma once
 
+#include <absl/hash/hash.h>
+
+#include <concepts>
 #include <string_view>
 
 namespace oead::util {
@@ -40,5 +43,26 @@ inline void SplitStringByLine(std::string_view data, Callback cb) {
     line_start_pos = line_end_pos + 1;
   }
 }
+
+struct StrHash {
+  using is_transparent = void;
+
+  template <typename T>
+    requires std::constructible_from<std::string_view, T>
+  size_t operator()(const T& value) const {
+    return absl::HashOf(std::string_view(value));
+  }
+};
+
+struct StrEqual {
+  using is_transparent = void;
+
+  template <typename T, typename U>
+    requires std::constructible_from<std::string_view, T> &&
+             std::constructible_from<std::string_view, U>
+  constexpr bool operator()(const T& lhs, const U& rhs) const {
+    return std::string_view(lhs) == std::string_view(rhs);
+  }
+};
 
 }  // namespace oead::util

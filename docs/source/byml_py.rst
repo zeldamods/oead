@@ -35,7 +35,15 @@ Reference
 
 .. class:: oead.byml.Hash
 
-    Lightweight dict-like object. Can be cast to a dict.
+    Lightweight dict-like object with string keys. Can be cast to a dict.
+
+.. class:: oead.byml.Hash32
+
+    Lightweight dict-like object with u32 keys. Can be cast to a dict.
+
+.. class:: oead.byml.Hash64
+
+    Lightweight dict-like object with u64 keys. Can be cast to a dict.
 
 .. autofunction:: oead.byml.from_binary
 

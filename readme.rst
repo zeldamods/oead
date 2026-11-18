@@ -14,7 +14,7 @@ Currently, oead only handles very common formats that are extensively used in re
 * `AAMP <https://zeldamods.org/wiki/AAMP>`_ (binary parameter archive): Only version 2 is supported.
 * `AMTA` (audio meta): Version 4.0 is supported
 * `BARS` (binary audio resource): Version 1.1 is supported
-* `BYML <https://zeldamods.org/wiki/BYML>`_ (binary YAML): Versions 1, 2, 3, and 4 are supported.
+* `BYML <https://zeldamods.org/wiki/BYML>`_ (binary YAML): Versions 1-10 are supported.
 * `FSTM` (cafe stream): Version 4.0.0 is supported
 * `FSTP` (cafe stream prefetch): Version 2.1.0 is supported
 * `FWAV` (cafe wave): Version 1.2.0 is supported

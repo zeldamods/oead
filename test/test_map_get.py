@@ -54,3 +54,11 @@ def test_wrong_self_raises_type_error():
         oead.byml.Hash.keys(5)
     with pytest.raises(TypeError):
         oead.aamp.ParameterMap.keys(5)
+
+
+def test_tagged_map():
+    text = "!!map foo: bar"
+    parsed = oead.byml.from_text(text)
+    assert isinstance(parsed, oead.byml.Hash)
+    assert parsed.get("foo") == "bar"
+
