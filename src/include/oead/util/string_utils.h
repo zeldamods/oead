@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include <absl/hash/hash.h>
+
 #include <concepts>
 #include <string_view>
 
@@ -41,6 +43,16 @@ inline void SplitStringByLine(std::string_view data, Callback cb) {
     line_start_pos = line_end_pos + 1;
   }
 }
+
+struct StrHash {
+  using is_transparent = void;
+
+  template <typename T>
+    requires std::constructible_from<std::string_view, T>
+  size_t operator()(const T& value) const {
+    return absl::HashOf(std::string_view(value));
+  }
+};
 
 struct StrEqual {
   using is_transparent = void;

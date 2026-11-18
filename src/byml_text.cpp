@@ -120,14 +120,6 @@ static bool ShouldUseInlineYamlStyle(const Byml& container) {
 static Byml::Type ParseBymlType(std::string_view type) {
   if (type == "Null")
     return Byml::Type::Null;
-  if (type == "Hash32")
-    return Byml::Type::Hash32;
-  if (type == "Hash64")
-    return Byml::Type::Hash64;
-  if (type == "OrderedHash32")
-    return Byml::Type::OrderedHash32;
-  if (type == "OrderedHash64")
-    return Byml::Type::OrderedHash64;
   if (type == "String")
     return Byml::Type::String;
   if (type == "Binary")
@@ -142,6 +134,14 @@ static Byml::Type ParseBymlType(std::string_view type) {
     return Byml::Type::Hash;
   if (type == "OrderedHash")
     return Byml::Type::OrderedHash;
+  if (type == "Hash32")
+    return Byml::Type::Hash32;
+  if (type == "Hash64")
+    return Byml::Type::Hash64;
+  if (type == "OrderedHash32")
+    return Byml::Type::OrderedHash32;
+  if (type == "OrderedHash64")
+    return Byml::Type::OrderedHash64;
   if (type == "Bool")
     return Byml::Type::Bool;
   if (type == "Int")
@@ -163,14 +163,6 @@ static std::string_view ConvertBymlTypeToString(Byml::Type type) {
   switch (type) {
   case Byml::Type::Null:
     return "Null";
-  case Byml::Type::Hash32:
-    return "Hash32";
-  case Byml::Type::Hash64:
-    return "Hash64";
-  case Byml::Type::OrderedHash32:
-    return "OrderedHash32";
-  case Byml::Type::OrderedHash64:
-    return "OrderedHash64";
   case Byml::Type::String:
     return "String";
   case Byml::Type::Binary:
@@ -185,6 +177,14 @@ static std::string_view ConvertBymlTypeToString(Byml::Type type) {
     return "Hash";
   case Byml::Type::OrderedHash:
     return "OrderedHash";
+  case Byml::Type::Hash32:
+    return "Hash32";
+  case Byml::Type::Hash64:
+    return "Hash64";
+  case Byml::Type::OrderedHash32:
+    return "OrderedHash32";
+  case Byml::Type::OrderedHash64:
+    return "OrderedHash64";
   case Byml::Type::Bool:
     return "Bool";
   case Byml::Type::Int:
@@ -204,6 +204,22 @@ static std::string_view ConvertBymlTypeToString(Byml::Type type) {
   }
 }
 
+template <std::integral T>
+T ParseIntegerKey(std::string_view key_str) {
+  T key;
+  if (key_str.starts_with("0x") || key_str.starts_with("0X")) {
+    if (std::from_chars(key_str.data() + 2, key_str.data() + key_str.size(), key, 16).ec !=
+        std::errc()) {
+      throw InvalidDataError("Failed to parse integer key");
+    }
+  } else {
+    if (std::from_chars(key_str.data(), key_str.data() + key_str.size(), key).ec != std::errc()) {
+      throw InvalidDataError("Failed to parse integer key");
+    }
+  }
+  return key;
+}
+
 Byml ParseYamlNode(ryml::ConstNodeRef node) {
   if (!node.readable())
     throw InvalidDataError("Invalid YAML node");
@@ -218,7 +234,7 @@ Byml ParseYamlNode(ryml::ConstNodeRef node) {
   }
 
   if (node.is_map()) {
-    if (!node.has_val_tag()) {
+    if (!node.has_val_tag() || yml::RymlGetValTag(node) == "!!map") {
       auto hash = Byml::Hash{};
       for (const auto& child : node) {
         std::string key{yml::RymlSubstrToStrView(child.key())};
@@ -237,11 +253,7 @@ Byml ParseYamlNode(ryml::ConstNodeRef node) {
     } else if (yml::RymlGetValTag(node) == "!h32") {
       auto hash = Byml::Hash32{};
       for (const auto& child : node) {
-        u32 key;
-        const auto [_, ec] = std::from_chars(child.key().begin(), child.key().end(), key, 16);
-        if (ec != std::error_code()) {
-          throw InvalidDataError("Failed to parse !h32 key");
-        }
+        const u32 key = ParseIntegerKey<u32>(yml::RymlSubstrToStrView(child.key()));
         Byml value = ParseYamlNode(child);
         hash.emplace(key, std::move(value));
       }
@@ -249,11 +261,7 @@ Byml ParseYamlNode(ryml::ConstNodeRef node) {
     } else if (yml::RymlGetValTag(node) == "!h64") {
       auto hash = Byml::Hash64{};
       for (const auto& child : node) {
-        u64 key;
-        const auto [_, ec] = std::from_chars(child.key().begin(), child.key().end(), key, 16);
-        if (ec != std::error_code()) {
-          throw InvalidDataError("Failed to parse !h64 key");
-        }
+        const u64 key = ParseIntegerKey<u64>(yml::RymlSubstrToStrView(child.key()));
         Byml value = ParseYamlNode(child);
         hash.emplace(key, std::move(value));
       }
@@ -261,11 +269,7 @@ Byml ParseYamlNode(ryml::ConstNodeRef node) {
     } else if (yml::RymlGetValTag(node) == "!ordered_h32") {
       auto hash = Byml::OrderedHash32{};
       for (const auto& child : node) {
-        u32 key;
-        const auto [_, ec] = std::from_chars(child.key().begin(), child.key().end(), key, 16);
-        if (ec != std::error_code()) {
-          throw InvalidDataError("Failed to parse !ordered_h32 key");
-        }
+        const u32 key = ParseIntegerKey<u32>(yml::RymlSubstrToStrView(child.key()));
         Byml value = ParseYamlNode(child);
         hash.emplace(key, std::move(value));
       }
@@ -273,11 +277,7 @@ Byml ParseYamlNode(ryml::ConstNodeRef node) {
     } else if (yml::RymlGetValTag(node) == "!ordered_h64") {
       auto hash = Byml::OrderedHash64{};
       for (const auto& child : node) {
-        u64 key;
-        const auto [_, ec] = std::from_chars(child.key().begin(), child.key().end(), key, 16);
-        if (ec != std::error_code()) {
-          throw InvalidDataError("Failed to parse !ordered_h64 key");
-        }
+        const u64 key = ParseIntegerKey<u64>(yml::RymlSubstrToStrView(child.key()));
         Byml value = ParseYamlNode(child);
         hash.emplace(key, std::move(value));
       }

@@ -81,12 +81,12 @@ enum class NodeType : u8 {
 
 constexpr NodeType GetNodeType(Byml::Type type) {
   constexpr std::array map{
-      NodeType::Null,           NodeType::Hash32,        NodeType::Hash64,
-      NodeType::OrderedHash32,  NodeType::OrderedHash64, NodeType::String,
-      NodeType::Binary,         NodeType::AlignedBinary, NodeType::Array,
-      NodeType::MonoTypedArray, NodeType::Hash,          NodeType::OrderedHash,
-      NodeType::Bool,           NodeType::Int,           NodeType::Float,
-      NodeType::UInt,           NodeType::Int64,         NodeType::UInt64,
+      NodeType::Null,          NodeType::String,        NodeType::Binary,
+      NodeType::AlignedBinary, NodeType::Array,         NodeType::MonoTypedArray,
+      NodeType::Hash,          NodeType::OrderedHash,   NodeType::Hash32,
+      NodeType::Hash64,        NodeType::OrderedHash32, NodeType::OrderedHash64,
+      NodeType::Bool,          NodeType::Int,           NodeType::Float,
+      NodeType::UInt,          NodeType::Int64,         NodeType::UInt64,
       NodeType::Double,
   };
   return map[u8(type)];
@@ -179,7 +179,7 @@ public:
         !num_entries)
       throw InvalidDataError("Invalid string table");
     if (*type == NodeType::RelocatedStringTable) {
-      m_offset += *reader.Read<u64>();
+      m_base = *reader.Read<u64>();
     }
     m_size = *num_entries;
   }
@@ -188,7 +188,8 @@ public:
     if (idx >= m_size)
       throw std::out_of_range("Invalid string table entry index");
 
-    const auto rel_offset = reader.Read<u32>(m_offset + 4 + 4 * idx);
+    const auto rel_offset =
+        reader.Read<u32>(m_offset + 4 + (m_base ? sizeof(u64) : 0) + sizeof(u32) * idx);
     // This is safe even for idx = N - 1 since the offset array has N+1 elements.
     const auto next_rel_offset = reader.Read<u32>();
     if (!rel_offset || !next_rel_offset)
@@ -197,12 +198,14 @@ public:
       throw InvalidDataError("Invalid string table: inconsistent offsets");
 
     const size_t max_len = *next_rel_offset - *rel_offset;
-    return reader.ReadString(m_offset + *rel_offset, max_len);
+    const size_t str_offset = m_offset + m_base + *rel_offset;
+    return reader.ReadString(str_offset, max_len);
   }
 
 private:
   u32 m_offset = 0;
   u32 m_size = 0;
+  u64 m_base = 0;
 };
 
 class Parser {
@@ -266,16 +269,25 @@ private:
     case NodeType::Binary: {
       const u32 data_offset = *raw;
       const u32 size = m_reader.Read<u32>(data_offset).value();
-      return Byml{std::vector<u8>(m_reader.span().begin() + data_offset + 4,
-                                  m_reader.span().begin() + data_offset + 4 + size)};
+      const u32 data_start = data_offset + 4;
+      const u32 data_end = data_start + size;
+      if (data_start >= m_reader.span().size() || data_end > m_reader.span().size())
+        throw InvalidDataError("Invalid value node: out-of-range binary data");
+      return Byml{std::vector<u8>(m_reader.span().begin() + data_start,
+                                  m_reader.span().begin() + data_end)};
     }
     case NodeType::AlignedBinary: {
       const u32 data_offset = *raw;
       const u32 size = m_reader.Read<u32>(data_offset).value();
       const u32 align = m_reader.Read<u32>().value();
-      return Byml{Byml::AlignedBinary{{m_reader.span().begin() + data_offset + 8,
-                                       m_reader.span().begin() + data_offset + 8 + size},
-                                      align}};
+      const u32 data_start = data_offset + 8;
+      const u32 data_end = data_start + size;
+      if (data_start >= m_reader.span().size() || data_end > m_reader.span().size())
+        throw InvalidDataError("Invalid value node: out-of-range binary data");
+      if (align == 0 || data_start % align != 0)
+        throw InvalidDataError("Invalid value node: binary data is not aligned properly");
+      return Byml{Byml::AlignedBinary{
+          {m_reader.span().begin() + data_start, m_reader.span().begin() + data_end}, align}};
     }
     case NodeType::Bool:
       return *raw != 0;
@@ -305,9 +317,9 @@ private:
   }
 
   std::vector<u32> ParseIndexOrder(u32 offset, u32 count) {
-    const size_t index_size = count < 0x100  ? sizeof(u8) :
-                              count < 0x1000 ? sizeof(u16) :
-                                               sizeof(u32);
+    const size_t index_size = count < 0x100   ? sizeof(u8) :
+                              count < 0x10000 ? sizeof(u16) :
+                                                sizeof(u32);
     m_reader.Seek(offset);
     std::vector<u32> indices(count);
     for (u32 i = 0; i < count; ++i) {
@@ -543,9 +555,13 @@ struct WriteContext {
       writer.WriteBytes(data.GetBinary());
       return;
     case Byml::Type::AlignedBinary:
+      if (data.GetAlignedBinary().align == 0)
+        throw InvalidDataError("Aligned binary with alignment of zero");
       // The size and alignment are written in the 8 bytes before the aligned data buffer
       // To compensate, we need to move the writer forward by 8 bytes first before aligning
-      writer.Seek(util::AlignUp(writer.Tell() + 8, data.GetAlignedBinary().align) - 8);
+      // Since we have a u32 size + align, we should align up to a minimum of 4 bytes
+      writer.Seek(
+          util::AlignUp(writer.Tell() + 8, std::max(data.GetAlignedBinary().align, size_t(4))) - 8);
       writer.Write(static_cast<u32>(data.GetAlignedBinary().data.size()));
       writer.Write(static_cast<u32>(data.GetAlignedBinary().align));
       writer.WriteBytes(data.GetAlignedBinary().data);
@@ -575,9 +591,9 @@ struct WriteContext {
   };
 
   void WriteIndices(std::span<const u32> indices) {
-    const size_t index_size = indices.size() < 0x100  ? sizeof(u8) :
-                              indices.size() < 0x1000 ? sizeof(u16) :
-                                                        sizeof(u32);
+    const size_t index_size = indices.size() < 0x100   ? sizeof(u8) :
+                              indices.size() < 0x10000 ? sizeof(u16) :
+                                                         sizeof(u32);
     for (const auto i : indices) {
       switch (index_size) {
       case sizeof(u8):
@@ -640,20 +656,6 @@ struct WriteContext {
     };
 
     switch (data.GetType()) {
-    case Byml::Type::Hash32:
-      write_hash_container_node.template operator()<NodeType::Hash32>(data.GetHash32());
-      break;
-    case Byml::Type::Hash64:
-      write_hash_container_node.template operator()<NodeType::Hash64>(data.GetHash64());
-      break;
-    case Byml::Type::OrderedHash32:
-      write_hash_container_node.template operator()<NodeType::OrderedHash32>(
-          data.GetOrderedHash32());
-      break;
-    case Byml::Type::OrderedHash64:
-      write_hash_container_node.template operator()<NodeType::OrderedHash64>(
-          data.GetOrderedHash64());
-      break;
     case Byml::Type::Array: {
       const auto& array = data.GetArray();
       writer.Write(NodeType::Array);
@@ -709,6 +711,20 @@ struct WriteContext {
       writer.AlignUp(4);
       break;
     }
+    case Byml::Type::Hash32:
+      write_hash_container_node.template operator()<NodeType::Hash32>(data.GetHash32());
+      break;
+    case Byml::Type::Hash64:
+      write_hash_container_node.template operator()<NodeType::Hash64>(data.GetHash64());
+      break;
+    case Byml::Type::OrderedHash32:
+      write_hash_container_node.template operator()<NodeType::OrderedHash32>(
+          data.GetOrderedHash32());
+      break;
+    case Byml::Type::OrderedHash64:
+      write_hash_container_node.template operator()<NodeType::OrderedHash64>(
+          data.GetOrderedHash64());
+      break;
     default:
       throw std::invalid_argument("Invalid container node type");
     }
@@ -729,7 +745,9 @@ struct WriteContext {
         const size_t offset =
             type != Byml::Type::AlignedBinary ?
                 writer.Tell() :
-                util::AlignUp(writer.Tell() + 8, node.data->GetAlignedBinary().align) - 8;
+                util::AlignUp(writer.Tell() + 8,
+                              std::max(node.data->GetAlignedBinary().align, size_t(4))) -
+                    8;
         writer.RunAt(node.offset_in_container, [&](size_t) { writer.Write<u32>(offset); });
         non_inline_node_data.emplace(*node.data, offset);
         if (IsContainerType(type))
@@ -744,8 +762,28 @@ struct WriteContext {
     if (IsContainerType(data.GetType())) {
       WriteContainerNode(data);
     } else {
-      writer.Write(GetNodeType(data.GetType()));
+      const auto type = data.GetType();
+      writer.Write(GetNodeType(type));
       writer.AlignUp(4);
+
+      if (IsNonInlineType(type)) {
+        const size_t offset = writer.Tell();
+        writer.Write<u32>(0);
+
+        if (type == Byml::Type::AlignedBinary) {
+          //  Don't seek here since WriteValueNode will align the writer for us
+          const size_t value_offset =
+              util::AlignUp(writer.Tell() + 8, std::max(data.GetAlignedBinary().align, size_t(4))) -
+              8;
+          writer.RunAt(offset, [&](size_t) { writer.Write<u32>(value_offset); });
+        } else {
+          if (IsLongType(type))
+            writer.AlignUp(8);
+          else
+            writer.AlignUp(4);
+          writer.WriteCurrentOffsetAt<u32>(offset);
+        }
+      }
       WriteValueNode(data);
     }
   }
@@ -833,6 +871,14 @@ std::vector<u8> Byml::ToBinary(bool big_endian, int version) const {
   return ctx.writer.Finalize();
 }
 
+Byml::Hash& Byml::GetHash() {
+  return Get<Type::Hash>();
+}
+
+Byml::OrderedHash& Byml::GetOrderedHash() {
+  return Get<Type::OrderedHash>();
+}
+
 Byml::Hash32& Byml::GetHash32() {
   return Get<Type::Hash32>();
 }
@@ -847,14 +893,6 @@ Byml::OrderedHash32& Byml::GetOrderedHash32() {
 
 Byml::OrderedHash64& Byml::GetOrderedHash64() {
   return Get<Type::OrderedHash64>();
-}
-
-Byml::Hash& Byml::GetHash() {
-  return Get<Type::Hash>();
-}
-
-Byml::OrderedHash& Byml::GetOrderedHash() {
-  return Get<Type::OrderedHash>();
 }
 
 Byml::Array& Byml::GetArray() {
@@ -877,6 +915,14 @@ Byml::AlignedBinary& Byml::GetAlignedBinary() {
   return Get<Type::AlignedBinary>();
 }
 
+const Byml::Hash& Byml::GetHash() const {
+  return Get<Type::Hash>();
+}
+
+const Byml::OrderedHash& Byml::GetOrderedHash() const {
+  return Get<Type::OrderedHash>();
+}
+
 const Byml::Hash32& Byml::GetHash32() const {
   return Get<Type::Hash32>();
 }
@@ -891,14 +937,6 @@ const Byml::OrderedHash32& Byml::GetOrderedHash32() const {
 
 const Byml::OrderedHash64& Byml::GetOrderedHash64() const {
   return Get<Type::OrderedHash64>();
-}
-
-const Byml::Hash& Byml::GetHash() const {
-  return Get<Type::Hash>();
-}
-
-const Byml::OrderedHash& Byml::GetOrderedHash() const {
-  return Get<Type::OrderedHash>();
 }
 
 const Byml::Array& Byml::GetArray() const {
